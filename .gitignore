@@ -23,8 +23,12 @@ npm-debug.log*
 
 # IDE / OS
 .vscode/
-.agents/
+.agent/
 .idea/
 .DS_Store
 .gemini/
 .cursorrules
+
+NAAZ_BOOK_DEPOT_META_PROMPT.md
+check_progress.py
+
