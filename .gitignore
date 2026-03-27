@@ -1,0 +1,30 @@
+# Environments
+.env
+.env.local
+.venv
+venv/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+db.sqlite3
+media/
+naaz-backend/media/
+
+# Node.js
+naaz-frontend/node_modules/
+naaz-frontend/.next/
+naaz-frontend/out/
+naaz-frontend/build/
+npm-debug.log*
+
+# IDE / OS
+.vscode/
+.agents/
+.idea/
+.DS_Store
+.gemini/
+.cursorrules

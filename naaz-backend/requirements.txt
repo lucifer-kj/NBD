@@ -1,0 +1,37 @@
+# Core Django
+Django==5.0.4
+django-ninja==1.1.0
+psycopg2-binary==2.9.11
+
+# Auth
+djangorestframework-simplejwt==5.3.1
+
+# Cache & Queue
+celery==5.3.6
+redis==5.0.3
+django-redis==5.4.0
+
+# Search (Phase 5)
+elasticsearch==8.12.0
+elasticsearch-dsl==8.9.0
+
+# Payments
+requests==2.31.0
+
+# Utils
+python-dotenv==1.0.1
+Pillow==10.2.0
+django-cors-headers==4.3.1
+django-ratelimit==4.1.0
+django-storages==1.14.2
+
+# Notifications
+twilio==8.13.0
+
+# Testing
+pytest-django==4.7.0
+factory-boy==3.3.0
+coverage==7.4.0
+
+# Linting
+ruff==0.3.0
