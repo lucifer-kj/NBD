@@ -30,11 +30,9 @@ services:
   # --- Redis Instance (Managed Key Value) ---
   - type: keyvalue
     name: naaz-redis
-    plan: free # Managed Redis-compatible service
+    plan: free
 
 databases:
   # --- PostgreSQL Database ---
-  - name: naaz-db
-    databaseName: naaz_db
-    user: naaz_user
+  - name: naaz_db_prod # Renamed for clarity
     plan: free
