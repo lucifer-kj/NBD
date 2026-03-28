@@ -7,7 +7,7 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
   // Try fetching actual data
   let book = null;
   try {
-    const res = await fetch(`http://127.0.0.1:8000/api/books/${slug}/`, { cache: 'no-store' });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/books/${slug}/`, { cache: 'no-store' });
     if (res.ok) {
       book = await res.json();
     }

@@ -9,7 +9,7 @@ export const metadata = {
 export default async function AtarPage() {
   let atars = [];
   try {
-    const res = await fetch('http://127.0.0.1:8000/api/atar/', { cache: 'no-store' });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/atar/`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       atars = data.items || data;

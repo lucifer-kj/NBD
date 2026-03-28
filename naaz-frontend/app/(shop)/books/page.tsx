@@ -10,7 +10,7 @@ export default async function BooksPage() {
   // We mock the API call gracefully so it doesn't crash if Docker/Django isn't running on the user's host
   let books = [];
   try {
-    const res = await fetch('http://127.0.0.1:8000/api/books/', { cache: 'no-store' });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/books/`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       books = data.items || data;

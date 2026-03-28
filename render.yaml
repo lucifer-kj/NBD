@@ -1,0 +1,41 @@
+services:
+  # --- Backend API (Django Ninja) ---
+  - type: web
+    name: naaz-backend
+    runtime: docker
+    plan: free # Change to 'starter' or higher for production
+    dockerContext: naaz-backend
+    dockerfilePath: naaz-backend/Dockerfile
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings.production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: naaz-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: naaz-redis
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: naaz-backend.onrender.com # Update this once you have a custom domain
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://nbd-tan.vercel.app # Your Vercel frontend URL
+
+databases:
+  # --- PostgreSQL Database ---
+  - name: naaz-db
+    databaseName: naaz_db
+    user: naaz_user
+    plan: free # Change to 'starter' or higher for persistence
+
+# --- Redis Instance ---
+redis:
+  - name: naaz-redis
+    plan: free # Change to 'starter' for production
+    ipAllowList: [] # Only allow internal Render traffic
