@@ -4,7 +4,6 @@ import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import NewsletterSection from "@/components/newsletter-section";
-import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 
 import { TypewriterText } from "@/components/ui/typewriter-text";
@@ -48,13 +47,13 @@ export default function HomePage() {
               عَلَّمَ الْإِنسَانَ مَا لَمْ يَعْلَمْ
             </p>
             <p className="text-white/90 text-sm italic leading-relaxed">
-              "Read in the name of your Lord who created—
+              &ldquo;Read in the name of your Lord who created—
               Created man from a clot.
               Read, and your Lord is the Most Generous—
               Who taught by the pen—
-              Taught man that which he knew not."
+              Taught man that which he knew not.&rdquo;
               <span className="block mt-2 text-white/70 text-xs font-semibold">
-                (Surah Al-'Alaq, 96:1–5)
+                (Surah Al-&apos;Alaq, 96:1–5)
               </span>
             </p>
           </div>
@@ -70,13 +69,15 @@ export default function HomePage() {
             {/* Typewriter effect extracted to client component */}
             <div className="mb-8 text-left">
               <p className="text-xl md:text-2xl text-white/95 font-sans italic min-h-[2.5rem] text-left">
-                "<TypewriterText fullText="Publishing the Light of Knowledge since 1967" />"
+                <span className="text-white/95">&ldquo;</span>
+                <TypewriterText fullText="Publishing the Light of Knowledge since 1967" />
+                <span className="text-white/95">&rdquo;</span>
               </p>
             </div>
             
             <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed max-w-2xl text-left font-light">
               A pioneering publishing company since 1967, specializing in authentic Islamic literature 
-              and the Qur'an in multiple languages, serving the global Muslim community.
+              and the Qur&apos;an in multiple languages, serving the global Muslim community.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 animate-fade-in justify-start">

@@ -1,12 +1,17 @@
 "use client";
 
+import { useEffect } from "react";
 import { useCartStore } from "@/store/cart-store";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, getTotal, clearCart } = useCartStore();
+  const { items, removeItem, updateQuantity, getTotal, clearCart, loadFromStorage } = useCartStore();
+
+  useEffect(() => {
+    loadFromStorage();
+  }, [loadFromStorage]);
   return (
     <div className="max-w-md mx-auto px-4 py-8 min-h-screen flex flex-col">
       <h1 className="text-2xl font-bold mb-6 text-center">Your Cart</h1>

@@ -10,7 +10,6 @@ interface AtarVariant {
 }
 
 interface AtarProps {
-  id: number;
   name: string;
   slug: string;
   top_notes: string;
@@ -18,7 +17,7 @@ interface AtarProps {
   imageUrl?: string;
 }
 
-const AtarCard = ({ id, name, slug, top_notes, variants, imageUrl }: AtarProps) => {
+const AtarCard = ({ name, slug, top_notes, variants, imageUrl }: AtarProps) => {
   const fallbackImage = "/Images/ittars.jpeg";
   
   // Default to first variant price if available

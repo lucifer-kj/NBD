@@ -36,6 +36,7 @@ export function RoutePrefetcher() {
   useEffect(() => {
     // Don't prefetch on low-end devices or with reduced data preference
     if (
+      typeof navigator !== 'undefined' &&
       'connection' in navigator && 
       (navigator as NetworkInformation).connection?.saveData
     ) {
@@ -43,7 +44,7 @@ export function RoutePrefetcher() {
     }
     
     // Check if we're on a mobile device with potentially slow connection
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     
     // Prefetch static routes
     const routesToPrefetch = isMobile ? IMPORTANT_ROUTES.slice(0, 5) : IMPORTANT_ROUTES;
@@ -60,7 +61,7 @@ export function RoutePrefetcher() {
     // Check if requestIdleCallback is available
     if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
       // Use TypeScript type assertion for requestIdleCallback
-      (window.requestIdleCallback || setTimeout)(prefetchRoutes);
+      (typeof window !== 'undefined' && window.requestIdleCallback || setTimeout)(prefetchRoutes);
     } else {
       // Fallback for browsers that don't support requestIdleCallback
       setTimeout(prefetchRoutes, 200);

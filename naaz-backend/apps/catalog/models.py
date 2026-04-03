@@ -2,6 +2,17 @@ from django.db import models
 from django.utils.text import slugify
 
 
+def build_unique_slug(model_cls, value, instance_id=None):
+    base = slugify(value)[:500]
+    candidate = base
+    counter = 2
+    while model_cls.objects.filter(slug=candidate).exclude(id=instance_id).exists():
+        suffix = f"-{counter}"
+        candidate = f"{base[: max(1, 550 - len(suffix))]}{suffix}"
+        counter += 1
+    return candidate
+
+
 class Book(models.Model):
     """
     Islamic literature catalog.
@@ -68,7 +79,7 @@ class Book(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title)
+            self.slug = build_unique_slug(Book, self.title, self.id)
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -110,7 +121,7 @@ class Atar(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = build_unique_slug(Atar, self.name, self.id)
         super().save(*args, **kwargs)
 
     def __str__(self):

@@ -18,14 +18,15 @@ interface CartState {
   clearCart: () => void
   getTotal: () => number
   getCount: () => number
+  loadFromStorage: () => void
 }
 
 const CART_KEY = 'naazbookdepot_cart'
 
 const loadCart = (): CartItem[] => {
-  if (typeof window === 'undefined') return []
+  if (typeof window === 'undefined' || typeof window.localStorage === 'undefined' || typeof window.localStorage.getItem !== 'function') return [];
   try {
-    const data = localStorage.getItem(CART_KEY)
+    const data = window.localStorage.getItem(CART_KEY)
     return data ? JSON.parse(data) : []
   } catch {
     return []
@@ -33,12 +34,16 @@ const loadCart = (): CartItem[] => {
 }
 
 const saveCart = (items: CartItem[]) => {
-  if (typeof window === 'undefined') return
-  localStorage.setItem(CART_KEY, JSON.stringify(items))
+  if (typeof window === 'undefined' || typeof window.localStorage === 'undefined' || typeof window.localStorage.setItem !== 'function') return;
+  try {
+    window.localStorage.setItem(CART_KEY, JSON.stringify(items))
+  } catch {
+    // Ignore errors (e.g., storage quota exceeded)
+  }
 }
 
 export const useCartStore = create<CartState>((set, get) => ({
-  items: loadCart(),
+  items: [],
   addItem: (item, quantity = 1) => {
     set((state) => {
       const existing = state.items.find((i) => i.id === item.id)
@@ -71,6 +76,9 @@ export const useCartStore = create<CartState>((set, get) => ({
       saveCart(newItems)
       return { items: newItems }
     })
+  },
+  loadFromStorage: () => {
+    set({ items: loadCart() })
   },
   clearCart: () => {
     saveCart([])

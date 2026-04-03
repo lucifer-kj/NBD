@@ -1,3 +1,11 @@
+if (typeof globalThis !== "undefined" && globalThis.localStorage && typeof globalThis.localStorage.getItem !== "function") {
+  try {
+    globalThis.localStorage.getItem = () => null;
+    globalThis.localStorage.setItem = () => {};
+    globalThis.localStorage.removeItem = () => {};
+  } catch (e) {}
+}
+
 import React from "react";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -11,6 +19,7 @@ import AnimatedLayoutClient from "@/components/providers/animated-layout-client"
 import RoutePrefetcher from "@/components/providers/route-prefetch";
 
 import { ToastProvider } from "@/components/ui/toast"
+import { GoogleOAuthWrapper } from "@/components/providers/google-oauth-wrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -61,19 +70,20 @@ export default function RootLayout({
         <ToastProvider>
 
           <AuthProvider>
-            <ClientRoot>
-              <div className="min-h-screen flex flex-col">
-                <Header />
-                <main className="flex-1">
-                  <ErrorBoundary>
-                    <AnimatedLayoutClient>{children}</AnimatedLayoutClient>
-                  </ErrorBoundary>
-                </main>
-                <Footer />
-                {/* Route prefetcher - improves navigation performance */}
-                <RoutePrefetcher />
-              </div>
-            </ClientRoot>
+            <GoogleOAuthWrapper>
+              <ClientRoot>
+                <div className="min-h-screen flex flex-col">
+                  <Header />
+                  <main className="flex-1">
+                    <ErrorBoundary>
+                      <AnimatedLayoutClient>{children}</AnimatedLayoutClient>
+                    </ErrorBoundary>
+                  </main>
+                  <Footer />
+                  <RoutePrefetcher />
+                </div>
+              </ClientRoot>
+            </GoogleOAuthWrapper>
           </AuthProvider>
         </ToastProvider>
       </body>

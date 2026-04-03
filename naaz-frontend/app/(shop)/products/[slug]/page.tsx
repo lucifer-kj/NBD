@@ -12,6 +12,7 @@ import StarRating from "@/components/star-rating"
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel"
 import { useCartStore } from "@/store/cart-store"
 import { useAuth } from "@/components/providers/session-provider"
+import { getAtarList, getBooks } from "@/lib/api-client"
 
 interface Product {
   id: string
@@ -27,6 +28,7 @@ interface Product {
     name: string
     slug: string
   }
+  kind: "book" | "atar"
 }
 
 interface Review {
@@ -71,29 +73,43 @@ export default function ProductPage({ params }: PageProps) {
       setLoading(true)
       
       try {
-        // TODO: Replace with Django API calls
-        const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'
-        const [productRes, reviewsRes, relatedRes] = await Promise.all([
-          fetch(`${BACKEND_URL}/api/products/${slug}/`),
-          fetch(`${BACKEND_URL}/api/products/${slug}/reviews/`),
-          fetch(`${BACKEND_URL}/api/products/${slug}/related/`),
-        ])
-        
-        if (productRes.ok) {
-          const productData = await productRes.json()
-          setProduct(productData)
+        const [books, atars] = await Promise.all([getBooks(), getAtarList()])
+        const book = books.find((b) => b.slug === slug)
+        if (book) {
+          setProduct({
+            id: `book-${book.id}`,
+            name: book.title,
+            description: "",
+            price: Number(book.price),
+            images: [],
+            slug: book.slug,
+            stock: book.stock_quantity,
+            categoryId: "books",
+            category: { name: "Books", slug: "books" },
+            kind: "book",
+          })
+        } else {
+          const atar = atars.find((a) => a.slug === slug)
+          if (atar) {
+            const v = atar.variants?.[0]
+            setProduct({
+              id: `atar-${atar.id}`,
+              name: atar.name,
+              description: atar.description || "",
+              price: Number(v?.price || 0),
+              images: [],
+              slug: atar.slug,
+              stock: v?.stock_quantity || 0,
+              categoryId: "atar",
+              category: { name: "Atar", slug: "atar" },
+              kind: "atar",
+            })
+          } else {
+            setProduct(null)
+          }
         }
-        
-        if (reviewsRes.ok) {
-          const reviewsData = await reviewsRes.json()
-          setReviews(reviewsData)
-        }
-        
-        if (relatedRes.ok) {
-          const relatedData = await relatedRes.json()
-          setRelatedProducts(relatedData)
-        }
-
+        setReviews([])
+        setRelatedProducts([])
         setIsAuthenticated(isAuthenticatedUser)
       } catch (error) {
         console.error('Error fetching product:', error)
@@ -122,24 +138,8 @@ export default function ProductPage({ params }: PageProps) {
     
     setIsSubmittingReview(true)
     try {
-      const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'
-      const response = await fetch(`${BACKEND_URL}/api/products/${product.slug}/reviews/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(reviewData),
-      })
-
-      if (response.ok) {
-        const newReview = await response.json()
-        setReviews(prev => [newReview, ...prev])
-        alert('Review submitted successfully!')
-      } else {
-        const error = await response.json()
-        alert(error.error || 'Failed to submit review')
-      }
+      console.log("Reviews endpoint not implemented yet", reviewData, product.slug)
+      alert("Reviews will be enabled in a later release.")
     } catch (error) {
       console.error('Error submitting review:', error)
       alert('Failed to submit review')

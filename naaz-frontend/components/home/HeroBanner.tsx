@@ -53,11 +53,11 @@ const HeroBanner = () => {
             عَلَّمَ الْإِنسَانَ مَا لَمْ يَعْلَمْ
           </p>
           <p className="text-white/90 text-sm italic leading-relaxed">
-            "Read in the name of your Lord who created— Created man from a clot.
+            &ldquo;Read in the name of your Lord who created— Created man from a clot.
             Read, and your Lord is the Most Generous— Who taught by the pen—
-            Taught man that which he knew not."
+            Taught man that which he knew not.&rdquo;
             <span className="block mt-2 text-white/70 text-xs font-semibold">
-              (Surah Al-'Alaq, 96:1–5)
+              (Surah Al-&apos;Alaq, 96:1–5)
             </span>
           </p>
         </div>
@@ -73,14 +73,16 @@ const HeroBanner = () => {
           {/* Typewriter effect */}
           <div className="mb-8 text-left">
             <p className="text-xl md:text-2xl text-white/95 font-playfair italic min-h-[2.5rem] text-left">
-              "{typewriterText}"
+              <span className="text-white/95">&ldquo;</span>
+              {typewriterText}
+              <span className="text-white/95">&rdquo;</span>
               <span className="animate-pulse ml-1 text-naaz-gold">|</span>
             </p>
           </div>
 
           <p className="text-lg md:text-xl text-white/90 mb-8 leading-relaxed max-w-2xl text-left">
             A pioneering publishing company since 1967, specializing in
-            authentic Islamic literature and the Qur'an in multiple languages,
+            authentic Islamic literature and the Qur&apos;an in multiple languages,
             serving the global Muslim community.
           </p>
 

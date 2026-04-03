@@ -2,8 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { Search, User, Menu, X, LogOut, ChevronDown } from "lucide-react";
+import { Search, User, Menu, X, ChevronDown } from "lucide-react";
 // Assumes AuthContext, LoginModal, MobileDrawer, AnimatedCartIcon are stubbed or implemented
 // import { useAuth } from '@/lib/context/AuthContext';
 // import LoginModal from '@/components/auth/LoginModal';
@@ -15,8 +14,6 @@ const Navbar = () => {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isProductsDropdownOpen, setIsProductsDropdownOpen] = useState(false);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-
   const productsDropdownRef = useRef<HTMLDivElement>(null);
   const productsButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -35,11 +32,6 @@ const Navbar = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isProductsDropdownOpen]);
-
-  // Stubbing Auth
-  const isAuthenticated = false;
-  const user = { name: "Test User", email: "test@example.com" };
-  const handleSignOut = () => setIsUserDropdownOpen(false);
 
   const productCategories = [
     { name: "Islamic Books", path: "/products", available: true },

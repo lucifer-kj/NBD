@@ -33,3 +33,19 @@ class UserAddressSchema(Schema):
     state: str
     pin_code: str
     is_default: bool
+
+    class Config:
+        from_attributes = True
+
+
+class AddressCreateIn(Schema):
+    label: str = "Home"
+    street: str
+    city: str
+    state: str
+    pin_code: str
+    is_default: bool = False
+
+
+class GoogleAuthIn(Schema):
+    id_token: str

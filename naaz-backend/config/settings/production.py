@@ -37,7 +37,8 @@ CACHES = {
 ELASTICSEARCH_URL = os.getenv('ELASTICSEARCH_URL')
 
 # Security settings
-SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True') == 'True'
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True').lower() == 'true'
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_HSTS_SECONDS = 31536000
@@ -45,14 +46,5 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
 # CORS
-# Sanitize origins (strip trailing slashes/paths as required by django-cors-headers)
-raw_origins = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
-CORS_ALLOWED_ORIGINS = [
-    origin.rstrip('/').split('//')[-1].split('/')[0] if '//' in origin else origin.rstrip('/') 
-    for origin in raw_origins if origin
-]
-# Ensure absolute URI format (http:// or https://)
-CORS_ALLOWED_ORIGINS = [
-    f"https://{o}" if not o.startswith(('http://', 'https://')) else o 
-    for o in raw_origins if o
-]
+raw_origins = [o.strip() for o in os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') if o.strip()]
+CORS_ALLOWED_ORIGINS = [o.rstrip('/') for o in raw_origins]

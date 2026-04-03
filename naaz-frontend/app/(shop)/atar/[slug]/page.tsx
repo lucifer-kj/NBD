@@ -2,6 +2,8 @@ import React from 'react';
 import Image from 'next/image';
 import { ShoppingCart, Droplets } from 'lucide-react';
 
+type AtarVariantRow = { id: number; volume_ml: number; price: number; stock_quantity?: number };
+
 export default async function AtarDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   // Try fetching actual data
@@ -11,7 +13,7 @@ export default async function AtarDetailPage({ params }: { params: Promise<{ slu
     if (res.ok) {
       atar = await res.json();
     }
-  } catch (e) {
+  } catch {
     console.warn("Backend API not reachable. Using fallback dummy data.");
   }
 
@@ -96,7 +98,7 @@ export default async function AtarDetailPage({ params }: { params: Promise<{ slu
             <div className="mb-8">
               <div className="text-sm font-bold text-gray-700 mb-3">Select Size:</div>
               <div className="flex gap-3">
-                {atar.variants.map((v: any, index: number) => (
+                {atar.variants.map((v: AtarVariantRow, index: number) => (
                   <button key={v.id} className={`px-6 py-3 rounded-xl border-2 font-bold transition-colors ${index === 0 ? 'border-[var(--islamic-green)] text-[var(--islamic-green)] bg-[#2E5A44]/5' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}>
                     {v.volume_ml}ml
                   </button>

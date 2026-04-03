@@ -18,6 +18,16 @@ class PromoCode(models.Model):
 
     class Meta:
         db_table = 'promo_codes'
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(valid_until__gt=models.F('valid_from')),
+                name='promo_valid_window_check',
+            ),
+            models.CheckConstraint(
+                check=models.Q(discount_percentage__gte=0) & models.Q(discount_percentage__lte=100),
+                name='promo_discount_percentage_range_check',
+            ),
+        ]
 
     def __str__(self):
         return f"{self.code} ({self.discount_percentage}% off)"
@@ -121,6 +131,10 @@ class OrderItem(models.Model):
 
     class Meta:
         db_table = 'order_items'
+        constraints = [
+            models.CheckConstraint(check=models.Q(quantity__gt=0), name='order_item_quantity_positive'),
+            models.CheckConstraint(check=models.Q(line_total__gte=0), name='order_item_line_total_non_negative'),
+        ]
 
     def __str__(self):
         return f"{self.product_name} × {self.quantity} @ ₹{self.price_at_purchase}"

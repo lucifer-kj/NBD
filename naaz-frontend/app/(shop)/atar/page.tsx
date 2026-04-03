@@ -1,24 +1,32 @@
 import React from 'react';
 import AtarCard from '@/components/catalog/AtarCard';
 
+type AtarListItem = {
+  id: number;
+  name: string;
+  slug: string;
+  top_notes: string;
+  variants: { id: number; volume_ml: number; price: number }[];
+};
+
 export const metadata = {
   title: 'Premium Atar Selection | Naaz Book Depot',
   description: 'Experience our exclusive collection of non-alcoholic premium fragrances.',
 };
 
 export default async function AtarPage() {
-  let atars = [];
+  let atars: AtarListItem[] = [];
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/atar/`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       atars = data.items || data;
     }
-  } catch (error) {
-    console.warn("Backend API not reachable. Falling back to dummy data for UI preview.");
+  } catch {
+    console.warn("Backend API not reachable.");
   }
   
-  if (!atars || atars.length === 0) {
+  if ((!atars || atars.length === 0) && process.env.NEXT_PUBLIC_ENABLE_DEMO_DATA === "true") {
     atars = [
       { id: 1, name: 'Royal Oudh', slug: 'royal-oudh', top_notes: 'Agarwood, Rose, Amber', variants: [{ id: 11, volume_ml: 12, price: 1200 }] },
       { id: 2, name: 'Amber Rose', slug: 'amber-rose', top_notes: 'Damascus Rose, Vanilla', variants: [{ id: 12, volume_ml: 6, price: 550 }] },
@@ -49,10 +57,9 @@ export default async function AtarPage() {
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {atars.map((atar: any) => (
+        {atars.map((atar) => (
           <AtarCard 
             key={atar.id}
-            id={atar.id}
             name={atar.name}
             slug={atar.slug}
             top_notes={atar.top_notes}

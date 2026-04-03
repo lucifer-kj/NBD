@@ -4,7 +4,6 @@ import Image from 'next/image';
 import { ShoppingCart } from 'lucide-react';
 
 interface BookProps {
-  id: number;
   title: string;
   slug: string;
   author: string;
@@ -13,7 +12,7 @@ interface BookProps {
   format?: string;
 }
 
-const BookCard = ({ id, title, slug, author, price, imageUrl, format }: BookProps) => {
+const BookCard = ({ title, slug, author, price, imageUrl, format }: BookProps) => {
   const fallbackImage = "/Images/Books.jpeg";
 
   return (

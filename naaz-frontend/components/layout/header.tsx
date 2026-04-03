@@ -11,33 +11,11 @@ import {
 
 // Define layout using Tailwind CSS variables from globals.css
 export async function Header() {
-  let productCategories = [
-    { name: 'Islamic Books', path: '/products', available: true },
-    { name: 'Quran & Tafseer', path: '/products?category=quran', available: true },
-    { name: 'Hadith Collections', path: '/products?category=hadith', available: true },
-    { name: 'Perfumes', path: '/perfumes', available: false },
-    { name: 'Essentials', path: '/essentials', available: false }
+  const productCategories = [
+    { name: 'Islamic Books', path: '/books', available: true },
+    { name: 'Atar', path: '/atar', available: true },
+    { name: 'All Products', path: '/products', available: true },
   ];
-
-  try {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    const res = await fetch(`${backendUrl}/api/catalog/categories/`, {
-      cache: 'force-cache',
-      next: { tags: ['categories'] }
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
-         productCategories = data.map((cat: any) => ({
-           name: cat.name,
-           path: `/categories/${cat.slug || cat.id}`,
-           available: true
-         }));
-      }
-    }
-  } catch (err) {
-    console.log('Django API offline, using fallback categories context.');
-  }
 
   return (
     <>

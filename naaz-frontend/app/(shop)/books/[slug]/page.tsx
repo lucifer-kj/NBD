@@ -11,7 +11,7 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
     if (res.ok) {
       book = await res.json();
     }
-  } catch (e) {
+  } catch {
     console.warn("Backend API not reachable. Using fallback dummy data.");
   }
 

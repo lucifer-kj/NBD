@@ -41,8 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # Third-party
+
     'corsheaders',
-    'rest_framework',
     'rest_framework_simplejwt',
 
     # Local apps
@@ -58,9 +58,11 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'apps.core.middleware.RequestIDMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -102,6 +104,7 @@ DATABASES = {
         'PASSWORD': tmp_url.password,
         'HOST': tmp_url.hostname,
         'PORT': tmp_url.port,
+        'OPTIONS': {'sslmode': 'require'} if tmp_url.hostname and any(cloud in tmp_url.hostname for cloud in ['supabase', 'neon', 'upstash']) else {}
     }
 }
 
@@ -130,7 +133,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = os.getenv('DJANGO_TIME_ZONE', 'Asia/Kolkata')
 
 USE_I18N = True
 
@@ -156,3 +159,46 @@ AUTH_USER_MODEL = 'users.CustomUser'
 CORS_ALLOWED_ORIGINS = [
     os.getenv('FRONTEND_URL', 'http://localhost:3000'),
 ]
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "%(asctime)s %(levelname)s %(name)s %(message)s"
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        }
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": os.getenv("LOG_LEVEL", "INFO"),
+    },
+}
+
+# Instamojo (see Instamojo_instruction.md — aliases match common .env naming)
+INSTAMOJO_API_KEY = os.getenv('INSTAMOJO_API_KEY') or os.getenv('CONSUMER_KEY')
+INSTAMOJO_AUTH_TOKEN = os.getenv('INSTAMOJO_AUTH_TOKEN') or os.getenv('CONSUMER_SECRET')
+INSTAMOJO_SALT = os.getenv('INSTAMOJO_SALT')
+INSTAMOJO_ENV = os.getenv('INSTAMOJO_ENV', 'sandbox')
+
+# Google Sign-In (ID token verification)
+GOOGLE_OAUTH_CLIENT_ID = os.getenv('GOOGLE_OAUTH_CLIENT_ID')
+
+SENTRY_DSN = os.getenv("SENTRY_DSN")
+if SENTRY_DSN:
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.django import DjangoIntegration
+
+        sentry_sdk.init(
+            dsn=SENTRY_DSN,
+            integrations=[DjangoIntegration()],
+            traces_sample_rate=float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.1")),
+        )
+    except Exception as e:
+        print(f"Sentry SDK initialization failed: {e}")

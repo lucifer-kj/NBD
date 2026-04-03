@@ -10,7 +10,7 @@ const Footer = () => {
           <div className="col-span-1 md:col-span-2">
             <h3 className="text-2xl font-headings font-bold mb-4 text-[var(--islamic-gold)]">Naaz Book Depot</h3>
             <p className="text-white/80 leading-relaxed mb-6 max-w-sm font-light">
-              Publishing the Light of Knowledge since 1967. Specialized in authentic Islamic literature, Qur'an, and premium fragrances serving the global Muslim community.
+              Publishing the Light of Knowledge since 1967. Specialized in authentic Islamic literature, Qur&apos;an, and premium fragrances serving the global Muslim community.
             </p>
           </div>
 

@@ -22,6 +22,9 @@ class OrderItemOut(Schema):
     quantity: int
     line_total: Decimal
 
+    class Config:
+        from_attributes = True
+
 class OrderOut(Schema):
     id: int
     status: str
@@ -30,5 +33,17 @@ class OrderOut(Schema):
     loyalty_discount_amount: Decimal
     final_amount: Decimal
     tracking_number: Optional[str] = None
+    instamojo_payment_request_id: Optional[str] = None
     created_at: datetime
     items: List[OrderItemOut]
+
+    class Config:
+        from_attributes = True
+
+
+class OrderSummaryOut(Schema):
+    id: int
+    status: str
+    final_amount: Decimal
+    created_at: datetime
+    item_count: int

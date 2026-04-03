@@ -3,10 +3,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronDown, Search, User, LogOut, Menu, X, ShoppingCart } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../providers/session-provider';
+import { useCartStore } from '@/store/cart-store';
+
+type ProductCategory = { name: string; path: string; available: boolean };
 
 // Products Dropdown Client Component
-export function ProductsDropdown({ productCategories }: { productCategories: any[] }) {
+export function ProductsDropdown({ productCategories }: { productCategories: ProductCategory[] }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -102,7 +106,11 @@ export function SearchBox() {
 export function UserActions() {
   const [isOpen, setIsOpen] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const { user, isAuthenticated, logout } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const { user, isAuthenticated, logout, login, loginWithGoogle } = useAuth();
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
   const handleSignOut = () => {
     logout();
@@ -167,20 +175,55 @@ export function UserActions() {
             <h2 className="text-2xl font-bold text-[var(--islamic-green)] mb-4">Sign In</h2>
             <p className="text-sm text-gray-500 mb-6">Connect with the Django Backend here via BFF pattern.</p>
             <div className="space-y-4">
-              <input type="email" placeholder="Email" className="w-full border border-gray-300 p-2 rounded" />
-              <input type="password" placeholder="Password" className="w-full border border-gray-300 p-2 rounded" />
+              <input
+                type="email"
+                placeholder="Email"
+                className="w-full border border-gray-300 p-2 rounded"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                className="w-full border border-gray-300 p-2 rounded"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              {loginError && <p className="text-sm text-red-600">{loginError}</p>}
+              {googleClientId && (
+                <div className="flex justify-center py-2">
+                  <GoogleLogin
+                    text="continue_with"
+                    shape="rectangular"
+                    theme="outline"
+                    size="large"
+                    onSuccess={async (cr) => {
+                      if (!cr.credential) return;
+                      try {
+                        setLoginError("");
+                        await loginWithGoogle(cr.credential);
+                        setShowLoginModal(false);
+                      } catch {
+                        setLoginError("Google sign-in failed");
+                      }
+                    }}
+                    onError={() => setLoginError("Google sign-in failed")}
+                  />
+                </div>
+              )}
               <button 
                 className="w-full bg-[#C7A536] text-white font-bold py-2 rounded"
-                onClick={() => {
-                   // Mock login execution linking to /api/auth/login BFF
-                   fetch('/api/auth/login', {
-                     method: 'POST',
-                     headers: { 'Content-Type': 'application/json' },
-                     body: JSON.stringify({ email: 'test@naaz.com', password: 'password123' })
-                   }).then(() => setShowLoginModal(false));
+                onClick={async () => {
+                   try {
+                    setLoginError("");
+                    await login(email, password);
+                    setShowLoginModal(false);
+                   } catch {
+                    setLoginError("Invalid credentials");
+                   }
                 }}
               >
-                Login
+                Login with email
               </button>
             </div>
           </div>
@@ -190,11 +233,19 @@ export function UserActions() {
   );
 }
 
-// Animated Cart Icon Stub 
 export function AnimatedCartIcon() {
+  const count = useCartStore((s) => s.getCount());
   return (
     <Link href="/cart" className="relative p-2 text-[var(--islamic-green)] hover:text-[#C7A536] transition-colors">
       <ShoppingCart size={24} />
+      {count > 0 && (
+        <span
+          className="absolute top-0 right-0 min-w-[1.125rem] h-[1.125rem] rounded-full bg-[#C7A536] text-white text-[10px] leading-none flex items-center justify-center font-bold px-0.5"
+          aria-label={`${count} items in cart`}
+        >
+          {count > 99 ? "99+" : count}
+        </span>
+      )}
     </Link>
   );
 }

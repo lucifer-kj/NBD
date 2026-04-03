@@ -14,11 +14,14 @@ import { useReducedMotion } from "@/lib/useReducedMotion";
 
 export default function CartDrawer() {
   const [open, setOpen] = useState(false)
-  const { items, removeItem, updateQuantity, clearCart, getTotal, getCount } = useCartStore()
+  const { items, removeItem, updateQuantity, clearCart, getTotal, getCount, loadFromStorage } = useCartStore()
   const [mounted, setMounted] = useState(false)
   const reduced = useReducedMotion();
 
-  useEffect(() => { setMounted(true) }, [])
+  useEffect(() => { 
+    setMounted(true)
+    loadFromStorage()
+  }, [loadFromStorage])
 
   return (
     <Drawer.Root open={open} onOpenChange={setOpen}>

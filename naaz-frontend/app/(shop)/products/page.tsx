@@ -7,30 +7,19 @@ import { ChevronLeft, ChevronRight, Search, X, Filter, ChevronDown } from "lucid
 import { useAuth } from "@/components/providers/session-provider"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import ProductCard from "@/components/product-card"
+import { getAtarList, getBooks, mapAtarToProduct, mapBookToProduct, type ProductCardView } from "@/lib/api-client"
 
 interface Category {
   id: string
   name: string
-  slug: string
-}
-
-interface Product {
-  id: string
-  name: string
-  price: number
-  images: string[]
-  slug: string
-  categoryId: string
-}
-
-interface ProductsResponse {
-  products: Product[]
-  total: number
 }
 
 export default function ProductsPage() {
-  const [categories, setCategories] = useState<Category[]>([])
-  const [products, setProducts] = useState<Product[]>([])
+  const [categories] = useState<Category[]>([
+    { id: "books", name: "Books" },
+    { id: "atar", name: "Atar" },
+  ])
+  const [products, setProducts] = useState<ProductCardView[]>([])
   const [total, setTotal] = useState(0)
   const [search, setSearch] = useState("")
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
@@ -48,6 +37,7 @@ export default function ProductsPage() {
 
   // Check for search parameter from header redirect
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     const urlParams = new URLSearchParams(window.location.search)
     const searchParam = urlParams.get('search')
     if (searchParam) {
@@ -56,27 +46,31 @@ export default function ProductsPage() {
   }, [])
 
   useEffect(() => {
-    const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'
-    fetch(`${BACKEND_URL}/api/categories/`)
-      .then(res => res.json())
-      .then(setCategories)
-  }, [])
-
-  useEffect(() => {
     setLoading(true)
-    const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'
-    let url = `${BACKEND_URL}/api/products/?page=${currentPage}&pageSize=${pageSize}`
-    if (selectedCategory) url += `&category=${selectedCategory}`
-    if (search) url += `&search=${encodeURIComponent(search)}`
-    if (priceRange !== "all") url += `&priceRange=${priceRange}`
-    if (stockStatus !== "all") url += `&stockStatus=${stockStatus}`
-    if (sortBy !== "newest") url += `&sortBy=${sortBy}`
-    
-    fetch(url)
-      .then(res => res.json())
-      .then((data: ProductsResponse) => {
-        setProducts(data.products)
-        setTotal(data.total)
+    Promise.all([getBooks(), getAtarList()])
+      .then(([books, atars]) => {
+        let merged = [...books.map(mapBookToProduct), ...atars.map(mapAtarToProduct)]
+        if (selectedCategory) {
+          merged = merged.filter((p) => p.categoryId === selectedCategory)
+        }
+        if (search) {
+          const q = search.toLowerCase()
+          merged = merged.filter((p) => p.name.toLowerCase().includes(q))
+        }
+        if (stockStatus === "in-stock") merged = merged.filter((p) => p.stock > 0)
+        if (stockStatus === "out-of-stock") merged = merged.filter((p) => p.stock === 0)
+        if (priceRange === "0-500") merged = merged.filter((p) => p.price <= 500)
+        if (priceRange === "500-1000") merged = merged.filter((p) => p.price > 500 && p.price <= 1000)
+        if (priceRange === "1000-2000") merged = merged.filter((p) => p.price > 1000 && p.price <= 2000)
+        if (priceRange === "2000+") merged = merged.filter((p) => p.price > 2000)
+        if (sortBy === "price-low") merged.sort((a, b) => a.price - b.price)
+        if (sortBy === "price-high") merged.sort((a, b) => b.price - a.price)
+        if (sortBy === "name-asc") merged.sort((a, b) => a.name.localeCompare(b.name))
+        if (sortBy === "name-desc") merged.sort((a, b) => b.name.localeCompare(a.name))
+
+        setTotal(merged.length)
+        const start = (currentPage - 1) * pageSize
+        setProducts(merged.slice(start, start + pageSize))
       })
       .finally(() => setLoading(false))
   }, [selectedCategory, search, priceRange, stockStatus, sortBy, currentPage])
@@ -91,7 +85,9 @@ export default function ProductsPage() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
   }
 
   // TODO: Re-implement wishlist against Django API

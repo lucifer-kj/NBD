@@ -1,25 +1,33 @@
 import React from 'react';
 import BookCard from '@/components/catalog/BookCard';
 
+type BookListItem = {
+  id: number;
+  title: string;
+  slug: string;
+  author: string;
+  format: string;
+  price: number;
+};
+
 export const metadata = {
   title: 'Islamic Books | Naaz Book Depot',
   description: 'Explore our vast collection of authentic Islamic literature and Qurans.',
 };
 
 export default async function BooksPage() {
-  // We mock the API call gracefully so it doesn't crash if Docker/Django isn't running on the user's host
-  let books = [];
+  let books: BookListItem[] = [];
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/books/`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       books = data.items || data;
     }
-  } catch (error) {
-    console.warn("Backend API not reachable. Falling back to dummy data for UI preview.");
+  } catch {
+    console.warn("Backend API not reachable.");
   }
   
-  if (!books || books.length === 0) {
+  if ((!books || books.length === 0) && process.env.NEXT_PUBLIC_ENABLE_DEMO_DATA === "true") {
     books = [
       { id: 1, title: 'The Noble Quran (English Translation)', slug: 'noble-quran-english', author: 'Dr. Muhammad Taqi-ud-Din Al-Hilali', format: 'Hardcover', price: 950 },
       { id: 2, title: 'Sahih Al-Bukhari (Complete 9 Volumes)', slug: 'sahih-bukhari-set', author: 'Imam Muhammad bin Ismail bin Al-Mughirah Al-Bukhari', format: 'Set', price: 4500 },
@@ -36,7 +44,7 @@ export default async function BooksPage() {
         <h1 className="text-4xl md:text-5xl font-headings font-bold text-[var(--islamic-green)] mb-4">Islamic Library</h1>
         <div className="h-1 w-24 bg-[var(--islamic-gold)] rounded mx-auto mb-6" />
         <p className="text-lg text-[var(--charcoal)]/70 max-w-2xl mx-auto font-light">
-          Discover our curated collection of essential texts, from the Holy Qur'an to Hadith collections and scholarly commentaries.
+          Discover our curated collection of essential texts, from the Holy Qur&apos;an to Hadith collections and scholarly commentaries.
         </p>
       </div>
       
@@ -51,7 +59,7 @@ export default async function BooksPage() {
               <li className="flex items-center gap-2 hover:text-[var(--islamic-gold)] cursor-pointer transition-colors"><input type="checkbox" className="rounded text-[var(--islamic-green)] focus:ring-[var(--islamic-gold)]" /> Hadith</li>
               <li className="flex items-center gap-2 hover:text-[var(--islamic-gold)] cursor-pointer transition-colors"><input type="checkbox" className="rounded text-[var(--islamic-green)] focus:ring-[var(--islamic-gold)]" /> Fiqh (Jurisprudence)</li>
               <li className="flex items-center gap-2 hover:text-[var(--islamic-gold)] cursor-pointer transition-colors"><input type="checkbox" className="rounded text-[var(--islamic-green)] focus:ring-[var(--islamic-gold)]" /> History & Biography</li>
-              <li className="flex items-center gap-2 hover:text-[var(--islamic-gold)] cursor-pointer transition-colors"><input type="checkbox" className="rounded text-[var(--islamic-green)] focus:ring-[var(--islamic-gold)]" /> Children's Books</li>
+              <li className="flex items-center gap-2 hover:text-[var(--islamic-gold)] cursor-pointer transition-colors"><input type="checkbox" className="rounded text-[var(--islamic-green)] focus:ring-[var(--islamic-gold)]" /> Children&apos;s Books</li>
             </ul>
           </div>
         </div>
@@ -69,10 +77,9 @@ export default async function BooksPage() {
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {books.map((book: any) => (
+            {books.map((book) => (
               <BookCard 
                 key={book.id}
-                id={book.id}
                 title={book.title}
                 slug={book.slug}
                 author={book.author}

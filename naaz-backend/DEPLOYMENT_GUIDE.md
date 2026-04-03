@@ -29,6 +29,8 @@ git push origin master
 2.  **Import Project**: Select the `naaz-frontend` folder from your repo.
 3.  **Environment Variables**: In the "Environment Variables" section, add:
     -   `NEXT_PUBLIC_API_URL`: **[Paste your Render URL here]**
+    -   `NEXT_PUBLIC_APP_URL`: your Vercel site URL (e.g. `https://nbd-tan.vercel.app`) — used for payment redirects if you reference it in the app.
+    -   `NEXT_PUBLIC_GOOGLE_CLIENT_ID`: from [Google Cloud Console](https://console.cloud.google.com/) OAuth 2.0 Client (Web); must match `GOOGLE_OAUTH_CLIENT_ID` on the backend.
 4.  **Deploy**: Click "Deploy".
 
 ---
@@ -39,6 +41,21 @@ To make sure Vercel (`https://nbd-tan.vercel.app/`) can talk to Render:
 2.  Go to **Settings** -> **Environment Variables**.
 3.  Check `CORS_ALLOWED_ORIGINS`. It should already be set to `https://nbd-tan.vercel.app` (added by the Blueprint).
 4.  If not, add it or update it.
+
+---
+
+## 💳 Instamojo & Google (production)
+
+On **Render** → `naaz-backend` → **Environment**, set at least:
+
+| Variable | Purpose |
+|----------|---------|
+| `INSTAMOJO_SALT` | Private salt from Instamojo (required for webhook MAC verification). |
+| `INSTAMOJO_API_KEY` / `INSTAMOJO_AUTH_TOKEN` | Or `CONSUMER_KEY` / `CONSUMER_SECRET` (same values). |
+| `INSTAMOJO_ENV` | `sandbox` or `production` |
+| `GOOGLE_OAUTH_CLIENT_ID` | Same Web client ID as `NEXT_PUBLIC_GOOGLE_CLIENT_ID` on Vercel. |
+
+Webhook URL is `https://<your-render-host>/api/payments/webhook/` — Instamojo must reach it over HTTPS (use your public API URL, not localhost).
 
 ---
 

@@ -12,6 +12,7 @@ class CustomUser(AbstractUser):
     username = None  # Removed — we auth by email
     email = models.EmailField(unique=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
+    google_sub = models.CharField(max_length=255, blank=True, null=True, unique=True)
 
     # Loyalty System
     loyalty_points_balance = models.PositiveIntegerField(default=0)
