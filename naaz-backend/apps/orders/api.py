@@ -113,7 +113,12 @@ def create_checkout_order(request, payload: CheckoutIn):
 
     for item in payload.items:
         if item.item_type == "BOOK":
-            product = Book.objects.get(id=item.item_id)
+            # Lock the row to prevent concurrent stock deductions
+            product = Book.objects.select_for_update().get(id=item.item_id)
+            if product.stock_quantity < item.quantity:
+                raise HttpError(400, f"Insufficient stock for {product.title}")
+            product.stock_quantity -= item.quantity
+            product.save(update_fields=["stock_quantity"])
             line_total = product.price * item.quantity
             OrderItem.objects.create(
                 order=order,
@@ -125,7 +130,12 @@ def create_checkout_order(request, payload: CheckoutIn):
                 line_total=line_total,
             )
         else:
-            variant = AtarVariant.objects.select_related("atar").get(id=item.item_id)
+            # Lock the variant row
+            variant = AtarVariant.objects.select_for_update().select_related("atar").get(id=item.item_id)
+            if variant.stock_quantity < item.quantity:
+                raise HttpError(400, f"Insufficient stock for {variant.atar.name} ({variant.volume_ml}ml)")
+            variant.stock_quantity -= item.quantity
+            variant.save(update_fields=["stock_quantity"])
             line_total = variant.price * item.quantity
             OrderItem.objects.create(
                 order=order,

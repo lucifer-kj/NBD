@@ -44,6 +44,8 @@ INSTALLED_APPS = [
 
     'corsheaders',
     'rest_framework_simplejwt',
+    'cloudinary_storage',
+    'cloudinary',
 
     # Local apps
     'apps.users',
@@ -149,6 +151,17 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Cloudinary — persistent image storage (Render wipes local files on deploy)
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME', ''),
+    'API_KEY': os.getenv('CLOUDINARY_API_KEY', ''),
+    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET', ''),
+}
+
+# Only use Cloudinary in production when credentials are set
+if os.getenv('CLOUDINARY_CLOUD_NAME'):
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
@@ -158,6 +171,7 @@ AUTH_USER_MODEL = 'users.CustomUser'
 
 CORS_ALLOWED_ORIGINS = [
     os.getenv('FRONTEND_URL', 'http://localhost:3000'),
+    os.getenv('ADMIN_URL', 'http://localhost:3001'),
 ]
 
 LOGGING = {
