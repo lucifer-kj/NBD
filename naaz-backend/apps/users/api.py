@@ -38,7 +38,8 @@ def register(request, payload: RegisterIn):
 
 @router.post("/login/", response=TokenOut)
 def login(request, payload: LoginIn):
-    user = authenticate(request, email=payload.email, password=payload.password)
+    # Django's default authenticate expects 'username' keyword even if using email-as-username
+    user = authenticate(request, username=payload.email, password=payload.password)
     if not user:
         raise HttpError(401, "Invalid credentials")
     refresh = RefreshToken.for_user(user)

@@ -174,6 +174,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://naaz-admin.vercel.app",
+    "http://localhost:3000",
+]
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
