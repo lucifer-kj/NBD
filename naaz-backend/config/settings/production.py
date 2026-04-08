@@ -5,7 +5,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 DEBUG = False
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', '').split(',') if host.strip()]
+
+render_external_hostname = os.getenv('RENDER_EXTERNAL_HOSTNAME')
+if render_external_hostname:
+    ALLOWED_HOSTS.append(render_external_hostname)
+
+if '.onrender.com' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('.onrender.com')
 
 # Database
 # In production, we strictly require DATABASE_URL
@@ -45,6 +52,13 @@ SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 
-# CORS
+# CORS and CSRF
+# We want to keep origins from base.py, and add anything from environment variables.
+from .base import CORS_ALLOWED_ORIGINS as BASE_CORS, CSRF_TRUSTED_ORIGINS as BASE_CSRF
+
 raw_origins = [o.strip() for o in os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') if o.strip()]
-CORS_ALLOWED_ORIGINS = [o.rstrip('/') for o in raw_origins]
+env_origins = [o.rstrip('/') for o in raw_origins]
+
+# Use a set to remove duplicates, then convert to list
+CORS_ALLOWED_ORIGINS = list(set(BASE_CORS + env_origins))
+CSRF_TRUSTED_ORIGINS = list(set(BASE_CSRF + env_origins))
