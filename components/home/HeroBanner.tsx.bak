@@ -1,0 +1,128 @@
+"use client";
+
+import React from "react";
+import Link from "next/link";
+import { ArrowRight, Book } from "lucide-react";
+import { motion } from "framer-motion";
+import { heroHeading, heroSubtext, heroCTA, staggerContainer } from "@/lib/motion.config";
+
+const HeroBanner = () => {
+  return (
+    <section className="relative min-h-[90vh] md:min-h-[85vh] overflow-hidden flex items-center bg-[var(--islamic-green-dark)]">
+      {/* Background Image with optimized positioning */}
+      <div
+        className="absolute inset-0 transform scale-105 transition-transform duration-[2000ms]"
+        style={{
+          backgroundImage: "url('/Images/Image+Background.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center 40%",
+        }}
+      />
+
+      {/* Cinematic gradient overlay matching the screenshot depth */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[var(--islamic-green-dark)]/95 via-[var(--islamic-green-dark)]/40 to-transparent z-[1]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-[var(--islamic-green-dark)]/60 z-[1]" />
+
+      {/* Main Content Area */}
+      <motion.div
+        className="relative z-10 container mx-auto px-4 md:px-8 lg:px-16 w-full flex flex-col lg:flex-row items-center justify-between gap-12"
+        initial="hidden"
+        animate="show"
+        variants={staggerContainer}
+      >
+        <div className="max-w-3xl lg:w-3/5 text-left pt-10 md:pt-0">
+          {/* Main Title - Serif & Bold */}
+          <motion.h1
+            variants={heroHeading}
+            className="text-[3.5rem] md:text-[5rem] lg:text-[6.5rem] font-headings font-bold text-white mb-2 md:mb-4 drop-shadow-2xl tracking-tight leading-[1.05]"
+          >
+            Naaz Book Depot
+          </motion.h1>
+
+          {/* Subtitle with trailing bar matching screenshot */}
+          <motion.div variants={heroSubtext} className="mb-8 md:mb-10 inline-block relative">
+            <h2 className="text-lg md:text-2xl lg:text-3xl font-headings italic text-white/95 flex items-center gap-1.5 font-light tracking-wide">
+              <span>&quot;</span>
+              Publishing the Light of Knowledge since 1967
+              <span>&quot;</span>
+              <span className="w-[3px] h-[1.2em] bg-[var(--islamic-gold)] animate-pulse inline-block ml-2 opacity-80" />
+            </h2>
+          </motion.div>
+
+          {/* Description Paragraph */}
+          <motion.p
+            variants={heroSubtext}
+            className="text-base md:text-xl text-white/85 mb-10 md:mb-12 leading-relaxed max-w-xl font-light tracking-wide"
+          >
+            A pioneering publishing company since 1967, specializing in
+            authentic Islamic literature and the Qur&apos;an in multiple languages,
+            serving the global Muslim community.
+          </motion.p>
+
+          {/* CTA Grouping */}
+          <motion.div
+            variants={heroCTA}
+            className="flex flex-col sm:flex-row gap-4 sm:gap-6"
+          >
+            <Link
+              href="/about"
+              className="btn-primary text-center touch-target inline-flex items-center justify-center gap-3 group px-8 md:px-10"
+            >
+              <span className="text-base md:text-lg">Discover Our Legacy</span>
+              <ArrowRight
+                size={20}
+                className="group-hover:translate-x-1.5 transition-transform duration-300"
+              />
+            </Link>
+            <Link
+              href="/books"
+              className="btn-outline text-center touch-target inline-flex items-center justify-center gap-3 group px-8 md:px-10 border-2"
+            >
+              <span className="text-base md:text-lg">Explore Books</span>
+              <Book
+                size={20}
+                className="group-hover:rotate-12 transition-transform duration-300"
+              />
+            </Link>
+          </motion.div>
+        </div>
+
+        {/* Quranic Verse Card - Premium Glassmorphism (Visible on Tablet/Desktop) */}
+        <div className="lg:w-2/5 flex justify-end items-center mt-10 lg:mt-0 pb-10 lg:pb-0">
+          <motion.div 
+            initial={{ opacity: 0, x: 30, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            transition={{ duration: 1.2, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="p-8 md:p-12 rounded-[2.5rem] backdrop-blur-2xl bg-white/5 border border-white/10 shadow-[0_32px_64px_rgba(0,0,0,0.4)] text-right relative overflow-hidden max-w-md"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-50" />
+            <div className="relative z-10">
+              <p className="font-arabic text-white text-2xl md:text-4xl leading-[1.6] mb-8 drop-shadow-lg tracking-wide">
+                اقْرَأْ بِاسْمِ رَبِّكَ الَّذِي خَلَقَ
+                <br />
+                خَلَقَ الْإِنسَانَ مِنْ عَلَقٍ
+                <br />
+                اقْرَأْ وَرَبُّكَ الْأَكْرَمُ
+                <br />
+                الَّذِي عَلَّمَ بِالْقَلَمِ
+                <br />
+                عَلَّمَ الْإِنسَانَ مَا لَمْ يَعْلَمْ
+              </p>
+              <div className="text-white/80 text-sm md:text-base italic leading-relaxed text-left border-l-2 border-[var(--islamic-gold)]/40 pl-6 py-2 mb-6">
+                &ldquo;Read in the name of your Lord who created— Created man from a clot. Read, and your Lord is the Most Generous— Who taught by the pen— Taught man that which he knew not.&rdquo;
+              </div>
+              <p className="text-white/50 text-xs font-semibold tracking-widest text-right italic uppercase">
+                (Surah Al-&apos;Alaq, 96:1–5)
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
+
+      {/* Decorative pattern overlay */}
+      <div className="absolute inset-0 opacity-10 pointer-events-none z-0 islamic-pattern" />
+    </section>
+  );
+};
+
+export default HeroBanner;

@@ -1,0 +1,109 @@
+import React from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { 
+  ProductsDropdown, 
+  SearchBox, 
+  UserActions, 
+  AnimatedCartIcon, 
+  MobileMenu 
+} from '../ui/header-clients';
+
+// Define layout using Tailwind CSS variables from globals.css
+export async function Header() {
+  const productCategories = [
+    { name: 'Islamic Books', path: '/books', available: true },
+    { name: 'Atar', path: '/atar', available: true },
+    { name: 'All Products', path: '/products', available: true },
+  ];
+
+  return (
+    <>
+      {/* Contact Banner — At the very top, STATIC on desktop, MARQUEE on mobile */}
+      <div className="w-full bg-[var(--islamic-green)] text-white text-[11px] md:text-xs font-medium py-2 overflow-hidden relative z-[60]">
+        {/* Desktop: static centered layout with pipe separators */}
+        <div className="hidden lg:flex items-center justify-center gap-0 px-4">
+          <span className="flex items-center gap-1.5 opacity-90 hover:opacity-100 transition-opacity">
+            <span className="text-[var(--islamic-gold)]">📞</span> 033 22350051
+          </span>
+          <span className="mx-6 text-white/20">|</span>
+          <span className="flex items-center gap-1.5 opacity-90 hover:opacity-100 transition-opacity">
+            <span className="text-[var(--islamic-gold)]">📞</span> 033 22350960
+          </span>
+          <span className="mx-6 text-white/20">|</span>
+          <span className="flex items-center gap-1.5 opacity-90 hover:opacity-100 transition-opacity">
+            <span className="text-[var(--islamic-gold)]">📱</span> +91 91634 31395
+          </span>
+          <span className="mx-6 text-white/20">|</span>
+          <span className="flex items-center gap-1.5 opacity-90 hover:opacity-100 transition-opacity">
+            <span className="text-[var(--islamic-gold)]">✉️</span> naazgroupofficial@gmail.com
+          </span>
+          <span className="mx-6 text-white/20">|</span>
+          <span className="flex items-center gap-1.5 opacity-90 hover:opacity-100 transition-opacity">
+            <span className="text-[var(--islamic-gold)]">📍</span> Visit us in Kolkata, West Bengal
+          </span>
+        </div>
+        {/* Mobile: scrolling marquee */}
+        <div className="lg:hidden flex items-center h-full min-h-[1.2rem]">
+          <div className="ticker-marquee absolute whitespace-nowrap px-4">
+            📞 033 22350051 &nbsp;|&nbsp; 📞 033 22350960 &nbsp;|&nbsp; 📱 +91 91634 31395 &nbsp;|&nbsp; ✉️ naazgroupofficial@gmail.com &nbsp;|&nbsp; 📍 Visit us in Kolkata, West Bengal
+          </div>
+        </div>
+      </div>
+
+      <header className="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-[var(--islamic-beige)]">
+        <nav className="bg-[var(--islamic-beige)]/30 py-3 md:py-4 px-4 md:px-6">
+          <div className="container mx-auto flex items-center justify-between">
+            {/* Logo Section matching screenshot */}
+            <Link href="/" className="flex flex-row gap-3 items-center group">
+              <div className="relative overflow-hidden rounded-sm transition-transform duration-500 group-hover:scale-105">
+                <Image
+                  src="/Images/Naaz Book Depot Logo.svg"
+                  alt="Naaz Book Depot Logo"
+                  width={42}
+                  height={42}
+                  className="w-10 h-10 md:w-12 md:h-12 object-contain"
+                  priority
+                />
+              </div>
+              <div className="flex flex-col items-start">
+                <h1 className="text-xl md:text-2xl lg:text-3xl font-headings font-bold text-[var(--islamic-green)] tracking-tight leading-tight">
+                  Naaz Book Depot
+                </h1>
+                <p className="text-[10px] md:text-xs text-[var(--islamic-green)]/70 font-medium italic">
+                  Publishing the Light of Knowledge
+                </p>
+              </div>
+            </Link>
+
+            {/* Navigation Links — Centered layout pattern */}
+            <div className="hidden lg:flex items-center space-x-10">
+              <Link href="/" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors duration-300 font-semibold text-sm tracking-widest uppercase">
+                Home
+              </Link>
+              
+              <ProductsDropdown productCategories={productCategories} />
+
+              <Link href="/about" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors duration-300 font-semibold text-sm tracking-widest uppercase">
+                About
+              </Link>
+              <Link href="/contact" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors duration-300 font-semibold text-sm tracking-widest uppercase">
+                Contact
+              </Link>
+            </div>
+
+            {/* Action Buttons — Enhanced icons */}
+            <div className="flex items-center space-x-2 md:space-x-5">
+              <SearchBox />
+              <AnimatedCartIcon />
+              <UserActions />
+              <div className="lg:hidden">
+                <MobileMenu />
+              </div>
+            </div>
+          </div>
+        </nav>
+      </header>
+    </>
+  );
+}
