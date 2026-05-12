@@ -257,9 +257,9 @@ export function UserActions() {
               />
               {authError && <p className="text-xs text-red-600 font-medium">{authError}</p>}
               
-              <button 
+                <button 
                 disabled={isSubmitting}
-                className="w-full bg-[#C7A536] hover:bg-[#B69425] text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50"
+                className="w-full bg-[var(--islamic-gold)] hover:bg-[var(--islamic-gold-dark)] text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50"
                 onClick={handleAuth}
               >
                 {isSubmitting ? 'Processing...' : (authMode === 'login' ? 'Sign In' : 'Create Account')}
@@ -302,10 +302,10 @@ export function MobileMenu() {
             <input type="text" placeholder="Search Islamic books..." className="flex-1 outline-none text-sm text-black" />
           </div>
           <div className="flex flex-col space-y-3">
-            <Link href="/" className="text-[var(--islamic-green)] hover:text-[#C7A536] transition-colors font-medium py-2" onClick={() => setIsOpen(false)}>Home</Link>
-            <Link href="/books" className="text-[var(--islamic-green)] hover:text-[#C7A536] transition-colors font-medium py-2" onClick={() => setIsOpen(false)}>Products</Link>
-            <Link href="/about" className="text-[var(--islamic-green)] hover:text-[#C7A536] transition-colors font-medium py-2" onClick={() => setIsOpen(false)}>About</Link>
-            <Link href="/contact" className="text-[var(--islamic-green)] hover:text-[#C7A536] transition-colors font-medium py-2" onClick={() => setIsOpen(false)}>Contact</Link>
+            <Link href="/" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-medium py-2" onClick={() => setIsOpen(false)}>Home</Link>
+            <Link href="/books" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-medium py-2" onClick={() => setIsOpen(false)}>Products</Link>
+            <Link href="/about" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-medium py-2" onClick={() => setIsOpen(false)}>About</Link>
+            <Link href="/contact" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-medium py-2" onClick={() => setIsOpen(false)}>Contact</Link>
           </div>
         </div>
       )}
