@@ -34,7 +34,7 @@ export function ProductsDropdown({ productCategories }: { productCategories: Pro
     <div className="relative">
       <button
         ref={buttonRef}
-        className="flex items-center text-[var(--islamic-green)] hover:text-[#C7A536] transition-colors font-medium"
+        className="flex items-center text-[var(--islamic-green-dark)] hover:text-white transition-colors font-semibold text-base"
         type="button"
         onClick={() => setIsOpen((v) => !v)}
       >
@@ -94,7 +94,7 @@ export function SearchBox() {
       ) : (
         <button 
           onClick={() => setIsExpanded(true)} 
-          className="text-[var(--islamic-green)] hover:text-[#C7A536] transition-colors p-2"
+          className="text-[var(--islamic-green-dark)] hover:text-white transition-colors p-2"
         >
           <Search size={24} />
         </button>
@@ -107,15 +107,47 @@ export function SearchBox() {
 export function UserActions() {
   const [isOpen, setIsOpen] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loginError, setLoginError] = useState("");
-  const { user, isAuthenticated, logout, login } = useAuth();
-  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user, isAuthenticated, logout, login, register } = useAuth();
 
   const handleSignOut = () => {
     logout();
     setIsOpen(false);
+  };
+
+  const handleAuth = async () => {
+    try {
+      setAuthError("");
+      setIsSubmitting(true);
+      
+      let result;
+      if (authMode === 'login') {
+        result = await login(email, password);
+      } else {
+        result = await register({ firstName, lastName, email, password });
+      }
+
+      if (result.success) {
+        setShowLoginModal(false);
+        // Reset fields
+        setEmail("");
+        setPassword("");
+        setFirstName("");
+        setLastName("");
+      } else {
+        setAuthError(result.error || (authMode === 'login' ? "Invalid credentials" : "Registration failed"));
+      }
+    } catch (err) {
+      setAuthError("An unexpected error occurred");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -123,11 +155,11 @@ export function UserActions() {
       <div className="relative">
         <button 
           onClick={() => setIsOpen(!isOpen)} 
-          className="text-[var(--islamic-green)] hover:text-[#C7A536] transition-colors flex items-center space-x-1 p-2"
+          className="text-[var(--islamic-green-dark)] hover:text-white transition-colors flex items-center space-x-1 p-2"
         >
           <User size={24} />
           {isAuthenticated && user && (
-            <span className="hidden md:inline text-sm font-medium">
+            <span className="hidden md:inline text-sm font-semibold">
               {user.firstName}
             </span>
           )}
@@ -156,10 +188,16 @@ export function UserActions() {
             ) : (
               <>
                 <button 
-                  onClick={() => { setShowLoginModal(true); setIsOpen(false); }} 
+                  onClick={() => { setShowLoginModal(true); setAuthMode('login'); setIsOpen(false); }} 
                   className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
                   Sign In
+                </button>
+                <button 
+                  onClick={() => { setShowLoginModal(true); setAuthMode('register'); setIsOpen(false); }} 
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  Create Account
                 </button>
               </>
             )}
@@ -168,64 +206,73 @@ export function UserActions() {
       </div>
 
       {showLoginModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-xl p-8 max-w-sm w-full relative">
-            <button onClick={() => setShowLoginModal(false)} className="absolute top-4 right-4 text-gray-500 hover:text-black">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl p-8 max-w-sm w-full relative shadow-2xl">
+            <button 
+              onClick={() => setShowLoginModal(false)} 
+              className="absolute top-4 right-4 text-gray-400 hover:text-black transition-colors"
+            >
               <X size={20} />
             </button>
-            <h2 className="text-2xl font-bold text-[var(--islamic-green)] mb-4">Sign In</h2>
-            <p className="text-sm text-gray-500 mb-6">Connect with the Django Backend here via BFF pattern.</p>
+            <h2 className="text-2xl font-bold text-[var(--islamic-green)] mb-2">
+              {authMode === 'login' ? 'Sign In' : 'Create Account'}
+            </h2>
+            <p className="text-sm text-gray-500 mb-6">
+              {authMode === 'login' 
+                ? 'Welcome back to Naaz Book Depot.' 
+                : 'Join our community of seekers.'}
+            </p>
             <div className="space-y-4">
+              {authMode === 'register' && (
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    placeholder="First Name"
+                    className="w-1/2 border border-gray-300 p-2 rounded text-black outline-none focus:border-[var(--islamic-gold)]"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Last Name"
+                    className="w-1/2 border border-gray-300 p-2 rounded text-black outline-none focus:border-[var(--islamic-gold)]"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                  />
+                </div>
+              )}
               <input
                 type="email"
                 placeholder="Email"
-                className="w-full border border-gray-300 p-2 rounded"
+                className="w-full border border-gray-300 p-2 rounded text-black outline-none focus:border-[var(--islamic-gold)]"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
               <input
                 type="password"
                 placeholder="Password"
-                className="w-full border border-gray-300 p-2 rounded"
+                className="w-full border border-gray-300 p-2 rounded text-black outline-none focus:border-[var(--islamic-gold)]"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              {loginError && <p className="text-sm text-red-600">{loginError}</p>}
-              {/* {googleClientId && (
-                <div className="flex justify-center py-2">
-                  <GoogleLogin
-                    text="continue_with"
-                    shape="rectangular"
-                    theme="outline"
-                    size="large"
-                    onSuccess={async (cr) => {
-                      if (!cr.credential) return;
-                      try {
-                        setLoginError("");
-                        await loginWithGoogle(cr.credential);
-                        setShowLoginModal(false);
-                      } catch {
-                        setLoginError("Google sign-in failed");
-                      }
-                    }}
-                    onError={() => setLoginError("Google sign-in failed")}
-                  />
-                </div>
-              )} */}
+              {authError && <p className="text-xs text-red-600 font-medium">{authError}</p>}
+              
               <button 
-                className="w-full bg-[#C7A536] text-white font-bold py-2 rounded"
-                onClick={async () => {
-                   try {
-                    setLoginError("");
-                    await login(email, password);
-                    setShowLoginModal(false);
-                   } catch {
-                    setLoginError("Invalid credentials");
-                   }
-                }}
+                disabled={isSubmitting}
+                className="w-full bg-[#C7A536] hover:bg-[#B69425] text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50"
+                onClick={handleAuth}
               >
-                Login with email
+                {isSubmitting ? 'Processing...' : (authMode === 'login' ? 'Sign In' : 'Create Account')}
               </button>
+
+              <div className="text-center pt-2">
+                <button 
+                  onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}
+                  className="text-sm text-gray-600 hover:text-[var(--islamic-green)] underline underline-offset-4"
+                >
+                  {authMode === 'login' ? "Don't have an account? Register" : "Already have an account? Sign In"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -244,7 +291,7 @@ export function MobileMenu() {
 
   return (
     <>
-      <button onClick={() => setIsOpen(!isOpen)} className="lg:hidden text-[var(--islamic-green)] p-2">
+      <button onClick={() => setIsOpen(!isOpen)} className="lg:hidden text-[var(--islamic-green-dark)] hover:text-white p-2">
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 

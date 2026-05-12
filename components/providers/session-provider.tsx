@@ -8,6 +8,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  register: (input: { firstName: string; lastName: string; email: string; password: string }) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<void>;
 }
@@ -17,6 +18,7 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   isLoading: true,
   login: async () => ({ success: false, error: 'Not initialized' }),
+  register: async () => ({ success: false, error: 'Not initialized' }),
   logout: async () => {},
   refreshSession: async () => {},
 });
@@ -69,6 +71,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const register = async (input: { firstName: string; lastName: string; email: string; password: string }) => {
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...input, cartId })
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        await refreshSession();
+        return { success: true };
+      } else {
+        return { success: false, error: data.error || 'Registration failed' };
+      }
+    } catch (error) {
+      return { success: false, error: 'An unexpected error occurred' };
+    }
+  };
+
   const logout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
@@ -76,13 +99,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Logout failed:', error);
     } finally {
       setUser(null);
-      // Optional: Redirect to home or clear cart
-      // window.location.href = '/'; 
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, logout, refreshSession }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, register, logout, refreshSession }}>
       {children}
     </AuthContext.Provider>
   );

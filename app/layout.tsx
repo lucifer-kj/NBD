@@ -80,8 +80,8 @@ export default function RootLayout({
               <ClientRoot>
                 <SessionInitializer />
                 <div className="min-h-screen flex flex-col">
-                  <ContactInfoStrip />
                   <Navbar />
+                  <ContactInfoStrip />
                   <main className="flex-1">
                     <ErrorBoundary>
                       <AnimatedLayoutClient>{children}</AnimatedLayoutClient>

@@ -35,15 +35,15 @@ const Navbar = () => {
     <header 
       className={`sticky top-0 z-50 transition-all duration-300 ${
         isScrolled 
-          ? "bg-white/95 backdrop-blur-md shadow-md py-2" 
-          : "bg-white py-4"
+          ? "bg-[var(--islamic-gold)]/95 backdrop-blur-md shadow-md py-2" 
+          : "bg-[var(--islamic-gold)] py-4"
       } border-b border-[var(--islamic-beige)]`}
     >
       <nav className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between">
           {/* Logo Section */}
           <Link href="/" className="flex flex-row gap-3 items-center group">
-            <div className="relative overflow-hidden rounded-sm transition-transform duration-500 group-hover:scale-105">
+            <div className="relative overflow-hidden rounded-sm transition-transform duration-500 group-hover:scale-105 bg-white/20 p-1 rounded-lg">
               <Image
                 src="/Images/Naaz Book Depot Logo.svg"
                 alt="Naaz Book Depot Logo"
@@ -54,10 +54,10 @@ const Navbar = () => {
               />
             </div>
             <div className="flex flex-col items-start">
-              <h1 className="text-xl md:text-2xl lg:text-3xl font-headings font-bold text-[var(--islamic-green)] tracking-tight leading-tight">
+              <h1 className="text-xl md:text-2xl lg:text-3xl font-headings font-bold text-[var(--islamic-green-dark)] tracking-tight leading-tight">
                 Naaz Book Depot
               </h1>
-              <p className="text-[10px] md:text-xs text-[var(--islamic-green)]/70 font-medium italic">
+              <p className="text-[10px] md:text-xs text-[var(--islamic-green-dark)]/80 font-medium italic">
                 Publishing the Light of Knowledge
               </p>
             </div>
@@ -67,7 +67,7 @@ const Navbar = () => {
           <div className="hidden lg:flex items-center space-x-10">
             <Link 
               href="/" 
-              className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors duration-300 font-semibold text-sm tracking-widest uppercase relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-[2px] after:bg-[var(--islamic-gold)] after:scale-x-0 hover:after:scale-x-100 after:transition-transform"
+              className="text-[var(--islamic-green-dark)] hover:text-white transition-colors duration-300 font-semibold text-base relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-[2px] after:bg-white after:scale-x-0 hover:after:scale-x-100 after:transition-transform"
             >
               Home
             </Link>
@@ -76,13 +76,13 @@ const Navbar = () => {
 
             <Link 
               href="/about" 
-              className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors duration-300 font-semibold text-sm tracking-widest uppercase relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-[2px] after:bg-[var(--islamic-gold)] after:scale-x-0 hover:after:scale-x-100 after:transition-transform"
+              className="text-[var(--islamic-green-dark)] hover:text-white transition-colors duration-300 font-semibold text-base relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-[2px] after:bg-white after:scale-x-0 hover:after:scale-x-100 after:transition-transform"
             >
               About
             </Link>
             <Link 
               href="/contact" 
-              className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors duration-300 font-semibold text-sm tracking-widest uppercase relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-[2px] after:bg-[var(--islamic-gold)] after:scale-x-0 hover:after:scale-x-100 after:transition-transform"
+              className="text-[var(--islamic-green-dark)] hover:text-white transition-colors duration-300 font-semibold text-base relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-[2px] after:bg-white after:scale-x-0 hover:after:scale-x-100 after:transition-transform"
             >
               Contact
             </Link>

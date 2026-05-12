@@ -123,7 +123,7 @@ const reshapeCart = (cart: Cart): ReshapedCart => {
 export async function getProduct(handle: string): Promise<ReshapedProduct | undefined> {
   const res = await shopifyFetch<{ data: { product: Product } }>({
     query: getProductQuery,
-    tags: ['products'],
+    tags: ['products', `product-${handle}`],
     variables: { handle }
   });
 

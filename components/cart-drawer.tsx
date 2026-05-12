@@ -32,14 +32,14 @@ export default function CartDrawer() {
     <Drawer.Root open={isCartDrawerOpen} onOpenChange={(open) => !open && closeCartDrawer()}>
       <Drawer.Trigger asChild>
         <button 
-          className="relative p-2 text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors group"
+          className="relative p-2 text-[var(--islamic-green-dark)] hover:text-white transition-colors group"
           onClick={openCartDrawer}
           aria-label="Open cart"
         >
           <ShoppingCart size={24} className="transition-transform group-hover:scale-110" />
           {count > 0 && (
             <span
-              className="absolute top-0 right-0 min-w-[1.125rem] h-[1.125rem] rounded-full bg-[var(--islamic-gold)] text-white text-[10px] leading-none flex items-center justify-center font-bold px-0.5"
+              className="absolute top-0 right-0 min-w-[1.125rem] h-[1.125rem] rounded-full bg-[var(--islamic-green-dark)] text-white text-[10px] leading-none flex items-center justify-center font-bold px-0.5 border border-white/20"
             >
               {count > 99 ? "99+" : count}
             </span>

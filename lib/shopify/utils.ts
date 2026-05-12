@@ -1,4 +1,4 @@
-export const SHOPIFY_GRAPHQL_API_ENDPOINT = '/api/2024-01/graphql.json';
+export const SHOPIFY_GRAPHQL_API_ENDPOINT = '/api/2026-04/graphql.json';
 
 export async function fetchWithRetry(url: string, options: RequestInit, retries = 3): Promise<Response> {
   let attempt = 0;
