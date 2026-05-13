@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getCustomerDetails } from '@/lib/shopify';
-import { Package, Heart, User, ChevronRight, LogOut, ShoppingBag, MapPin } from 'lucide-react';
+import { Package, Heart, User, ChevronRight, ShoppingBag, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import LogoutButton from './logout-button';
 
@@ -147,7 +147,7 @@ export default async function AccountPage() {
               </div>
             ) : (
               <div className="bg-gray-50 rounded-3xl p-20 text-center border border-dashed border-gray-200">
-                <p className="text-gray-500 italic mb-6">You haven't placed any orders yet.</p>
+                <p className="text-gray-500 italic mb-6">You haven&apos;t placed any orders yet.</p>
                 <Button asChild className="bg-[var(--islamic-green)] text-white">
                   <Link href="/products">Start Shopping</Link>
                 </Button>

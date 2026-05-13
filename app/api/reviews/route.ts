@@ -44,12 +44,23 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         api_token: JUDGE_ME_API_TOKEN,
         shop_domain: SHOP_DOMAIN,
-        ...body
+        platform: 'shopify',
+        ...body,
+        id: body.external_id || body.id
       })
     });
 
     const data = await response.json();
-    return NextResponse.json(data, { status: response.status });
+    
+    if (!response.ok) {
+      console.error('Judge.me POST Error:', data);
+      return NextResponse.json({ 
+        error: data.message || 'Judge.me API Error',
+        details: data 
+      }, { status: response.status });
+    }
+
+    return NextResponse.json(data);
   } catch (error) {
     console.error('Error submitting review:', error);
     return NextResponse.json({ error: 'Failed to submit review' }, { status: 500 });

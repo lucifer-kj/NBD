@@ -4,10 +4,7 @@ import {
   Truck, 
   ShieldCheck, 
   RotateCcw, 
-  CreditCard, 
-  User, 
-  BookOpen,
-  ChevronDown
+  CreditCard
 } from 'lucide-react';
 
 export const metadata = {
@@ -90,7 +87,7 @@ export default function FAQPage() {
           </h1>
           <p className="text-white/70 max-w-2xl mx-auto text-lg">
             Everything you need to know about our products, shipping, and services. 
-            Can't find the answer? Contact us on WhatsApp.
+            Can&apos;t find the answer? Contact us on WhatsApp.
           </p>
         </div>
       </div>

@@ -1,12 +1,8 @@
-import { Suspense } from "react"
 import { notFound } from "next/navigation"
 import { getProduct, getProducts } from "@/lib/shopify"
 import ProductDetailsClient from "@/components/product/ProductDetailsClient"
 import ProductCard from "@/components/product-card"
 import ProductReviews from "@/components/product/ProductReviews"
-import { Star } from "lucide-react"
-import { cookies } from "next/headers"
-import { getCustomerDetails } from "@/lib/shopify"
 
 type PageProps = {
   params: Promise<{ slug: string }>

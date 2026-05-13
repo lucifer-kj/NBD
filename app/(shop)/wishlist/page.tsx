@@ -1,11 +1,9 @@
 import { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import Link from 'next/link';
-import Image from 'next/image';
 import { redirect } from 'next/navigation';
 import { getCustomerDetails, getProductsByIds } from '@/lib/shopify';
-import { Heart, ChevronLeft, ShoppingCart, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Heart, ChevronLeft } from 'lucide-react';
 import WishlistItems from '@/components/wishlist/wishlist-items';
 
 export const metadata: Metadata = {
@@ -47,7 +45,7 @@ export default async function WishlistPage() {
         <h1 className="text-4xl font-headings font-bold text-[var(--islamic-green)] flex items-center gap-4">
           <Heart className="text-red-500 fill-red-500" size={32} /> My Wishlist
         </h1>
-        <p className="text-gray-500 mt-2">Items you've saved for your spiritual collection.</p>
+        <p className="text-gray-500 mt-2">Items you&apos;ve saved for your spiritual collection.</p>
       </header>
 
       <WishlistItems 

@@ -2,10 +2,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { ChevronDown, Search, User, LogOut, Menu, X, ShoppingCart, Heart } from 'lucide-react';
-import { GoogleLogin } from '@react-oauth/google';
+import { ChevronDown, Search, User, LogOut, Menu, X, Heart } from 'lucide-react';
 import { useAuth } from '../providers/session-provider';
-import { useCartStore } from '@/store/cart-store';
 import CartDrawer from '@/components/cart-drawer';
 import PredictiveSearch from '@/components/search/predictive-search';
 import { useMounted } from '@/hooks/use-mounted';
@@ -139,7 +137,7 @@ export function UserActions() {
       } else {
         setAuthError(result.error || (authMode === 'login' ? "Invalid credentials" : "Registration failed"));
       }
-    } catch (err) {
+    } catch (_err) {
       setAuthError("An unexpected error occurred");
     } finally {
       setIsSubmitting(false);

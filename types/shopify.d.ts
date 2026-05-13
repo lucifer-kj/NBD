@@ -174,6 +174,21 @@ export type Customer = {
   };
 };
 
+export type Article = {
+  id: string;
+  handle: string;
+  title: string;
+  contentHtml: string;
+  excerpt: string;
+  publishedAt: string;
+  image?: Image;
+  authorV2: {
+    name: string;
+  };
+  seo: SEO;
+  tags: string[];
+};
+
 export type CustomerAccessToken = {
   accessToken: string;
   expiresAt: string;

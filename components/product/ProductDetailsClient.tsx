@@ -6,21 +6,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShoppingCart, 
   Heart, 
-  Share2, 
   Minus, 
   Plus, 
-  Star, 
-  Check, 
   ChevronRight, 
   ShieldCheck, 
-  Truck, 
-  RotateCcw 
+  Truck,
+  ArrowRight
 } from 'lucide-react';
 import { ReshapedProduct } from '@/types/shopify';
 import { useCartStore } from '@/store/cart-store';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { fadeInUp, staggerContainer } from '@/lib/motion.config';
 import StarRating from '@/components/star-rating';
 
 interface ProductDetailsClientProps {
@@ -277,9 +273,10 @@ export default function ProductDetailsClient({ product, initialWishlisted = fals
               }}
               disabled={!product.availableForSale || isLoading}
               variant="outline"
-              className="flex-1 border-2 border-[var(--islamic-green)] text-[var(--islamic-green)] h-14 rounded-xl text-lg font-bold hover:bg-[var(--islamic-green)] hover:text-white transition-all duration-300"
+              className="flex-1 border-2 border-[var(--islamic-green)] text-[var(--islamic-green)] h-14 rounded-xl text-lg font-bold hover:bg-[var(--islamic-green)] hover:text-white transition-all duration-300 gap-2"
             >
               Buy Now
+              <ArrowRight size={20} className="shrink-0" />
             </Button>
 
             <button 

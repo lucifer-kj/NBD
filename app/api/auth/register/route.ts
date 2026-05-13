@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     if ('errors' in createResponse) {
       const error = createResponse.errors[0];
       return NextResponse.json(
-        { error: error?.message || 'Failed to create account' },
+        { error: error || 'Failed to create account' },
         { status: 400 }
       );
     }

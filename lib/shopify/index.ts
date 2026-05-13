@@ -21,7 +21,10 @@ import {
   Cart,
   ReshapedCart,
   Connection,
-  Customer
+  Customer,
+  Order,
+  Article,
+  CustomerAccessToken
 } from '../../types/shopify';
 
 const domain = process.env.SHOPIFY_STORE_DOMAIN
@@ -42,17 +45,19 @@ if (!key) {
 }
 
 export async function shopifyFetch<T>({
-  cache = 'no-store',
+  cache = 'force-cache',
   headers,
   query,
   tags,
-  variables
+  variables,
+  revalidate = 3600
 }: {
   cache?: RequestCache;
   headers?: HeadersInit;
   query: string;
   tags?: string[];
   variables?: Record<string, unknown>;
+  revalidate?: number | false;
 }): Promise<{ status: number; body: T } | never> {
   try {
     const result = await fetch(endpoint, {
@@ -67,7 +72,10 @@ export async function shopifyFetch<T>({
         ...(variables && { variables })
       }),
       cache,
-      ...(tags && { next: { tags } })
+      next: { 
+        tags,
+        revalidate
+      }
     });
 
     const body = await result.json();
@@ -81,7 +89,7 @@ export async function shopifyFetch<T>({
       status: result.status,
       body
     };
-  } catch (e: any) {
+  } catch (e: unknown) {
     if (e instanceof Error) throw e;
     
     throw new Error('Error fetching from Shopify', { 
@@ -254,12 +262,12 @@ export async function updateCart(
 
 // --- Customer Auth & Management ---
 
-export async function loginCustomer(input: Record<string, unknown>): Promise<{ accessToken: string; expiresAt: string } | { errors: any[] }> {
+export async function loginCustomer(input: Record<string, unknown>): Promise<CustomerAccessToken | { errors: string[] }> {
   const res = await shopifyFetch<{
     data: {
       customerAccessTokenCreate: {
-        customerAccessToken: { accessToken: string; expiresAt: string };
-        customerUserErrors: any[];
+        customerAccessToken: CustomerAccessToken;
+        customerUserErrors: { message: string }[];
       };
     };
   }>({
@@ -270,7 +278,7 @@ export async function loginCustomer(input: Record<string, unknown>): Promise<{ a
 
   const payload = res.body.data.customerAccessTokenCreate;
   if (payload.customerUserErrors && payload.customerUserErrors.length > 0) {
-    return { errors: payload.customerUserErrors };
+    return { errors: payload.customerUserErrors.map((e: { message: string }) => e.message) };
   }
   return payload.customerAccessToken;
 }
@@ -290,12 +298,12 @@ export async function logoutCustomer(customerAccessToken: string): Promise<boole
   return !res.body.data.customerAccessTokenDelete.userErrors.length;
 }
 
-export async function createCustomer(input: Record<string, unknown>): Promise<Customer | { errors: any[] }> {
+export async function createCustomer(input: Record<string, unknown>): Promise<Customer | { errors: string[] }> {
   const res = await shopifyFetch<{
     data: {
       customerCreate: {
         customer: Customer;
-        customerUserErrors: any[];
+        customerUserErrors: { message: string }[];
       };
     };
   }>({
@@ -306,7 +314,7 @@ export async function createCustomer(input: Record<string, unknown>): Promise<Cu
 
   const payload = res.body.data.customerCreate;
   if (payload.customerUserErrors && payload.customerUserErrors.length > 0) {
-    return { errors: payload.customerUserErrors };
+    return { errors: payload.customerUserErrors.map((e: { message: string }) => e.message) };
   }
   return payload.customer;
 }
@@ -346,12 +354,12 @@ export async function updateCartBuyerIdentity(cartId: string, customerAccessToke
 
   return reshapeCart(res.body.data.cartBuyerIdentityUpdate.cart);
 }
-export async function getOrder(customerAccessToken: string, orderId: string): Promise<any | null> {
+export async function getOrder(customerAccessToken: string, orderId: string): Promise<Order | null> {
   const res = await shopifyFetch<{
     data: {
       customer: {
         orders: {
-          edges: Array<{ node: any }>;
+          edges: Array<{ node: Order }>;
         };
       };
     };
@@ -403,7 +411,7 @@ export async function getBlogArticles(blogHandle: string, first: number = 20) {
     data: {
       blog: {
         title: string;
-        articles: Connection<any>;
+        articles: Connection<Article>;
       };
     };
   }>({
@@ -425,7 +433,7 @@ export async function getArticle(blogHandle: string, articleHandle: string) {
   const res = await shopifyFetch<{
     data: {
       blog: {
-        articleByHandle: any;
+        articleByHandle: Article;
       };
     };
   }>({
@@ -442,9 +450,9 @@ export async function predictiveSearch(query: string) {
   const res = await shopifyFetch<{
     data: {
       predictiveSearch: {
-        products: any[];
-        collections: any[];
-        articles: any[];
+        products: unknown[];
+        collections: unknown[];
+        articles: unknown[];
       };
     };
   }>({
@@ -456,8 +464,8 @@ export async function predictiveSearch(query: string) {
   return res.body.data.predictiveSearch;
 }
 
-export async function createCustomerAddress(customerAccessToken: string, address: any) {
-  const res = await shopifyFetch<any>({
+export async function createCustomerAddress(customerAccessToken: string, address: unknown) {
+  const res = await shopifyFetch<{ data: { customerAddressCreate: unknown } }>({
     query: customerAddressCreateMutation,
     variables: { customerAccessToken, address },
     cache: 'no-store'
@@ -466,8 +474,8 @@ export async function createCustomerAddress(customerAccessToken: string, address
   return res.body.data.customerAddressCreate;
 }
 
-export async function updateCustomerAddress(customerAccessToken: string, id: string, address: any) {
-  const res = await shopifyFetch<any>({
+export async function updateCustomerAddress(customerAccessToken: string, id: string, address: unknown) {
+  const res = await shopifyFetch<{ data: { customerAddressUpdate: unknown } }>({
     query: customerAddressUpdateMutation,
     variables: { customerAccessToken, id, address },
     cache: 'no-store'
@@ -477,7 +485,7 @@ export async function updateCustomerAddress(customerAccessToken: string, id: str
 }
 
 export async function deleteCustomerAddress(customerAccessToken: string, id: string) {
-  const res = await shopifyFetch<any>({
+  const res = await shopifyFetch<{ data: { customerAddressDelete: unknown } }>({
     query: customerAddressDeleteMutation,
     variables: { customerAccessToken, id },
     cache: 'no-store'
@@ -487,7 +495,7 @@ export async function deleteCustomerAddress(customerAccessToken: string, id: str
 }
 
 export async function updateDefaultAddress(customerAccessToken: string, addressId: string) {
-  const res = await shopifyFetch<any>({
+  const res = await shopifyFetch<{ data: { customerDefaultAddressUpdate: unknown } }>({
     query: customerDefaultAddressUpdateMutation,
     variables: { customerAccessToken, addressId },
     cache: 'no-store'

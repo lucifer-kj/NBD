@@ -1,24 +1,30 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ReviewForm from '../review-form';
 import StarRating from '../star-rating';
 import { Star } from 'lucide-react';
+
+interface Review {
+  id: string;
+  rating: number;
+  title: string;
+  body: string;
+  user?: {
+    display_name: string;
+  };
+}
 
 interface ProductReviewsProps {
   productId: string;
 }
 
 export default function ProductReviews({ productId }: ProductReviewsProps) {
-  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    fetchReviews();
-  }, [productId]);
-
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
       const res = await fetch(`/api/reviews?productId=${productId}`);
       const data = await res.json();
@@ -28,16 +34,25 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [productId]);
 
-  const handleReviewSubmit = async (review: { rating: number; title: string; comment: string }) => {
+  useEffect(() => {
+    fetchReviews();
+  }, [fetchReviews]);
+
+  const handleReviewSubmit = async (review: { name: string; email: string; rating: number; title: string; comment: string }) => {
     setIsSubmitting(true);
+    // Extract numerical ID from GID if needed
+    const numericalId = productId.includes('gid://') ? productId.split('/').pop() : productId;
+    
     try {
       const res = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          external_id: productId,
+          external_id: numericalId,
+          name: review.name,
+          email: review.email,
           rating: review.rating,
           title: review.title,
           body: review.comment,
@@ -46,12 +61,13 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
 
       if (res.ok) {
         alert('Review submitted successfully! It will appear after moderation.');
-        // Optionally refetch or add optimistically
+        fetchReviews(); // Refetch to show the new review (if moderation allows)
       } else {
-        throw new Error('Failed to submit review');
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to submit review');
       }
-    } catch (error) {
-      alert('Error submitting review. Please try again.');
+    } catch (error: any) {
+      alert(error.message || 'Error submitting review. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -77,7 +93,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
           {isLoading ? (
             <p className="text-gray-500 animate-pulse">Loading reviews...</p>
           ) : reviews.length > 0 ? (
-            reviews.map((review: any) => (
+            reviews.map((review: Review) => (
               <div key={review.id} className="border-b border-gray-100 pb-6">
                 <div className="flex items-center gap-2 mb-2">
                   <StarRating rating={review.rating} size="sm" />

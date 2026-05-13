@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getArticle, getBlogArticles } from '@/lib/shopify';
-import { Calendar, User, ArrowLeft, Share2 } from 'lucide-react';
+import { Calendar, ArrowLeft, Share2 } from 'lucide-react';
 
 interface ArticlePageProps {
   params: Promise<{

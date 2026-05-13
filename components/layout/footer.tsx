@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Phone, Smartphone, Mail, MapPin, MessageCircle } from 'lucide-react';
+import { Phone, Mail, MapPin, MessageCircle } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -74,7 +74,7 @@ const Footer = () => {
                 <span>033 22350051 / 033 22350960</span>
               </li>
               <li className="flex items-start gap-3">
-                <Smartphone size={16} className="text-[var(--islamic-gold)] shrink-0 mt-0.5" />
+                <MessageCircle size={16} className="text-[var(--islamic-gold)] shrink-0 mt-0.5" />
                 <span>+91 91634 31395</span>
               </li>
               <li className="flex items-start gap-3">
