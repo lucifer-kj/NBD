@@ -3,7 +3,10 @@ import { notFound } from "next/navigation"
 import { getProduct, getProducts } from "@/lib/shopify"
 import ProductDetailsClient from "@/components/product/ProductDetailsClient"
 import ProductCard from "@/components/product-card"
+import ProductReviews from "@/components/product/ProductReviews"
 import { Star } from "lucide-react"
+import { cookies } from "next/headers"
+import { getCustomerDetails } from "@/lib/shopify"
 
 type PageProps = {
   params: Promise<{ slug: string }>
@@ -39,11 +42,24 @@ export default async function ProductPage({ params }: PageProps) {
     first: 4
   }).then(products => products.filter(p => p.id !== product.id))
 
+  // Check if product is in wishlist
+  let isWishlisted = false;
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get('customerAccessToken')?.value;
+  
+  if (accessToken) {
+    const customer = await getCustomerDetails(accessToken);
+    if (customer && customer.wishlist) {
+      const wishlistIds = JSON.parse(customer.wishlist.value);
+      isWishlisted = wishlistIds.includes(product.variants[0]?.id);
+    }
+  }
+
   return (
     <div className="bg-white">
       <div className="container mx-auto px-4 py-12 md:py-16">
         {/* Main Product Section */}
-        <ProductDetailsClient product={product} />
+        <ProductDetailsClient product={product} initialWishlisted={isWishlisted} />
 
         {/* Product Details Tabs / Sections */}
         <div className="mt-20 pt-10 border-t border-gray-100">
@@ -55,21 +71,8 @@ export default async function ProductPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* Reviews Section Placeholder */}
-        <div className="mt-20 pt-10 border-t border-gray-100">
-          <div className="flex items-center justify-between mb-10">
-            <h2 className="text-2xl font-headings font-bold text-[var(--islamic-green)]">Customer Reviews</h2>
-            <div className="flex items-center gap-2">
-              <Star size={20} fill="#D4AF37" className="text-[var(--islamic-gold)]" />
-              <span className="font-bold">4.8</span>
-              <span className="text-gray-400 text-sm">(24 reviews)</span>
-            </div>
-          </div>
-          
-          <div className="bg-gray-50 rounded-3xl p-10 text-center border border-dashed border-gray-200">
-            <p className="text-gray-500 italic">Reviews feature will be enabled soon. Stay tuned!</p>
-          </div>
-        </div>
+        {/* Reviews Section */}
+        <ProductReviews productId={product.id} />
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (

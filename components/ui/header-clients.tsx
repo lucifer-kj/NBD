@@ -2,11 +2,12 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { ChevronDown, Search, User, LogOut, Menu, X, ShoppingCart } from 'lucide-react';
+import { ChevronDown, Search, User, LogOut, Menu, X, ShoppingCart, Heart } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../providers/session-provider';
 import { useCartStore } from '@/store/cart-store';
 import CartDrawer from '@/components/cart-drawer';
+import PredictiveSearch from '@/components/search/predictive-search';
 
 type ProductCategory = { name: string; path: string; available: boolean };
 
@@ -77,50 +78,12 @@ export function ProductsDropdown({ productCategories }: { productCategories: Pro
 // Search Box Client Component
 export function SearchBox() {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [query, setQuery] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleSearch = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (query.trim()) {
-      window.location.href = `/products?search=${encodeURIComponent(query.trim())}`;
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    } else if (e.key === 'Escape') {
-      setIsExpanded(false);
-    }
-  };
-
-  useEffect(() => {
-    if (isExpanded && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [isExpanded]);
 
   return (
     <div className="hidden md:flex items-center">
       {isExpanded ? (
-        <div className="flex items-center bg-white rounded-lg shadow-sm border border-gray-200 px-3 py-2 w-80 transition-all duration-300">
-          <Search className="text-gray-400 mr-2" size={18} />
-          <input 
-            ref={inputRef}
-            type="text" 
-            placeholder="Search for books, atars..." 
-            className="flex-1 outline-none text-sm text-black" 
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onBlur={() => !query && setIsExpanded(false)} 
-          />
-          {query && (
-            <button onClick={() => setQuery("")} className="text-gray-400 hover:text-gray-600">
-              <X size={14} />
-            </button>
-          )}
+        <div className="w-[400px] transition-all duration-300">
+           <PredictiveSearch />
         </div>
       ) : (
         <button 
@@ -209,6 +172,9 @@ export function UserActions() {
                 </Link>
                 <Link href="/account" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsOpen(false)}>
                   My Orders
+                </Link>
+                <Link href="/wishlist" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2" onClick={() => setIsOpen(false)}>
+                  <Heart size={14} className="text-red-500" /> My Wishlist
                 </Link>
                 <hr className="my-1" />
                 <button onClick={handleSignOut} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
@@ -352,6 +318,7 @@ export function MobileMenu() {
             <Link href="/books" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-xl border-b border-gray-50 pb-2" onClick={() => setIsOpen(false)}>Islamic Books</Link>
             <Link href="/atar" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-xl border-b border-gray-50 pb-2" onClick={() => setIsOpen(false)}>Premium Atars</Link>
             <Link href="/products" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-xl border-b border-gray-50 pb-2" onClick={() => setIsOpen(false)}>All Products</Link>
+            <Link href="/blog" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-xl border-b border-gray-50 pb-2" onClick={() => setIsOpen(false)}>Spiritual Insights</Link>
             <Link href="/about" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-xl border-b border-gray-50 pb-2" onClick={() => setIsOpen(false)}>About Our Journey</Link>
             <Link href="/contact" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-xl border-b border-gray-50 pb-2" onClick={() => setIsOpen(false)}>Contact Us</Link>
           </div>

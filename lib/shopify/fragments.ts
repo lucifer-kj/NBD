@@ -70,6 +70,15 @@ export const productFragment = `
     }
     tags
     updatedAt
+    metafields(identifiers: [
+      { namespace: "custom", key: "care_instructions" },
+      { namespace: "custom", key: "technical_specs" },
+      { namespace: "reviews", key: "rating" }
+    ]) {
+      key
+      value
+      namespace
+    }
   }
 `;
 
@@ -132,5 +141,39 @@ export const cartFragment = `
       }
     }
     totalQuantity
+    discountCodes {
+      applicable
+      code
+    }
+  }
+`;
+
+export const articleFragment = `
+  fragment article on Article {
+    id
+    title
+    handle
+    content
+    contentHtml
+    excerpt
+    excerptHtml
+    publishedAt
+    authorV2 {
+      name
+    }
+    image {
+      url
+      altText
+      width
+      height
+    }
+    blog {
+      handle
+      title
+    }
+    seo {
+      title
+      description
+    }
   }
 `;

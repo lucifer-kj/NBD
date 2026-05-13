@@ -21,15 +21,17 @@ import { useCartStore } from '@/store/cart-store';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { fadeInUp, staggerContainer } from '@/lib/motion.config';
+import StarRating from '@/components/star-rating';
 
 interface ProductDetailsClientProps {
   product: ReshapedProduct;
+  initialWishlisted?: boolean;
 }
 
-export default function ProductDetailsClient({ product }: ProductDetailsClientProps) {
+export default function ProductDetailsClient({ product, initialWishlisted = false }: ProductDetailsClientProps) {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(initialWishlisted);
   const { addItem, isLoading } = useCartStore();
 
   const handleAddToCart = async () => {
@@ -48,6 +50,49 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
       style: 'currency',
       currency: currency || 'INR',
     }).format(parseFloat(amount));
+  };
+
+  // Extract metafields
+  const ratingMeta = product.metafields?.find(m => m.namespace === 'reviews' && m.key === 'rating');
+  const ratingValue = ratingMeta ? JSON.parse(ratingMeta.value).value : 4.8; // Fallback
+  const careInstructions = product.metafields?.find(m => m.namespace === 'custom' && m.key === 'care_instructions')?.value;
+  const techSpecs = product.metafields?.find(m => m.namespace === 'custom' && m.key === 'technical_specs')?.value;
+
+  const handleWishlistToggle = async () => {
+    // Optimistic UI
+    setIsWishlisted(!isWishlisted);
+    
+    try {
+      // Fetch user from /api/auth/me
+      const meRes = await fetch('/api/auth/me');
+      const meData = await meRes.json();
+      
+      if (!meData.user) {
+        alert("Please login to use wishlist");
+        setIsWishlisted(false);
+        return;
+      }
+
+      const customerId = meData.user.id;
+      const currentWishlist = meData.user.wishlist ? JSON.parse(meData.user.wishlist.value) : [];
+      const variantId = product.variants[0]?.id;
+      
+      let newWishlist;
+      if (isWishlisted) {
+        newWishlist = currentWishlist.filter((id: string) => id !== variantId);
+      } else {
+        newWishlist = [...currentWishlist, variantId];
+      }
+
+      await fetch('/api/wishlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customerId, variantIds: newWishlist })
+      });
+    } catch (error) {
+      console.error('Wishlist error:', error);
+      setIsWishlisted(!isWishlisted); // Revert on failure
+    }
   };
 
   return (
@@ -131,12 +176,8 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
         
         {/* Rating */}
         <div className="flex items-center gap-4 mb-6">
-          <div className="flex text-[var(--islamic-gold)]">
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} size={18} fill={i < 4 ? "currentColor" : "none"} />
-            ))}
-          </div>
-          <span className="text-sm text-gray-500">(4.8 • 24 Reviews)</span>
+          <StarRating rating={ratingValue} size="md" />
+          <span className="text-sm text-gray-500">({ratingValue} • Judge.me Certified)</span>
         </div>
 
         {/* Price */}
@@ -153,6 +194,24 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
           </div>
           <p className="text-sm text-gray-500 mt-1">Inclusive of all taxes</p>
         </div>
+
+        {/* Metafields Info */}
+        {(careInstructions || techSpecs) && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            {careInstructions && (
+              <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-100/50">
+                <p className="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-1">Care Instructions</p>
+                <p className="text-sm text-amber-900/80">{careInstructions}</p>
+              </div>
+            )}
+            {techSpecs && (
+              <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100/50">
+                <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-1">Technical Specs</p>
+                <p className="text-sm text-blue-900/80">{techSpecs}</p>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Short Description */}
         <div className="prose prose-sm text-gray-600 mb-8 max-w-none">
@@ -189,7 +248,7 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
             </Button>
 
             <button 
-              onClick={() => setIsWishlisted(!isWishlisted)}
+              onClick={handleWishlistToggle}
               className={`p-4 rounded-xl border-2 transition-all ${
                 isWishlisted 
                   ? 'bg-red-50 border-red-100 text-red-500' 

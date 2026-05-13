@@ -6,6 +6,11 @@ export const createCartMutation = `
       cart {
         ...cart
       }
+      userErrors {
+        field
+        message
+        code
+      }
     }
   }
   ${cartFragment}
@@ -16,6 +21,11 @@ export const addToCartMutation = `
     cartLinesAdd(cartId: $cartId, lines: $lines) {
       cart {
         ...cart
+      }
+      userErrors {
+        field
+        message
+        code
       }
     }
   }
@@ -28,6 +38,11 @@ export const removeFromCartMutation = `
       cart {
         ...cart
       }
+      userErrors {
+        field
+        message
+        code
+      }
     }
   }
   ${cartFragment}
@@ -38,6 +53,11 @@ export const updateCartMutation = `
     cartLinesUpdate(cartId: $cartId, lines: $lines) {
       cart {
         ...cart
+      }
+      userErrors {
+        field
+        message
+        code
       }
     }
   }
@@ -104,4 +124,94 @@ export const cartBuyerIdentityUpdateMutation = `
     }
   }
   ${cartFragment}
+`;
+
+export const setMetafieldsMutation = `
+  mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {
+    metafieldsSet(metafields: $metafields) {
+      metafields {
+        id
+        namespace
+        key
+        value
+      }
+      userErrors {
+        field
+        message
+        code
+      }
+    }
+  }
+`;
+export const updateCartDiscountMutation = `
+  mutation cartDiscountCodesUpdate($cartId: ID!, $discountCodes: [String!]) {
+    cartDiscountCodesUpdate(cartId: $cartId, discountCodes: $discountCodes) {
+      cart {
+        ...cart
+      }
+      userErrors {
+        field
+        message
+        code
+      }
+    }
+  }
+  ${cartFragment}
+`;
+export const customerAddressCreateMutation = `
+  mutation customerAddressCreate($customerAccessToken: String!, $address: MailingAddressInput!) {
+    customerAddressCreate(customerAccessToken: $customerAccessToken, address: $address) {
+      customerAddress {
+        id
+      }
+      customerUserErrors {
+        code
+        field
+        message
+      }
+    }
+  }
+`;
+
+export const customerAddressUpdateMutation = `
+  mutation customerAddressUpdate($customerAccessToken: String!, $id: ID!, $address: MailingAddressInput!) {
+    customerAddressUpdate(customerAccessToken: $customerAccessToken, id: $id, address: $address) {
+      customerAddress {
+        id
+      }
+      customerUserErrors {
+        code
+        field
+        message
+      }
+    }
+  }
+`;
+
+export const customerAddressDeleteMutation = `
+  mutation customerAddressDelete($customerAccessToken: String!, $id: ID!) {
+    customerAddressDelete(customerAccessToken: $customerAccessToken, id: $id) {
+      deletedCustomerAddressId
+      customerUserErrors {
+        code
+        field
+        message
+      }
+    }
+  }
+`;
+
+export const customerDefaultAddressUpdateMutation = `
+  mutation customerDefaultAddressUpdate($customerAccessToken: String!, $addressId: ID!) {
+    customerDefaultAddressUpdate(customerAccessToken: $customerAccessToken, addressId: $addressId) {
+      customer {
+        id
+      }
+      customerUserErrors {
+        code
+        field
+        message
+      }
+    }
+  }
 `;

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getCustomerDetails } from '@/lib/shopify';
 import { cookies } from 'next/headers';
 

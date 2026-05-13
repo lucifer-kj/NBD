@@ -31,6 +31,15 @@
       "namedRegex": "^/atar/(?<nxtPslug>[^/]+?)(?:/)?$"
     },
     {
+      "page": "/blog/[blogHandle]/[articleHandle]",
+      "regex": "^/blog/([^/]+?)/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPblogHandle": "nxtPblogHandle",
+        "nxtParticleHandle": "nxtParticleHandle"
+      },
+      "namedRegex": "^/blog/(?<nxtPblogHandle>[^/]+?)/(?<nxtParticleHandle>[^/]+?)(?:/)?$"
+    },
+    {
       "page": "/books/[slug]",
       "regex": "^/books/([^/]+?)(?:/)?$",
       "routeKeys": {
@@ -73,6 +82,12 @@
       "namedRegex": "^/account(?:/)?$"
     },
     {
+      "page": "/account/addresses",
+      "regex": "^/account/addresses(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/account/addresses(?:/)?$"
+    },
+    {
       "page": "/atar",
       "regex": "^/atar(?:/)?$",
       "routeKeys": {},
@@ -89,6 +104,12 @@
       "regex": "^/auth/signup(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/auth/signup(?:/)?$"
+    },
+    {
+      "page": "/blog",
+      "regex": "^/blog(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog(?:/)?$"
     },
     {
       "page": "/books",
@@ -137,6 +158,12 @@
       "regex": "^/search(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/search(?:/)?$"
+    },
+    {
+      "page": "/wishlist",
+      "regex": "^/wishlist(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/wishlist(?:/)?$"
     }
   ],
   "dataRoutes": [],

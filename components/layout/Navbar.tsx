@@ -76,6 +76,12 @@ const Navbar = () => {
             <ProductsDropdown productCategories={productCategories} />
 
             <Link
+              href="/blog"
+              className="text-white/90 hover:text-[var(--islamic-gold)] transition-colors duration-300 font-semibold text-base relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-[2px] after:bg-[var(--islamic-gold)] after:scale-x-0 hover:after:scale-x-100 after:transition-transform"
+            >
+              Insights
+            </Link>
+            <Link
               href="/about"
               className="text-white/90 hover:text-[var(--islamic-gold)] transition-colors duration-300 font-semibold text-base relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-[2px] after:bg-[var(--islamic-gold)] after:scale-x-0 hover:after:scale-x-100 after:transition-transform"
             >

@@ -1,4 +1,4 @@
-import { productFragment, cartFragment } from './fragments';
+import { productFragment, cartFragment, articleFragment } from './fragments';
 
 export const getProductQuery = `
   query getProduct($handle: String!) {
@@ -63,6 +63,136 @@ export const getCustomerQuery = `
           }
         }
       }
+      wishlist: metafield(namespace: "wishlist", key: "items") {
+        value
+      }
     }
   }
+`;
+
+export const predictiveSearchQuery = `
+  query predictiveSearch($query: String!) {
+    predictiveSearch(query: $query, types: [PRODUCT, COLLECTION, ARTICLE], limit: 5) {
+      products {
+        id
+        title
+        handle
+        featuredImage {
+          url
+          altText
+        }
+      }
+      collections {
+        id
+        title
+        handle
+      }
+      articles {
+        id
+        title
+        handle
+      }
+    }
+  }
+`;
+export const getOrderQuery = `
+  query getOrder($customerAccessToken: String!, $orderId: ID!) {
+    customer(customerAccessToken: $customerAccessToken) {
+      orders(first: 1, query: $orderId) {
+        edges {
+          node {
+            id
+            orderNumber
+            processedAt
+            financialStatus
+            fulfillmentStatus
+            totalPrice {
+              amount
+              currencyCode
+            }
+            totalShippingPrice {
+              amount
+              currencyCode
+            }
+            totalTax {
+              amount
+              currencyCode
+            }
+            subtotalPrice {
+              amount
+              currencyCode
+            }
+            shippingAddress {
+              firstName
+              lastName
+              address1
+              address2
+              city
+              zip
+              province
+              country
+            }
+            lineItems(first: 50) {
+              edges {
+                node {
+                  title
+                  quantity
+                  variant {
+                    image {
+                      url
+                      altText
+                    }
+                    price {
+                      amount
+                      currencyCode
+                    }
+                    product {
+                      handle
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const getProductsByIdsQuery = `
+  query getProductsByIds($ids: [ID!]!) {
+    nodes(ids: $ids) {
+      ... on Product {
+        ...product
+      }
+    }
+  }
+  ${productFragment}
+`;
+export const getBlogArticlesQuery = `
+  query getBlogArticles($blogHandle: String!, $first: Int) {
+    blog(handle: $blogHandle) {
+      title
+      articles(first: $first, sortKey: PUBLISHED_AT, reverse: true) {
+        edges {
+          node {
+            ...article
+          }
+        }
+      }
+    }
+  }
+  ${articleFragment}
+`;
+
+export const getArticleQuery = `
+  query getArticle($blogHandle: String!, $articleHandle: String!) {
+    blog(handle: $blogHandle) {
+      articleByHandle(handle: $articleHandle) {
+        ...article
+      }
+    }
+  }
+  ${articleFragment}
 `;

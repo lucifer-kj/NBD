@@ -25,6 +25,13 @@ export type SEO = {
   description: string;
 };
 
+export type Metafield = {
+  id: string;
+  key: string;
+  namespace: string;
+  value: string;
+};
+
 // --- Products ---
 
 export type ProductOption = {
@@ -64,6 +71,7 @@ export type Product = {
   seo: SEO;
   tags: string[];
   updatedAt: string;
+  metafields?: Metafield[];
 };
 
 // Reshaped Product for easier UI consumption
@@ -100,6 +108,10 @@ export type Cart = {
   };
   lines: Connection<CartLine>;
   totalQuantity: number;
+  discountCodes?: {
+    code: string;
+    applicable: boolean;
+  }[];
 };
 
 export type ReshapedCart = Omit<Cart, 'lines'> & {
@@ -123,6 +135,19 @@ export type Order = {
   lineItems: Connection<OrderLineItem>;
 };
 
+export type MailingAddress = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  address1: string;
+  address2: string;
+  city: string;
+  province: string;
+  zip: string;
+  country: string;
+  phone: string;
+};
+
 export type Customer = {
   id: string;
   firstName: string;
@@ -131,6 +156,11 @@ export type Customer = {
   phone: string | null;
   acceptsMarketing: boolean;
   orders?: Connection<Order>;
+  addresses?: Connection<MailingAddress>;
+  defaultAddress?: MailingAddress;
+  wishlist?: {
+    value: string;
+  };
 };
 
 export type CustomerAccessToken = {

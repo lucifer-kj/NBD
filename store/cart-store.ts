@@ -6,7 +6,8 @@ import {
   addToCartAction, 
   removeFromCartAction, 
   updateCartAction, 
-  getCartAction 
+  getCartAction,
+  updateCartDiscountAction
 } from '../lib/shopify/actions';
 
 interface CartState {
@@ -21,6 +22,8 @@ interface CartState {
   updateItem: (lineId: string, merchandiseId: string, quantity: number) => Promise<void>;
   clearCart: () => void;
   initCart: () => Promise<void>;
+  applyDiscount: (code: string) => Promise<void>;
+  removeDiscount: () => Promise<void>;
 }
 
 export const useCartStore = create<CartState>()(
@@ -38,18 +41,48 @@ export const useCartStore = create<CartState>()(
         set({ isLoading: true });
         try {
           let cartId = get().cartId;
-          let cart: ReshapedCart;
+          
+          const performAdd = async (id: string) => {
+            const result = await addToCartAction(id, [{ merchandiseId, quantity }]);
+            
+            // Handle userErrors (e.g., Out of Stock)
+            if (result.userErrors && result.userErrors.length > 0) {
+              const error = result.userErrors[0];
+              if (error.code === 'PRODUCT_VARIANT_OUT_OF_STOCK') {
+                throw new Error('This item is currently out of stock.');
+              }
+              throw new Error(error.message || 'Could not add item to cart.');
+            }
 
-          if (!cartId) {
-            cart = await createCartAction();
-            cartId = cart.id;
-            set({ cartId });
+            // Check if discount codes are still applicable
+            const hasInvalidDiscount = result.cart.discountCodes?.some(d => !d.applicable);
+            if (hasInvalidDiscount) {
+              console.warn('One or more discount codes are no longer applicable.');
+            }
+
+            set({ cart: result.cart, isCartDrawerOpen: true });
+          };
+
+          try {
+            if (!cartId) {
+              const newCart = await createCartAction();
+              cartId = newCart.id;
+              set({ cartId });
+            }
+            await performAdd(cartId);
+          } catch (error: any) {
+            // Recovery flow for expired/deleted carts
+            if (error.message?.includes('Cart not found') || error.message?.includes('id is invalid')) {
+              const newCart = await createCartAction();
+              set({ cartId: newCart.id, cart: newCart });
+              await performAdd(newCart.id);
+            } else {
+              throw error;
+            }
           }
-
-          const updatedCart = await addToCartAction(cartId, [{ merchandiseId, quantity }]);
-          set({ cart: updatedCart, isCartDrawerOpen: true });
-        } catch (error) {
+        } catch (error: any) {
           console.error('Error adding item to cart:', error);
+          // Here you could set an error state to be consumed by components
         } finally {
           set({ isLoading: false });
         }
@@ -61,8 +94,8 @@ export const useCartStore = create<CartState>()(
 
         set({ isLoading: true });
         try {
-          const updatedCart = await removeFromCartAction(cartId, [lineId]);
-          set({ cart: updatedCart });
+          const result = await removeFromCartAction(cartId, [lineId]);
+          set({ cart: result.cart });
         } catch (error) {
           console.error('Error removing item from cart:', error);
         } finally {
@@ -77,13 +110,18 @@ export const useCartStore = create<CartState>()(
         set({ isLoading: true });
         try {
           if (quantity === 0) {
-            const updatedCart = await removeFromCartAction(cartId, [lineId]);
-            set({ cart: updatedCart });
+            const result = await removeFromCartAction(cartId, [lineId]);
+            set({ cart: result.cart });
             return;
           }
 
-          const updatedCart = await updateCartAction(cartId, [{ id: lineId, merchandiseId, quantity }]);
-          set({ cart: updatedCart });
+          const result = await updateCartAction(cartId, [{ id: lineId, merchandiseId, quantity }]);
+          
+          if (result.userErrors && result.userErrors.length > 0) {
+            throw new Error(result.userErrors[0].message);
+          }
+          
+          set({ cart: result.cart });
         } catch (error) {
           console.error('Error updating cart item:', error);
         } finally {
@@ -101,6 +139,11 @@ export const useCartStore = create<CartState>()(
           try {
             const reshapedCart = await getCartAction(cartId);
             if (reshapedCart) {
+               // Check discount code validity on hydration
+               const hasInvalidDiscount = reshapedCart.discountCodes?.some(d => !d.applicable);
+               if (hasInvalidDiscount) {
+                 console.warn('Stale discount codes detected in cart.');
+               }
                set({ cart: reshapedCart });
             } else {
               set({ cart: null, cartId: null });
@@ -109,6 +152,44 @@ export const useCartStore = create<CartState>()(
             console.error('Error hydrating cart:', error);
             set({ cart: null, cartId: null });
           }
+        }
+      },
+      
+      applyDiscount: async (code: string) => {
+        const cartId = get().cartId;
+        if (!cartId) return;
+
+        set({ isLoading: true });
+        try {
+          const result = await updateCartDiscountAction(cartId, [code]);
+          
+          // Check if it was applied
+          const isApplied = result.cart.discountCodes?.some(d => d.code.toUpperCase() === code.toUpperCase() && d.applicable);
+          if (!isApplied) {
+             throw new Error('This discount code is invalid or not applicable.');
+          }
+
+          set({ cart: result.cart });
+        } catch (error: any) {
+          console.error('Error applying discount:', error);
+          throw error;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      removeDiscount: async () => {
+        const cartId = get().cartId;
+        if (!cartId) return;
+
+        set({ isLoading: true });
+        try {
+          const result = await updateCartDiscountAction(cartId, []);
+          set({ cart: result.cart });
+        } catch (error) {
+          console.error('Error removing discount:', error);
+        } finally {
+          set({ isLoading: false });
         }
       }
     }),
