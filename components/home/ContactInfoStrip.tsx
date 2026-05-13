@@ -31,12 +31,12 @@ const ContactInfoStrip = () => {
                 {href ? (
                   <a href={href} className="flex items-center gap-2 whitespace-nowrap hover:opacity-80 transition-opacity">
                     <span className="text-[var(--islamic-green-dark)]">{info.icon}</span>
-                    <span className="text-sm font-semibold">{info.text}</span>
+                    <span className={`text-sm font-semibold ${(isEmail || isPhone) ? 'text-[var(--islamic-green-dark)]' : ''}`}>{info.text}</span>
                   </a>
                 ) : (
                   <div className="flex items-center gap-2 whitespace-nowrap">
                     <span className="text-[var(--islamic-green-dark)]">{info.icon}</span>
-                    <span className="text-sm font-semibold">{info.text}</span>
+                    <span className={`text-sm font-semibold ${(isEmail || isPhone) ? 'text-[var(--islamic-green-dark)]' : ''}`}>{info.text}</span>
                   </div>
                 )}
                 {index !== contactInfo.length - 1 && (
@@ -61,12 +61,12 @@ const ContactInfoStrip = () => {
                   {href ? (
                     <a href={href} className="flex items-center gap-2 whitespace-nowrap">
                       <span className="text-[var(--islamic-green-dark)]">{info.icon}</span>
-                      <span className="text-sm font-semibold">{info.text}</span>
+                      <span className={`text-sm font-semibold ${(isEmail || isPhone) ? 'text-[var(--islamic-green-dark)]' : ''}`}>{info.text}</span>
                     </a>
                   ) : (
                     <div className="flex items-center gap-2 whitespace-nowrap">
                       <span className="text-[var(--islamic-green-dark)]">{info.icon}</span>
-                      <span className="text-sm font-semibold">{info.text}</span>
+                      <span className={`text-sm font-semibold ${(isEmail || isPhone) ? 'text-[var(--islamic-green-dark)]' : ''}`}>{info.text}</span>
                     </div>
                   )}
                   {index !== loopedInfo.length - 1 && (

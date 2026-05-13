@@ -3,15 +3,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import ReviewForm from '../review-form';
 import StarRating from '../star-rating';
-import { Star } from 'lucide-react';
+import { Star, CheckCircle, User } from 'lucide-react';
 
 interface Review {
   id: string;
   rating: number;
   title: string;
   body: string;
-  user?: {
-    display_name: string;
+  created_at: string;
+  verified?: string;
+  reviewer?: {
+    name: string;
   };
 }
 
@@ -26,7 +28,8 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
 
   const fetchReviews = useCallback(async () => {
     try {
-      const res = await fetch(`/api/reviews?productId=${productId}`);
+      const numericalId = productId.includes('gid://') ? productId.split('/').pop() : productId;
+      const res = await fetch(`/api/reviews?productId=${numericalId}`);
       const data = await res.json();
       setReviews(data.reviews || []);
     } catch (error) {
@@ -94,13 +97,46 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
             <p className="text-gray-500 animate-pulse">Loading reviews...</p>
           ) : reviews.length > 0 ? (
             reviews.map((review: Review) => (
-              <div key={review.id} className="border-b border-gray-100 pb-6">
-                <div className="flex items-center gap-2 mb-2">
-                  <StarRating rating={review.rating} size="sm" />
-                  <span className="font-bold text-sm">{review.title}</span>
+              <div key={review.id} className="bg-white rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-50 hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-shadow duration-300">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                      <StarRating rating={review.rating} size="sm" />
+                      {review.verified === 'buyer' && (
+                        <span className="flex items-center gap-1 text-[10px] font-bold text-[var(--islamic-green)] bg-[var(--islamic-green)]/5 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                          <CheckCircle size={10} fill="currentColor" className="text-white" />
+                          Verified Buyer
+                        </span>
+                      )}
+                    </div>
+                    <span className="font-bold text-gray-900">{review.title}</span>
+                  </div>
+                  <span className="text-[10px] text-gray-400 font-medium">
+                    {new Date(review.created_at).toLocaleDateString('en-IN', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric'
+                    })}
+                  </span>
                 </div>
-                <p className="text-gray-600 text-sm italic mb-2">"{review.body}"</p>
-                <p className="text-xs text-gray-400">By {review.user?.display_name || 'Verified Buyer'}</p>
+                
+                <div className="relative mb-6">
+                  <span className="absolute -left-2 -top-2 text-4xl text-gray-100 font-serif leading-none opacity-50">"</span>
+                  <p className="text-gray-600 text-sm leading-relaxed relative z-10 italic">
+                    {review.body}
+                  </p>
+                  <span className="absolute -right-2 -bottom-4 text-4xl text-gray-100 font-serif leading-none opacity-50">"</span>
+                </div>
+
+                <div className="flex items-center gap-3 pt-4 border-t border-gray-50">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center border border-gray-200">
+                    <User size={14} className="text-gray-400" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold text-gray-700">{review.reviewer?.name || 'Anonymous'}</span>
+                    <span className="text-[10px] text-gray-400 uppercase tracking-tight">Kolkata, India</span>
+                  </div>
+                </div>
               </div>
             ))
           ) : (
