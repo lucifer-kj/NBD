@@ -8,6 +8,8 @@ export const metadata = {
   description: 'Experience our exclusive collection of non-alcoholic premium fragrances.',
 };
 
+export const revalidate = 3600;
+
 export default async function AtarPage() {
   let atars: ReshapedProduct[] = [];
   try {

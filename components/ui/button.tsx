@@ -16,7 +16,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         {...props}
         className={cn(
-          "min-h-[44px] rounded-full font-semibold focus:outline-none focus:ring-2 focus:ring-secondary transition-all",
+          "inline-flex items-center justify-center min-h-[44px] rounded-full font-semibold focus:outline-none focus:ring-2 focus:ring-secondary transition-all gap-2",
           "text-base sm:text-lg",
           
           // Handle variants

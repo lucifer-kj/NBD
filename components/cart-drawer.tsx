@@ -11,10 +11,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import { cartSlideIn } from "@/lib/motion.config";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useMounted } from "@/hooks/use-mounted";
 
 export default function CartDrawer() {
   const { cart, isCartDrawerOpen, closeCartDrawer, openCartDrawer, removeItem, updateItem, clearCart, isLoading } = useCartStore()
   const reduced = useReducedMotion();
+  const mounted = useMounted();
 
   const lines = cart?.lines || []
   const count = lines.reduce((acc, line) => acc + line.quantity, 0)
@@ -37,7 +39,7 @@ export default function CartDrawer() {
           aria-label="Open cart"
         >
           <ShoppingCart size={24} className="transition-transform group-hover:scale-110" />
-          {count > 0 && (
+          {mounted && count > 0 && (
             <span
               className="absolute top-0 right-0 min-w-[1.125rem] h-[1.125rem] rounded-full bg-[var(--islamic-gold)] text-[var(--islamic-green-dark)] text-[10px] leading-none flex items-center justify-center font-bold px-0.5 border border-white/20"
             >

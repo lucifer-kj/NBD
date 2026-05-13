@@ -9,6 +9,8 @@ export const metadata = {
   description: 'Latest spiritual insights, book reviews, and updates from Naaz Book Depot.',
 };
 
+export const revalidate = 3600;
+
 export default async function BlogPage() {
   // Assuming 'news' is the default blog handle. Adjust if needed.
   const blog = await getBlogArticles('news', 12);

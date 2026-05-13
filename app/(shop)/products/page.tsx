@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   description: 'Explore our full collection of authentic Islamic literature, premium fragrances, and prayer essentials.',
 }
 
+export const revalidate = 3600;
+
 export default async function ProductsPage() {
   // Fetch products on the server
   // This ensures environment variables are used correctly and prevents client-side exposure

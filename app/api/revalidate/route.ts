@@ -39,10 +39,12 @@ export async function POST(req: NextRequest) {
     if (topic.startsWith('products/')) {
       const handle = body.handle;
       revalidateTag('products');
+      revalidatePath('/');
+      revalidatePath('/products');
       if (handle) {
         revalidateTag(`product-${handle}`);
         revalidatePath(`/products/${handle}`);
-        console.log(`Revalidated product: ${handle}`);
+        console.log(`Revalidated product: ${handle} and associated listing pages`);
       }
     }
 

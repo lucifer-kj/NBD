@@ -34,6 +34,26 @@ export default function ProductDetailsClient({ product, initialWishlisted = fals
   const [isWishlisted, setIsWishlisted] = useState(initialWishlisted);
   const { addItem, isLoading } = useCartStore();
 
+  // Fetch wishlist status on client if authenticated
+  React.useEffect(() => {
+    async function checkWishlist() {
+      try {
+        const res = await fetch('/api/auth/me');
+        const data = await res.json();
+        if (data.user && data.user.wishlist) {
+          const wishlistIds = JSON.parse(data.user.wishlist.value);
+          const variantId = product.variants[0]?.id;
+          if (variantId && wishlistIds.includes(variantId)) {
+            setIsWishlisted(true);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch wishlist status:', error);
+      }
+    }
+    checkWishlist();
+  }, [product.variants]);
+
   const handleAddToCart = async () => {
     const variantId = product.variants[0]?.id;
     if (variantId) {
@@ -53,10 +73,10 @@ export default function ProductDetailsClient({ product, initialWishlisted = fals
   };
 
   // Extract metafields
-  const ratingMeta = product.metafields?.find(m => m.namespace === 'reviews' && m.key === 'rating');
+  const ratingMeta = product.metafields?.find(m => m && m.namespace === 'reviews' && m.key === 'rating');
   const ratingValue = ratingMeta ? JSON.parse(ratingMeta.value).value : 4.8; // Fallback
-  const careInstructions = product.metafields?.find(m => m.namespace === 'custom' && m.key === 'care_instructions')?.value;
-  const techSpecs = product.metafields?.find(m => m.namespace === 'custom' && m.key === 'technical_specs')?.value;
+  const careInstructions = product.metafields?.find(m => m && m.namespace === 'custom' && m.key === 'care_instructions')?.value;
+  const techSpecs = product.metafields?.find(m => m && m.namespace === 'custom' && m.key === 'technical_specs')?.value;
 
   const handleWishlistToggle = async () => {
     // Optimistic UI
@@ -243,8 +263,23 @@ export default function ProductDetailsClient({ product, initialWishlisted = fals
               disabled={!product.availableForSale || isLoading}
               className="flex-1 bg-[var(--islamic-green)] hover:bg-[var(--islamic-green-dark)] text-white h-14 rounded-xl text-lg font-bold gap-2 shadow-lg shadow-[var(--islamic-green)]/20"
             >
-              <ShoppingCart size={20} />
+              <ShoppingCart size={20} className="shrink-0" />
               {isLoading ? "Adding..." : "Add to Cart"}
+            </Button>
+
+            <Button 
+              onClick={async () => {
+                const variantId = product.variants[0]?.id;
+                if (variantId) {
+                  await addItem(variantId, quantity);
+                  window.location.href = '/cart';
+                }
+              }}
+              disabled={!product.availableForSale || isLoading}
+              variant="outline"
+              className="flex-1 border-2 border-[var(--islamic-green)] text-[var(--islamic-green)] h-14 rounded-xl text-lg font-bold hover:bg-[var(--islamic-green)] hover:text-white transition-all duration-300"
+            >
+              Buy Now
             </Button>
 
             <button 

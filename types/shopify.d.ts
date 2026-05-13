@@ -123,6 +123,13 @@ export type ReshapedCart = Omit<Cart, 'lines'> & {
 export type OrderLineItem = {
   title: string;
   quantity: number;
+  variant?: {
+    image?: Image;
+    price: Money;
+    product: {
+      handle: string;
+    };
+  };
 };
 
 export type Order = {
@@ -131,7 +138,11 @@ export type Order = {
   processedAt: string;
   financialStatus: string;
   fulfillmentStatus: string;
-  currentTotalPrice: Money;
+  totalPrice: Money;
+  totalShippingPrice: Money;
+  totalTax: Money;
+  subtotalPrice: Money;
+  shippingAddress: Maybe<MailingAddress>;
   lineItems: Connection<OrderLineItem>;
 };
 

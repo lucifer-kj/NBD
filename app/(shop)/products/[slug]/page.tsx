@@ -28,6 +28,15 @@ export async function generateMetadata({ params }: PageProps) {
   }
 }
 
+export const revalidate = 3600; // Revalidate every hour
+
+export async function generateStaticParams() {
+  const products = await getProducts({ first: 20 });
+  return products.map((product) => ({
+    slug: product.handle,
+  }));
+}
+
 export default async function ProductPage({ params }: PageProps) {
   const { slug } = await params
   const product = await getProduct(slug)
@@ -42,24 +51,11 @@ export default async function ProductPage({ params }: PageProps) {
     first: 4
   }).then(products => products.filter(p => p.id !== product.id))
 
-  // Check if product is in wishlist
-  let isWishlisted = false;
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get('customerAccessToken')?.value;
-  
-  if (accessToken) {
-    const customer = await getCustomerDetails(accessToken);
-    if (customer && customer.wishlist) {
-      const wishlistIds = JSON.parse(customer.wishlist.value);
-      isWishlisted = wishlistIds.includes(product.variants[0]?.id);
-    }
-  }
-
   return (
     <div className="bg-white">
       <div className="container mx-auto px-4 py-12 md:py-16">
         {/* Main Product Section */}
-        <ProductDetailsClient product={product} initialWishlisted={isWishlisted} />
+        <ProductDetailsClient product={product} />
 
         {/* Product Details Tabs / Sections */}
         <div className="mt-20 pt-10 border-t border-gray-100">

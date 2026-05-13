@@ -59,7 +59,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link href="/contact" className="text-white/70 hover:text-[var(--islamic-gold)] transition-colors duration-300 text-sm font-medium">
-                  Contact
+                  FAQs
                 </Link>
               </li>
             </ul>

@@ -8,6 +8,7 @@ import { useAuth } from '../providers/session-provider';
 import { useCartStore } from '@/store/cart-store';
 import CartDrawer from '@/components/cart-drawer';
 import PredictiveSearch from '@/components/search/predictive-search';
+import { useMounted } from '@/hooks/use-mounted';
 
 type ProductCategory = { name: string; path: string; available: boolean };
 
@@ -109,6 +110,7 @@ export function UserActions() {
   const [authError, setAuthError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user, isAuthenticated, logout, login, register } = useAuth();
+  const mounted = useMounted();
 
   const handleSignOut = () => {
     logout();
@@ -152,7 +154,7 @@ export function UserActions() {
           className="text-white/90 hover:text-[var(--islamic-gold)] transition-colors flex items-center space-x-1 p-2"
         >
           <User size={24} />
-          {isAuthenticated && user && (
+          {mounted && isAuthenticated && user && (
             <span className="hidden md:inline text-sm font-semibold">
               {user.firstName}
             </span>
@@ -161,7 +163,7 @@ export function UserActions() {
         
         {isOpen && (
           <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-            {isAuthenticated && user ? (
+            {mounted && isAuthenticated && user ? (
               <>
                 <div className="px-4 py-2 border-b border-gray-100">
                   <p className="text-sm font-medium text-gray-900">{user.firstName} {user.lastName}</p>
@@ -286,6 +288,7 @@ export function AnimatedCartIcon() {
 export function MobileMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const mounted = useMounted();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -301,7 +304,7 @@ export function MobileMenu() {
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
-      {isOpen && (
+      {mounted && isOpen && (
         <div className="fixed inset-0 z-40 bg-white pt-20 px-4 mt-[72px] animate-slide-up">
           <form onSubmit={handleSearch} className="flex items-center bg-white rounded-lg shadow-sm border border-gray-200 px-3 py-2 mb-6">
             <Search className="text-gray-400 mr-2" size={18} />
@@ -320,7 +323,7 @@ export function MobileMenu() {
             <Link href="/products" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-xl border-b border-gray-50 pb-2" onClick={() => setIsOpen(false)}>All Products</Link>
             <Link href="/blog" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-xl border-b border-gray-50 pb-2" onClick={() => setIsOpen(false)}>Spiritual Insights</Link>
             <Link href="/about" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-xl border-b border-gray-50 pb-2" onClick={() => setIsOpen(false)}>About Our Journey</Link>
-            <Link href="/contact" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-xl border-b border-gray-50 pb-2" onClick={() => setIsOpen(false)}>Contact Us</Link>
+            <Link href="/contact" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-xl border-b border-gray-50 pb-2" onClick={() => setIsOpen(false)}>FAQs & Support</Link>
           </div>
         </div>
       )}

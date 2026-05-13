@@ -2,7 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getArticle } from '@/lib/shopify';
+import { getArticle, getBlogArticles } from '@/lib/shopify';
 import { Calendar, User, ArrowLeft, Share2 } from 'lucide-react';
 
 interface ArticlePageProps {
@@ -10,6 +10,17 @@ interface ArticlePageProps {
     blogHandle: string;
     articleHandle: string;
   }>;
+}
+
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const blog = await getBlogArticles('news', 10);
+  if (!blog) return [];
+  return blog.articles.map((article: any) => ({
+    blogHandle: 'news',
+    articleHandle: article.handle,
+  }));
 }
 
 export async function generateMetadata({ params }: ArticlePageProps) {

@@ -62,11 +62,11 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
           </p>
         </div>
         <div className="flex gap-3">
-          <div className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider ${statusColors[order.fulfillmentStatus] || 'bg-gray-100'}`}>
-            Fulfillment: {order.fulfillmentStatus.replace(/_/g, ' ')}
+          <div className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider ${statusColors[order.fulfillmentStatus || ''] || 'bg-gray-100'}`}>
+            Fulfillment: {(order.fulfillmentStatus || 'UNFULFILLED').replace(/_/g, ' ')}
           </div>
-          <div className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider ${statusColors[order.financialStatus] || 'bg-gray-100'}`}>
-            Payment: {order.financialStatus}
+          <div className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider ${statusColors[order.financialStatus || ''] || 'bg-gray-100'}`}>
+            Payment: {order.financialStatus || 'PENDING'}
           </div>
         </div>
       </header>
@@ -118,20 +118,20 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
             <div className="space-y-3 text-sm">
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal</span>
-                <span>{formatPrice(order.subtotalPrice.amount, order.subtotalPrice.currencyCode)}</span>
+                <span>{order.subtotalPrice ? formatPrice(order.subtotalPrice.amount, order.subtotalPrice.currencyCode) : 'N/A'}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>Shipping</span>
-                <span>{formatPrice(order.totalShippingPrice.amount, order.totalShippingPrice.currencyCode)}</span>
+                <span>{order.totalShippingPrice ? formatPrice(order.totalShippingPrice.amount, order.totalShippingPrice.currencyCode) : 'N/A'}</span>
               </div>
               <div className="flex justify-between text-gray-600">
                 <span>Tax</span>
-                <span>{formatPrice(order.totalTax.amount, order.totalTax.currencyCode)}</span>
+                <span>{order.totalTax ? formatPrice(order.totalTax.amount, order.totalTax.currencyCode) : 'N/A'}</span>
               </div>
               <hr className="border-gray-50 my-2" />
               <div className="flex justify-between text-lg font-bold text-[var(--islamic-green)]">
                 <span>Total</span>
-                <span>{formatPrice(order.totalPrice.amount, order.totalPrice.currencyCode)}</span>
+                <span>{order.totalPrice ? formatPrice(order.totalPrice.amount, order.totalPrice.currencyCode) : 'N/A'}</span>
               </div>
             </div>
           </div>

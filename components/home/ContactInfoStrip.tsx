@@ -21,34 +21,60 @@ const ContactInfoStrip = () => {
       <div className="container mx-auto">
         {/* Desktop: normal flex, Mobile: horizontal scroll + animation */}
         <div className="hidden md:flex flex-wrap items-center justify-center gap-4 md:gap-8">
-          {contactInfo.map((info, index) => (
-            <div key={index} className="flex items-center">
-              <div className="flex items-center gap-2 whitespace-nowrap">
-                <span className="text-[var(--islamic-green-dark)]">{info.icon}</span>
-                <span className="text-sm font-semibold">{info.text}</span>
+          {contactInfo.map((info, index) => {
+            const isEmail = info.text.includes('@');
+            const isPhone = !isEmail && /[\d\s+-]+/.test(info.text) && !info.text.includes('Lane');
+            const href = isEmail ? `mailto:${info.text}` : isPhone ? `tel:${info.text.replace(/\s+/g, '')}` : null;
+
+            return (
+              <div key={index} className="flex items-center">
+                {href ? (
+                  <a href={href} className="flex items-center gap-2 whitespace-nowrap hover:opacity-80 transition-opacity">
+                    <span className="text-[var(--islamic-green-dark)]">{info.icon}</span>
+                    <span className="text-sm font-semibold">{info.text}</span>
+                  </a>
+                ) : (
+                  <div className="flex items-center gap-2 whitespace-nowrap">
+                    <span className="text-[var(--islamic-green-dark)]">{info.icon}</span>
+                    <span className="text-sm font-semibold">{info.text}</span>
+                  </div>
+                )}
+                {index !== contactInfo.length - 1 && (
+                  <span className="mx-2 text-[var(--islamic-green-dark)]/30 font-bold">|</span>
+                )}
               </div>
-              {index !== contactInfo.length - 1 && (
-                <span className="mx-2 text-[var(--islamic-green-dark)]/30 font-bold">|</span>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
         <div className="md:hidden relative w-full overflow-x-hidden">
           <div
             className="flex items-center gap-6 animate-contact-marquee whitespace-nowrap"
             style={{ animationDuration: '18s', animationDelay: '1s' }}
           >
-            {loopedInfo.map((info, index) => (
-              <div key={index} className="flex items-center">
-                <div className="flex items-center gap-2 whitespace-nowrap">
-                  <span className="text-[var(--islamic-green-dark)]">{info.icon}</span>
-                  <span className="text-sm font-semibold">{info.text}</span>
+            {loopedInfo.map((info, index) => {
+              const isEmail = info.text.includes('@');
+              const isPhone = !isEmail && /[\d\s+-]+/.test(info.text) && !info.text.includes('Lane');
+              const href = isEmail ? `mailto:${info.text}` : isPhone ? `tel:${info.text.replace(/\s+/g, '')}` : null;
+
+              return (
+                <div key={index} className="flex items-center">
+                  {href ? (
+                    <a href={href} className="flex items-center gap-2 whitespace-nowrap">
+                      <span className="text-[var(--islamic-green-dark)]">{info.icon}</span>
+                      <span className="text-sm font-semibold">{info.text}</span>
+                    </a>
+                  ) : (
+                    <div className="flex items-center gap-2 whitespace-nowrap">
+                      <span className="text-[var(--islamic-green-dark)]">{info.icon}</span>
+                      <span className="text-sm font-semibold">{info.text}</span>
+                    </div>
+                  )}
+                  {index !== loopedInfo.length - 1 && (
+                    <span className="mx-2 text-[var(--islamic-green-dark)]/30 font-bold">|</span>
+                  )}
                 </div>
-                {index !== loopedInfo.length - 1 && (
-                  <span className="mx-2 text-[var(--islamic-green-dark)]/30 font-bold">|</span>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

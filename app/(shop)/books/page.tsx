@@ -8,6 +8,8 @@ export const metadata = {
   description: 'Explore our vast collection of authentic Islamic literature and Qurans.',
 };
 
+export const revalidate = 3600;
+
 export default async function BooksPage() {
   let books: ReshapedProduct[] = [];
   try {
