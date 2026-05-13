@@ -83,7 +83,7 @@ export default function BentoGrid() {
             variants={fadeInUp} 
             className="md:col-span-2 md:row-span-1 lg:col-span-3 lg:row-span-1 relative group overflow-hidden rounded-3xl shadow-lg"
           >
-            <Link href="/categories/rehal" className="absolute inset-0 z-10" />
+            <Link href="/products?search=rehal" className="absolute inset-0 z-10" />
             <Image
               src="/Images/Rehals.jpeg"
               alt="Handcrafted Quran Stands"

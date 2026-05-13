@@ -1,5 +1,5 @@
-import { SHOPIFY_GRAPHQL_API_ENDPOINT, fetchWithRetry } from './utils';
-import { getProductQuery, getProductsQuery, getCartQuery, getCustomerQuery } from './queries';
+import { SHOPIFY_GRAPHQL_API_ENDPOINT } from './utils';
+import { getProductQuery, getProductsQuery, getCustomerQuery } from './queries';
 import {
   createCartMutation,
   addToCartMutation,
@@ -16,22 +16,28 @@ import {
   Cart,
   ReshapedCart,
   Connection,
-  Edge,
-  Customer,
-  CustomerAccessToken
+  Customer
 } from '../../types/shopify';
 
 const domain = process.env.SHOPIFY_STORE_DOMAIN
   ? process.env.SHOPIFY_STORE_DOMAIN.includes('://')
     ? process.env.SHOPIFY_STORE_DOMAIN.replace(/\/$/, '')
     : `https://${process.env.SHOPIFY_STORE_DOMAIN.replace(/\/$/, '')}`
-  : 'https://naaz-book-depot.myshopify.com';
+  : null;
 
-const endpoint = `${domain}${SHOPIFY_GRAPHQL_API_ENDPOINT}`;
-const key = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN!;
+if (!domain) {
+  console.warn('SHOPIFY_STORE_DOMAIN is not defined in environment variables.');
+}
+
+const endpoint = domain ? `${domain}${SHOPIFY_GRAPHQL_API_ENDPOINT}` : '';
+const key = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN || '';
+
+if (!key) {
+  console.warn('SHOPIFY_STOREFRONT_ACCESS_TOKEN is not defined in environment variables.');
+}
 
 export async function shopifyFetch<T>({
-  cache = 'force-cache',
+  cache = 'no-store',
   headers,
   query,
   tags,
@@ -206,8 +212,15 @@ export async function updateCart(
 
 // --- Customer Auth & Management ---
 
-export async function loginCustomer(input: any): Promise<{ accessToken: string; expiresAt: string } | { errors: any[] }> {
-  const res = await shopifyFetch<any>({
+export async function loginCustomer(input: Record<string, unknown>): Promise<{ accessToken: string; expiresAt: string } | { errors: any[] }> {
+  const res = await shopifyFetch<{
+    data: {
+      customerAccessTokenCreate: {
+        customerAccessToken: { accessToken: string; expiresAt: string };
+        customerUserErrors: any[];
+      };
+    };
+  }>({
     query: customerAccessTokenCreateMutation,
     variables: { input },
     cache: 'no-store'
@@ -221,7 +234,13 @@ export async function loginCustomer(input: any): Promise<{ accessToken: string; 
 }
 
 export async function logoutCustomer(customerAccessToken: string): Promise<boolean> {
-  const res = await shopifyFetch<any>({
+  const res = await shopifyFetch<{
+    data: {
+      customerAccessTokenDelete: {
+        userErrors: any[];
+      };
+    };
+  }>({
     query: customerAccessTokenDeleteMutation,
     variables: { customerAccessToken },
     cache: 'no-store'
@@ -229,8 +248,15 @@ export async function logoutCustomer(customerAccessToken: string): Promise<boole
   return !res.body.data.customerAccessTokenDelete.userErrors.length;
 }
 
-export async function createCustomer(input: any): Promise<Customer | { errors: any[] }> {
-  const res = await shopifyFetch<any>({
+export async function createCustomer(input: Record<string, unknown>): Promise<Customer | { errors: any[] }> {
+  const res = await shopifyFetch<{
+    data: {
+      customerCreate: {
+        customer: Customer;
+        customerUserErrors: any[];
+      };
+    };
+  }>({
     query: customerCreateMutation,
     variables: { input },
     cache: 'no-store'
@@ -244,7 +270,11 @@ export async function createCustomer(input: any): Promise<Customer | { errors: a
 }
 
 export async function getCustomerDetails(customerAccessToken: string): Promise<Customer | null> {
-  const res = await shopifyFetch<any>({
+  const res = await shopifyFetch<{
+    data: {
+      customer: Customer;
+    };
+  }>({
     query: getCustomerQuery,
     variables: { customerAccessToken },
     cache: 'no-store'
@@ -254,7 +284,13 @@ export async function getCustomerDetails(customerAccessToken: string): Promise<C
 }
 
 export async function updateCartBuyerIdentity(cartId: string, customerAccessToken: string, email: string): Promise<ReshapedCart> {
-  const res = await shopifyFetch<any>({
+  const res = await shopifyFetch<{
+    data: {
+      cartBuyerIdentityUpdate: {
+        cart: Cart;
+      };
+    };
+  }>({
     query: cartBuyerIdentityUpdateMutation,
     variables: {
       cartId,

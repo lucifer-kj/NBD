@@ -210,28 +210,31 @@ export default function ProductPage({ params }: PageProps) {
         {/* Product Information */}
         <div className="space-y-6">
           <div>
-            <h1 className="text-3xl font-bold text-[var(--charcoal)] mb-2">{product.title}</h1>
-            <div className="flex items-center gap-4 mb-4">
+            <h1 className="text-3xl md:text-5xl font-headings font-bold text-[var(--islamic-green)] mb-3">{product.title}</h1>
+            <div className="flex items-center gap-4 mb-6">
               <StarRating
                 rating={averageRating}
                 size="md"
                 showValue={true}
               />
-              <Badge variant={stockInfo.color as "default" | "secondary" | "destructive"}>{stockInfo.status}</Badge>
+              <Badge className="bg-[var(--islamic-gold)] text-[var(--islamic-green)] hover:bg-[var(--islamic-gold)] border-none">
+                {stockInfo.status}
+              </Badge>
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 border-b border-gray-100 pb-6">
             <div className="flex items-center gap-3">
-              <span className="text-3xl font-bold text-[var(--islamic-green)]">
+              <span className="text-4xl font-bold text-gray-900">
                 {formatPrice(parseFloat(product.priceRange.minVariantPrice.amount))}
               </span>
               {parseFloat(product.priceRange.maxVariantPrice.amount) > parseFloat(product.priceRange.minVariantPrice.amount) && (
-                <span className="text-lg text-gray-500">
-                  - {formatPrice(parseFloat(product.priceRange.maxVariantPrice.amount))}
+                <span className="text-xl text-gray-400 line-through">
+                  {formatPrice(parseFloat(product.priceRange.maxVariantPrice.amount))}
                 </span>
               )}
             </div>
+            <p className="text-sm text-gray-500 font-medium tracking-wide uppercase">Inclusive of all taxes</p>
           </div>
 
           <div className="prose max-w-none">
@@ -260,21 +263,23 @@ export default function ProductPage({ params }: PageProps) {
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-4">
               <Button 
-                className="flex-1 bg-[var(--islamic-green)] hover:bg-[var(--islamic-green-dark)] text-white text-lg py-3 transition-all duration-300 shadow-md hover:shadow-xl"
+                className="flex-[2] bg-[var(--islamic-green)] hover:bg-[var(--islamic-green-dark)] text-white text-lg py-7 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl font-bold"
                 onClick={handleAddToCart}
                 disabled={!product.availableForSale}
               >
                 <ShoppingCart className="w-5 h-5 mr-2" />
                 Add to Cart
               </Button>
-              <Button className="border border-gray-300 bg-white hover:bg-gray-50 text-gray-900 text-lg py-3">
-                <Heart className="w-5 h-5" />
-              </Button>
-              <Button className="border border-gray-300 bg-white hover:bg-gray-50 text-gray-900 text-lg py-3">
-                <Share2 className="w-5 h-5" />
-              </Button>
+              <div className="flex flex-1 gap-2">
+                <Button variant="outline" className="flex-1 py-7 rounded-xl border-gray-200 hover:bg-gray-50 hover:text-[var(--islamic-gold)] transition-colors">
+                  <Heart className="w-5 h-5" />
+                </Button>
+                <Button variant="outline" className="flex-1 py-7 rounded-xl border-gray-200 hover:bg-gray-50 hover:text-[var(--islamic-gold)] transition-colors">
+                  <Share2 className="w-5 h-5" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>

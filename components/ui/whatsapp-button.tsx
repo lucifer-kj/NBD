@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Phone } from "lucide-react";
 
 export default function WhatsAppButton() {
-  const whatsappNumber = "919163431395"; // From previous context
+  const whatsappNumber = "919051085118"; // From previous context
   const whatsappUrl = `https://wa.me/${whatsappNumber}`;
 
   return (

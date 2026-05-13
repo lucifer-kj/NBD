@@ -1,14 +1,7 @@
 import React from 'react';
-import BookCard from '@/components/catalog/BookCard';
-
-type BookListItem = {
-  id: number;
-  title: string;
-  slug: string;
-  author: string;
-  format: string;
-  price: number;
-};
+import ProductCard from '@/components/product-card';
+import { getProducts } from '@/lib/shopify';
+import { ReshapedProduct } from '@/types/shopify';
 
 export const metadata = {
   title: 'Islamic Books | Naaz Book Depot',
@@ -16,28 +9,18 @@ export const metadata = {
 };
 
 export default async function BooksPage() {
-  let books: BookListItem[] = [];
+  let books: ReshapedProduct[] = [];
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/books/`, { cache: 'no-store' });
-    if (res.ok) {
-      const data = await res.json();
-      books = data.items || data;
-    }
-  } catch {
-    console.warn("Backend API not reachable.");
+    // Fetch products with "Books" tag or from a "Books" collection
+    // For now, we'll fetch all and filter, or just fetch with a query
+    books = await getProducts({ 
+      query: 'tag:Books',
+      first: 50 
+    });
+  } catch (error) {
+    console.error("Error fetching books from Shopify:", error);
   }
   
-  if ((!books || books.length === 0) && process.env.NEXT_PUBLIC_ENABLE_DEMO_DATA === "true") {
-    books = [
-      { id: 1, title: 'The Noble Quran (English Translation)', slug: 'noble-quran-english', author: 'Dr. Muhammad Taqi-ud-Din Al-Hilali', format: 'Hardcover', price: 950 },
-      { id: 2, title: 'Sahih Al-Bukhari (Complete 9 Volumes)', slug: 'sahih-bukhari-set', author: 'Imam Muhammad bin Ismail bin Al-Mughirah Al-Bukhari', format: 'Set', price: 4500 },
-      { id: 3, title: 'Riyad-us-Saliheen', slug: 'riyad-us-saliheen', author: 'Imam An-Nawawi', format: 'Paperback', price: 650 },
-      { id: 4, title: 'Tafsir Ibn Kathir', slug: 'tafsir-ibn-kathir', author: 'Imam Ibn Kathir', format: '10 Volumes', price: 5800 },
-      { id: 5, title: 'Fortress of the Muslim (Hisnul Muslim)', slug: 'hisnul-muslim', author: 'Sa\'id bin Ali bin Wahf Al-Qahtani', format: 'Pocket Size', price: 150 },
-      { id: 6, title: 'The Sealed Nectar (Ar-Raheeq Al-Makhtum)', slug: 'sealed-nectar', author: 'Safi-ur-Rahman Al-Mubarakpuri', format: 'Hardcover', price: 850 },
-    ];
-  }
-
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="mb-10 text-center">
@@ -50,16 +33,27 @@ export default async function BooksPage() {
       
       {/* Filters & Grid */}
       <div className="flex flex-col md:flex-row gap-8">
-        {/* Sidebar placeholder */}
+        {/* Sidebar */}
         <div className="w-full md:w-64 flex-shrink-0">
-          <div className="bg-[#F8F6F3] p-6 rounded-2xl sticky top-24">
+          <div className="bg-[#F8F6F3] p-6 rounded-2xl sticky top-24 border border-gray-100">
             <h3 className="font-headings font-bold text-xl text-[var(--islamic-green)] mb-4">Categories</h3>
             <ul className="space-y-3 text-[var(--charcoal)]/80">
-              <li className="flex items-center gap-2 hover:text-[var(--islamic-gold)] cursor-pointer transition-colors"><input type="checkbox" className="rounded text-[var(--islamic-green)] focus:ring-[var(--islamic-gold)]" /> Quran & Tafseer</li>
-              <li className="flex items-center gap-2 hover:text-[var(--islamic-gold)] cursor-pointer transition-colors"><input type="checkbox" className="rounded text-[var(--islamic-green)] focus:ring-[var(--islamic-gold)]" /> Hadith</li>
-              <li className="flex items-center gap-2 hover:text-[var(--islamic-gold)] cursor-pointer transition-colors"><input type="checkbox" className="rounded text-[var(--islamic-green)] focus:ring-[var(--islamic-gold)]" /> Fiqh (Jurisprudence)</li>
-              <li className="flex items-center gap-2 hover:text-[var(--islamic-gold)] cursor-pointer transition-colors"><input type="checkbox" className="rounded text-[var(--islamic-green)] focus:ring-[var(--islamic-gold)]" /> History & Biography</li>
-              <li className="flex items-center gap-2 hover:text-[var(--islamic-gold)] cursor-pointer transition-colors"><input type="checkbox" className="rounded text-[var(--islamic-green)] focus:ring-[var(--islamic-gold)]" /> Children&apos;s Books</li>
+              <li className="flex items-center gap-2 hover:text-[var(--islamic-gold)] cursor-pointer transition-colors">
+                <span className="w-2 h-2 rounded-full bg-[var(--islamic-gold)]" />
+                Quran & Tafseer
+              </li>
+              <li className="flex items-center gap-2 hover:text-[var(--islamic-gold)] cursor-pointer transition-colors">
+                <span className="w-2 h-2 rounded-full bg-gray-300" />
+                Hadith
+              </li>
+              <li className="flex items-center gap-2 hover:text-[var(--islamic-gold)] cursor-pointer transition-colors">
+                <span className="w-2 h-2 rounded-full bg-gray-300" />
+                Fiqh
+              </li>
+              <li className="flex items-center gap-2 hover:text-[var(--islamic-gold)] cursor-pointer transition-colors">
+                <span className="w-2 h-2 rounded-full bg-gray-300" />
+                History
+              </li>
             </ul>
           </div>
         </div>
@@ -76,18 +70,21 @@ export default async function BooksPage() {
             </select>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {books.map((book) => (
-              <BookCard 
-                key={book.id}
-                title={book.title}
-                slug={book.slug}
-                author={book.author}
-                price={book.price}
-                format={book.format}
-              />
-            ))}
-          </div>
+          {books.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {books.map((book) => (
+                <ProductCard 
+                  key={book.id}
+                  product={book}
+                  showWishlist={false}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
+              <p className="text-gray-500">No books found in the collection.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

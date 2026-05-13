@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 7, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/lenovo/Documents/Builds/ndb/instrumentation.ts"],"sourcesContent":["export function register() {\r\n  if (\r\n    typeof globalThis !== \"undefined\" &&\r\n    globalThis.localStorage &&\r\n    typeof globalThis.localStorage.getItem !== \"function\"\r\n  ) {\r\n    try {\r\n      globalThis.localStorage.getItem = () => null;\r\n      globalThis.localStorage.setItem = () => {};\r\n      globalThis.localStorage.removeItem = () => {};\r\n    } catch (e) {\r\n      // Ignore\r\n    }\r\n  }\r\n}\r\n"],"names":[],"mappings":";;;AAAO,SAAS;IACd,IACE,OAAO,eAAe,eACtB,WAAW,YAAY,IACvB,OAAO,WAAW,YAAY,CAAC,OAAO,KAAK,YAC3C;QACA,IAAI;YACF,WAAW,YAAY,CAAC,OAAO,GAAG,IAAM;YACxC,WAAW,YAAY,CAAC,OAAO,GAAG,KAAO;YACzC,WAAW,YAAY,CAAC,UAAU,GAAG,KAAO;QAC9C,EAAE,OAAO,GAAG;QACV,SAAS;QACX;IACF;AACF","debugId":null}}]
-}

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCustomerDetails } from '@/lib/shopify';
 import { cookies } from 'next/headers';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const cookieStore = await cookies();
     const accessToken = cookieStore.get('customerAccessToken')?.value;

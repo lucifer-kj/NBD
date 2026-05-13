@@ -34,7 +34,7 @@ export function ProductsDropdown({ productCategories }: { productCategories: Pro
     <div className="relative">
       <button
         ref={buttonRef}
-        className="flex items-center text-[var(--islamic-green-dark)] hover:text-white transition-colors font-semibold text-base"
+        className="flex items-center text-white/90 hover:text-[var(--islamic-gold)] transition-colors font-semibold text-base"
         type="button"
         onClick={() => setIsOpen((v) => !v)}
       >
@@ -77,6 +77,29 @@ export function ProductsDropdown({ productCategories }: { productCategories: Pro
 // Search Box Client Component
 export function SearchBox() {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [query, setQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (query.trim()) {
+      window.location.href = `/products?search=${encodeURIComponent(query.trim())}`;
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    } else if (e.key === 'Escape') {
+      setIsExpanded(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isExpanded && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isExpanded]);
 
   return (
     <div className="hidden md:flex items-center">
@@ -84,17 +107,25 @@ export function SearchBox() {
         <div className="flex items-center bg-white rounded-lg shadow-sm border border-gray-200 px-3 py-2 w-80 transition-all duration-300">
           <Search className="text-gray-400 mr-2" size={18} />
           <input 
+            ref={inputRef}
             type="text" 
-            placeholder="Search for Islamic books, knowledge..." 
+            placeholder="Search for books, atars..." 
             className="flex-1 outline-none text-sm text-black" 
-            autoFocus 
-            onBlur={() => setIsExpanded(false)} 
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onBlur={() => !query && setIsExpanded(false)} 
           />
+          {query && (
+            <button onClick={() => setQuery("")} className="text-gray-400 hover:text-gray-600">
+              <X size={14} />
+            </button>
+          )}
         </div>
       ) : (
         <button 
           onClick={() => setIsExpanded(true)} 
-          className="text-[var(--islamic-green-dark)] hover:text-white transition-colors p-2"
+          className="text-white/90 hover:text-[var(--islamic-gold)] transition-colors p-2"
         >
           <Search size={24} />
         </button>
@@ -155,7 +186,7 @@ export function UserActions() {
       <div className="relative">
         <button 
           onClick={() => setIsOpen(!isOpen)} 
-          className="text-[var(--islamic-green-dark)] hover:text-white transition-colors flex items-center space-x-1 p-2"
+          className="text-white/90 hover:text-[var(--islamic-gold)] transition-colors flex items-center space-x-1 p-2"
         >
           <User size={24} />
           {isAuthenticated && user && (
@@ -288,24 +319,41 @@ export function AnimatedCartIcon() {
 // Mobile Menu Client
 export function MobileMenu() {
   const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState("");
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim()) {
+      setIsOpen(false);
+      window.location.href = `/products?search=${encodeURIComponent(query.trim())}`;
+    }
+  };
 
   return (
     <>
-      <button onClick={() => setIsOpen(!isOpen)} className="lg:hidden text-[var(--islamic-green-dark)] hover:text-white p-2">
+      <button onClick={() => setIsOpen(!isOpen)} className="lg:hidden text-white/90 hover:text-[var(--islamic-gold)] p-2">
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-40 bg-white pt-20 px-4 mt-[72px]">
-          <div className="flex items-center bg-white rounded-lg shadow-sm border border-gray-200 px-3 py-2 mb-4">
+        <div className="fixed inset-0 z-40 bg-white pt-20 px-4 mt-[72px] animate-slide-up">
+          <form onSubmit={handleSearch} className="flex items-center bg-white rounded-lg shadow-sm border border-gray-200 px-3 py-2 mb-6">
             <Search className="text-gray-400 mr-2" size={18} />
-            <input type="text" placeholder="Search Islamic books..." className="flex-1 outline-none text-sm text-black" />
-          </div>
-          <div className="flex flex-col space-y-3">
-            <Link href="/" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-medium py-2" onClick={() => setIsOpen(false)}>Home</Link>
-            <Link href="/books" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-medium py-2" onClick={() => setIsOpen(false)}>Products</Link>
-            <Link href="/about" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-medium py-2" onClick={() => setIsOpen(false)}>About</Link>
-            <Link href="/contact" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-medium py-2" onClick={() => setIsOpen(false)}>Contact</Link>
+            <input 
+              type="text" 
+              placeholder="Search Islamic books..." 
+              className="flex-1 outline-none text-sm text-black" 
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </form>
+          <div className="flex flex-col space-y-4">
+            <Link href="/" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-xl border-b border-gray-50 pb-2" onClick={() => setIsOpen(false)}>Home</Link>
+            <Link href="/books" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-xl border-b border-gray-50 pb-2" onClick={() => setIsOpen(false)}>Islamic Books</Link>
+            <Link href="/atar" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-xl border-b border-gray-50 pb-2" onClick={() => setIsOpen(false)}>Premium Atars</Link>
+            <Link href="/products" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-xl border-b border-gray-50 pb-2" onClick={() => setIsOpen(false)}>All Products</Link>
+            <Link href="/about" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-xl border-b border-gray-50 pb-2" onClick={() => setIsOpen(false)}>About Our Journey</Link>
+            <Link href="/contact" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-xl border-b border-gray-50 pb-2" onClick={() => setIsOpen(false)}>Contact Us</Link>
           </div>
         </div>
       )}

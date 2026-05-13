@@ -61,22 +61,12 @@ export default function ProductCard({
     }).format(price);
   };
 
-  // Accessibility: alt text fallback
+  // Determine if product is new based on tags
+  const isNew = product.tags.some(tag => tag.toLowerCase() === 'new');
   const imageAlt = product.title ? `${product.title} product image` : "Product image";
 
   // Stock status
   const inStock = product.availableForSale;
-
-  // Rating stars
-  const renderStars = (rating: number = 0) => {
-    return (
-      <div className="flex items-center gap-0.5" aria-label={`Rated ${rating} out of 5`}>
-        {[1, 2, 3, 4, 5].map((i) => (
-          <Star key={i} className={`w-4 h-4 ${i <= Math.round(rating) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`} fill={i <= Math.round(rating) ? "#facc15" : "none"} aria-hidden="true" />
-        ))}
-      </div>
-    );
-  };
 
   return (
     <motion.div
@@ -109,7 +99,7 @@ export default function ProductCard({
         {/* Image Section */}
         <Link href={`/products/${product.handle}`} className="block relative aspect-[4/3] overflow-hidden rounded-t-2xl">
           <Image
-            src={product.featuredImage?.url || "/Images/Riyadh as-Salihin.jpg"}
+            src={product.featuredImage?.url || "/Images/Logo.png"}
             alt={imageAlt}
             fill
             sizes="(max-width: 640px) 90vw, (max-width: 1024px) 40vw, 300px"
@@ -134,13 +124,18 @@ export default function ProductCard({
               </h3>
             </Link>
             
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex items-center text-[var(--islamic-gold)]">
-                {renderStars(4.8)}
+            {/* Rating - Only show if data exists, otherwise hide or show generic stars if desired */}
+            <div className="flex items-center gap-2 mb-4">
+              <div className="flex">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    size={12}
+                    className="fill-[var(--islamic-gold)] text-[var(--islamic-gold)]"
+                  />
+                ))}
               </div>
-              <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-[var(--islamic-green)]/60">
-                {inStock ? "Authentic Stock" : "Temporarily Out"}
-              </span>
+              <span className="text-[10px] font-bold text-[var(--charcoal)]/50 tracking-tighter uppercase">Authentic</span>
             </div>
           </div>
 

@@ -1,5 +1,1 @@
-const CHUNK_PUBLIC_PATH = "server/instrumentation.js";
-const runtime = require("./chunks/[turbopack]_runtime.js");
-runtime.loadChunk("server/chunks/instrumentation_ts_ca8ae59b._.js");
-runtime.getOrInstantiateRuntimeModule("[project]/instrumentation.ts [instrumentation] (ecmascript)", CHUNK_PUBLIC_PATH);
-module.exports = runtime.getOrInstantiateRuntimeModule("[project]/instrumentation.ts [instrumentation] (ecmascript)", CHUNK_PUBLIC_PATH).exports;
+"use strict";(()=>{var e={};e.id=183,e.ids=[183],e.modules={11641:(e,l,o)=>{function t(){if("undefined"!=typeof globalThis&&globalThis.localStorage&&"function"!=typeof globalThis.localStorage.getItem)try{globalThis.localStorage.getItem=()=>null,globalThis.localStorage.setItem=()=>{},globalThis.localStorage.removeItem=()=>{}}catch(e){}}o.r(l),o.d(l,{register:()=>t})}};var l=require("./webpack-runtime.js");l.C(e);var o=l(l.s=11641);module.exports=o})();

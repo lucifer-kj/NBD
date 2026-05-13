@@ -25,11 +25,11 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
   return (
     <>
       {/* Overlay */}
-      <div 
+      <div
         className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
         onClick={onClose}
       />
-      
+
       {/* Drawer */}
       <div className={`fixed inset-y-0 right-0 w-full md:w-96 bg-white z-50 shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         {/* Header */}
@@ -38,7 +38,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
             <ShoppingBag size={20} />
             Your Cart
           </h2>
-          <button 
+          <button
             onClick={onClose}
             className="p-2 text-gray-500 hover:text-[var(--islamic-gold)] rounded-full hover:bg-white transition-colors"
           >

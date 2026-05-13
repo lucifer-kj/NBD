@@ -56,22 +56,32 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-headings), serif;
     color: var(--islamic-green);
     font-weight: 700;
     line-height: var(--line-tight);
     letter-spacing: -0.01em;
   }
+
   a {
     color: var(--islamic-gold);
     text-decoration: none;
     transition: color 0.2s;
   }
-  a:hover, a:focus {
+
+  a:hover,
+  a:focus {
     color: var(--islamic-gold-dark);
     text-decoration: underline;
   }
+
   :root {
     /* Brand Colors - Islamic Green & Gold Theme */
     --primary: #2D5A4C;
@@ -105,9 +115,9 @@
 
     /* Gradients */
     --hero-gradient: linear-gradient(135deg, #2D5A4C 0%, #3D6B5B 50%, #1F3D33 100%);
-    --card-overlay: linear-gradient(180deg, rgba(45,90,76,0) 0%, rgba(45,90,76,0.4) 100%);
-    --gold-gradient: linear-gradient(135deg, #deb975 0%, #c5a05b 100%);
-    --islamic-overlay: linear-gradient(135deg, rgba(45,90,76,0.9) 0%, rgba(61,107,91,0.8) 100%);
+    --card-overlay: linear-gradient(180deg, rgba(45, 90, 76, 0) 0%, rgba(45, 90, 76, 0.4) 100%);
+    --gold-gradient: linear-gradient(to right, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #aa771c 100%);
+    --islamic-overlay: linear-gradient(135deg, rgba(45, 90, 76, 0.9) 0%, rgba(61, 107, 91, 0.8) 100%);
 
     /* Typography */
     --font-primary: 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
@@ -151,7 +161,7 @@
     --breakpoint-large: 1200px;
 
     --radius: 0.75rem;
-    
+
     /* Theme colors */
     --foreground: #1F3D33;
     --card: #FFFFFF;
@@ -168,7 +178,7 @@
     --border: #E5E7EB;
     --input: #F3F4F6;
     --ring: #2D5A4C;
-    
+
     /* Glass UI effect variables - Islamic theme */
     --glass-bg: rgba(248, 246, 243, 0.65);
     --glass-border: rgba(45, 90, 76, 0.12);
@@ -209,7 +219,7 @@
     --sidebar-accent-foreground: #F8F6F3;
     --sidebar-border: #374151;
     --sidebar-ring: #3D6B5B;
-    
+
     /* Dark mode glass UI effect variables */
     --glass-bg: rgba(31, 41, 55, 0.8);
     --glass-border: rgba(61, 107, 91, 0.3);
@@ -220,6 +230,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -235,18 +246,18 @@
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--glass-border);
   border-radius: 16px;
-  box-shadow: 
+  box-shadow:
     0 8px 32px var(--glass-shadow),
-    inset 0 1px 0 rgba(255,255,255,0.08);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
 
 .glass-card:hover {
-  box-shadow: 
+  box-shadow:
     0 16px 48px var(--glass-shadow),
-    inset 0 1px 0 rgba(255,255,255,0.12);
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
   transform: translateY(-6px);
   border-color: var(--islamic-gold);
 }
@@ -263,12 +274,10 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--islamic-gold),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      var(--islamic-gold),
+      transparent);
   opacity: 0.4;
 }
 
@@ -279,12 +288,10 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--glass-highlight),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      var(--glass-highlight),
+      transparent);
   transition: all 0.8s ease;
 }
 
@@ -339,7 +346,7 @@
 .btn-outline {
   background: transparent;
   color: white;
-  border: 2px solid rgba(255,255,255,0.4);
+  border: 2px solid rgba(255, 255, 255, 0.4);
   border-radius: 12px;
   padding: 14px 32px;
   font-weight: 700;
@@ -453,11 +460,13 @@
   transition: color 0.2s;
   padding-bottom: 2px;
 }
+
 .nav-link:hover,
 .nav-link:focus {
   color: var(--islamic-gold);
   outline: none;
 }
+
 .nav-link::after {
   content: "";
   position: absolute;
@@ -469,9 +478,10 @@
   border-radius: 2px;
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1;
 }
+
 .nav-link:hover::after,
 .nav-link:focus::after {
   transform: scaleX(1);
@@ -485,13 +495,18 @@
   outline-offset: 2px;
   box-shadow: 0 0 0 3px var(--islamic-gold-dark);
 }
+
 .focus-green:focus-visible {
   outline: 2px solid var(--islamic-green);
   outline-offset: 2px;
   box-shadow: 0 0 0 3px var(--islamic-green-light);
 }
 
-button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
   outline: 2px solid var(--islamic-gold);
   outline-offset: 2px;
   box-shadow: 0 0 0 3px var(--islamic-gold-dark);
@@ -501,9 +516,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
    MARQUEE / TICKER STRIP
    =================================== */
 @keyframes ticker-scroll {
-  0% { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
+  0% {
+    transform: translateX(100%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
 }
+
 .ticker-marquee {
   display: inline-block;
   white-space: nowrap;
@@ -529,6 +550,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   transform: translateY(24px);
   transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .reveal-on-scroll.revealed {
   opacity: 1;
   transform: translateY(0);

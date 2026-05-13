@@ -1,13 +1,7 @@
 import React from 'react';
-import AtarCard from '@/components/catalog/AtarCard';
-
-type AtarListItem = {
-  id: number;
-  name: string;
-  slug: string;
-  top_notes: string;
-  variants: { id: number; volume_ml: number; price: number }[];
-};
+import ProductCard from '@/components/product-card';
+import { getProducts } from '@/lib/shopify';
+import { ReshapedProduct } from '@/types/shopify';
 
 export const metadata = {
   title: 'Premium Atar Selection | Naaz Book Depot',
@@ -15,26 +9,17 @@ export const metadata = {
 };
 
 export default async function AtarPage() {
-  let atars: AtarListItem[] = [];
+  let atars: ReshapedProduct[] = [];
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/atar/`, { cache: 'no-store' });
-    if (res.ok) {
-      const data = await res.json();
-      atars = data.items || data;
-    }
-  } catch {
-    console.warn("Backend API not reachable.");
+    // Fetch products with "Atar" tag or from an "Atar" collection
+    atars = await getProducts({ 
+      query: 'tag:Atar OR tag:Fragrance',
+      first: 50 
+    });
+  } catch (error) {
+    console.error("Error fetching atars from Shopify:", error);
   }
   
-  if ((!atars || atars.length === 0) && process.env.NEXT_PUBLIC_ENABLE_DEMO_DATA === "true") {
-    atars = [
-      { id: 1, name: 'Royal Oudh', slug: 'royal-oudh', top_notes: 'Agarwood, Rose, Amber', variants: [{ id: 11, volume_ml: 12, price: 1200 }] },
-      { id: 2, name: 'Amber Rose', slug: 'amber-rose', top_notes: 'Damascus Rose, Vanilla', variants: [{ id: 12, volume_ml: 6, price: 550 }] },
-      { id: 3, name: 'Majestic Musk', slug: 'majestic-musk', top_notes: 'White Musk, Sandalwood', variants: [{ id: 13, volume_ml: 12, price: 890 }] },
-      { id: 4, name: 'Jasmine Mist', slug: 'jasmine-mist', top_notes: 'Night-blooming Jasmine', variants: [{ id: 14, volume_ml: 6, price: 400 }] },
-    ];
-  }
-
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="mb-10 text-center">
@@ -56,17 +41,21 @@ export default async function AtarPage() {
         </select>
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {atars.map((atar) => (
-          <AtarCard 
-            key={atar.id}
-            name={atar.name}
-            slug={atar.slug}
-            top_notes={atar.top_notes}
-            variants={atar.variants}
-          />
-        ))}
-      </div>
+      {atars.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {atars.map((atar) => (
+            <ProductCard 
+              key={atar.id}
+              product={atar}
+              showWishlist={false}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
+          <p className="text-gray-500">No fragrances found in the collection.</p>
+        </div>
+      )}
     </div>
   );
 }
