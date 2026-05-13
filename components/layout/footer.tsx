@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { Phone, Smartphone, Mail, MapPin, MessageCircle } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -25,11 +26,9 @@ const Footer = () => {
               href="https://wa.me/919163431395"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm text-[var(--islamic-gold)] hover:text-white transition-colors duration-300 font-semibold"
+              className="inline-flex items-center gap-2 text-sm text-[var(--islamic-gold)] hover:text-white transition-colors duration-300 font-semibold group"
             >
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                <path d="M12.031 0C5.385 0 0 5.385 0 12.031c0 2.128.555 4.195 1.611 6.012L.152 23.473l5.568-1.462a11.97 11.97 0 0 0 6.311 1.782h.005c6.645 0 12.031-5.385 12.031-12.031S18.676 0 12.031 0zm0 21.789h-.004a9.98 9.98 0 0 1-5.083-1.385l-.364-.216-3.784.992.993-3.689-.236-.376A9.957 9.957 0 0 1 2.038 12.03c0-5.514 4.485-10 10-10 5.513 0 10 4.486 10 10s-4.487 10-10 10zm5.485-7.487c-.301-.151-1.78-.88-2.056-.98-.275-.1-.476-.151-.676.151-.201.301-.776.98-.951 1.18-.176.2-.352.226-.653.075-2.046-1.025-3.32-2.185-4.225-3.69-.151-.252.072-.257.369-.854.075-.151.038-.276-.038-.426-.075-.151-.676-1.626-.926-2.226-.24-.582-.486-.503-.676-.513-.175-.008-.376-.008-.576-.008a1.096 1.096 0 0 0-.796.376c-.275.301-1.051 1.026-1.051 2.502s1.076 2.895 1.226 3.096c.151.2 2.115 3.226 5.127 4.526 2.053.886 2.87.822 3.966.69 1.25-.15 2.868-1.171 3.268-2.302.401-1.131.401-2.102.276-2.302-.126-.2-.476-.301-.776-.451z"/>
-              </svg>
+              <MessageCircle size={18} className="group-hover:scale-110 transition-transform duration-300" />
               Chat with us on WhatsApp
             </a>
           </div>
@@ -70,22 +69,22 @@ const Footer = () => {
           <div>
             <h4 className="text-sm font-bold uppercase tracking-wider mb-5 text-[var(--islamic-gold)]">Contact Us</h4>
             <ul className="space-y-3 text-white/70 text-sm font-medium">
-              <li className="flex items-start gap-2">
-                <span className="text-[var(--islamic-gold)] mt-0.5">📞</span>
+              <li className="flex items-start gap-3">
+                <Phone size={16} className="text-[var(--islamic-gold)] shrink-0 mt-0.5" />
                 <span>033 22350051 / 033 22350960</span>
               </li>
-              <li className="flex items-start gap-2">
-                <span className="text-[var(--islamic-gold)] mt-0.5">📱</span>
+              <li className="flex items-start gap-3">
+                <Smartphone size={16} className="text-[var(--islamic-gold)] shrink-0 mt-0.5" />
                 <span>+91 91634 31395</span>
               </li>
-              <li className="flex items-start gap-2">
-                <span className="text-[var(--islamic-gold)] mt-0.5">✉️</span>
+              <li className="flex items-start gap-3">
+                <Mail size={16} className="text-[var(--islamic-gold)] shrink-0 mt-0.5" />
                 <a href="mailto:naazgroupofficial@gmail.com" className="hover:text-[var(--islamic-gold)] transition-colors">
                   naazgroupofficial@gmail.com
                 </a>
               </li>
-              <li className="flex items-start gap-2">
-                <span className="text-[var(--islamic-gold)] mt-0.5">📍</span>
+              <li className="flex items-start gap-3">
+                <MapPin size={16} className="text-[var(--islamic-gold)] shrink-0 mt-0.5" />
                 <span>Kolkata, West Bengal, India</span>
               </li>
             </ul>

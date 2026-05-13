@@ -39,25 +39,26 @@ const Navbar = () => {
       <nav className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between">
           {/* Logo Section */}
-          <Link href="/" className="flex flex-row gap-2.5 items-center group">
+          <Link href="/" className="flex flex-row gap-2.5 items-center group hover:no-underline">
             <div className="relative transition-transform duration-500 group-hover:scale-105 flex-shrink-0">
               <Image
                 src="/Images/logo.png"
                 alt="Naaz Book Depot Logo"
-                width={54}
-                height={54}
-                className="w-11 h-11 md:w-14 md:h-14 object-contain"
+                width={64}
+                height={64}
+                className="w-14 h-14 md:w-16 md:h-16 object-contain"
                 priority
               />
             </div>
             <div className="flex flex-col items-start">
               <h1
-                className="text-xl md:text-2xl lg:text-3xl font-headings font-bold tracking-tight leading-tight"
+                className="text-lg md:text-2xl lg:text-3xl font-headings font-bold tracking-tight leading-tight"
                 style={{ background: 'linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
               >
-                Naaz Book Depot
+                <span className="md:hidden">Naaz<br />Book<br />Depot</span>
+                <span className="hidden md:inline">Naaz Book Depot</span>
               </h1>
-              <p className="text-[10px] md:text-xs text-[var(--islamic-gold)]/80 font-medium italic">
+              <p className="hidden md:block text-[10px] md:text-xs text-[var(--islamic-gold)]/80 font-medium italic">
                 Publishing the Light of Knowledge
               </p>
             </div>
