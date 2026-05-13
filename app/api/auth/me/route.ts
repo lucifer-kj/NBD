@@ -18,11 +18,12 @@ export async function GET() {
 
     if (!customer) {
       // Token might be expired or invalid
-      (await cookies()).delete('customerAccessToken');
-      return NextResponse.json(
+      const response = NextResponse.json(
         { user: null },
         { status: 200 }
       );
+      response.cookies.delete('customerAccessToken');
+      return response;
     }
 
     return NextResponse.json({ user: customer });

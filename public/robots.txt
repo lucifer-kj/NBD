@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://naazbookdepot.com/sitemap.xml

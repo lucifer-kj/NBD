@@ -1,18 +1,9 @@
-if (typeof globalThis !== "undefined" && globalThis.localStorage && typeof globalThis.localStorage.getItem !== "function") {
-  try {
-    globalThis.localStorage.getItem = () => null;
-    globalThis.localStorage.setItem = () => {};
-    globalThis.localStorage.removeItem = () => {};
-  } catch (e) {}
-}
-
 import React from "react";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/session-provider";
 import Navbar from "@/components/layout/Navbar";
-import ContactInfoStrip from "@/components/home/ContactInfoStrip";
 import Footer from "@/components/layout/footer";
 import ClientRoot from "@/components/providers/client-root";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
@@ -81,7 +72,6 @@ export default function RootLayout({
                 <SessionInitializer />
                 <div className="min-h-screen flex flex-col">
                   <Navbar />
-                  <ContactInfoStrip />
                   <main className="flex-1">
                     <ErrorBoundary>
                       <AnimatedLayoutClient>{children}</AnimatedLayoutClient>

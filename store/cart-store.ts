@@ -1,9 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { ReshapedCart } from '../types/shopify';
-import { createCart, addToCart, removeFromCart, updateCart } from '../lib/shopify';
-import { shopifyFetch } from '../lib/shopify';
-import { cartFragment } from '../lib/shopify/fragments';
+import { 
+  createCartAction, 
+  addToCartAction, 
+  removeFromCartAction, 
+  updateCartAction, 
+  getCartAction 
+} from '../lib/shopify/actions';
 
 interface CartState {
   cart: ReshapedCart | null;
@@ -37,12 +41,12 @@ export const useCartStore = create<CartState>()(
           let cart: ReshapedCart;
 
           if (!cartId) {
-            cart = await createCart();
+            cart = await createCartAction();
             cartId = cart.id;
             set({ cartId });
           }
 
-          const updatedCart = await addToCart(cartId, [{ merchandiseId, quantity }]);
+          const updatedCart = await addToCartAction(cartId, [{ merchandiseId, quantity }]);
           set({ cart: updatedCart, isCartDrawerOpen: true });
         } catch (error) {
           console.error('Error adding item to cart:', error);
@@ -57,7 +61,7 @@ export const useCartStore = create<CartState>()(
 
         set({ isLoading: true });
         try {
-          const updatedCart = await removeFromCart(cartId, [lineId]);
+          const updatedCart = await removeFromCartAction(cartId, [lineId]);
           set({ cart: updatedCart });
         } catch (error) {
           console.error('Error removing item from cart:', error);
@@ -73,12 +77,12 @@ export const useCartStore = create<CartState>()(
         set({ isLoading: true });
         try {
           if (quantity === 0) {
-            const updatedCart = await removeFromCart(cartId, [lineId]);
+            const updatedCart = await removeFromCartAction(cartId, [lineId]);
             set({ cart: updatedCart });
             return;
           }
 
-          const updatedCart = await updateCart(cartId, [{ id: lineId, merchandiseId, quantity }]);
+          const updatedCart = await updateCartAction(cartId, [{ id: lineId, merchandiseId, quantity }]);
           set({ cart: updatedCart });
         } catch (error) {
           console.error('Error updating cart item:', error);
@@ -95,26 +99,9 @@ export const useCartStore = create<CartState>()(
         const cartId = get().cartId;
         if (cartId) {
           try {
-            const res = await shopifyFetch<{ data: { cart: any } }>({
-              query: `
-                query getCart($cartId: ID!) {
-                  cart(id: $cartId) {
-                    ...cart
-                  }
-                }
-                ${cartFragment}
-              `,
-              variables: { cartId },
-              cache: 'no-store'
-            });
-
-            if (res.body.data.cart) {
-               // Reshape logic locally to avoid circular dependencies if any
-               const reshapedCart = {
-                ...res.body.data.cart,
-                lines: res.body.data.cart.lines.edges.map((edge: any) => edge.node)
-               };
-               set({ cart: reshapedCart as ReshapedCart });
+            const reshapedCart = await getCartAction(cartId);
+            if (reshapedCart) {
+               set({ cart: reshapedCart });
             } else {
               set({ cart: null, cartId: null });
             }

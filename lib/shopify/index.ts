@@ -68,19 +68,23 @@ export async function shopifyFetch<T>({
     const body = await result.json();
 
     if (body.errors) {
-      throw body.errors[0];
+      const error = body.errors[0];
+      throw new Error(error.message || 'Shopify API Error', { cause: error });
     }
 
     return {
       status: result.status,
       body
     };
-  } catch (e) {
-    console.error('Error fetching from Shopify:', e);
-    throw {
-      error: e,
-      query
-    };
+  } catch (e: any) {
+    if (e instanceof Error) throw e;
+    
+    throw new Error('Error fetching from Shopify', { 
+      cause: {
+        error: e,
+        query 
+      }
+    });
   }
 }
 
@@ -115,7 +119,7 @@ const reshapeProducts = (products: Product[]) => {
   return reshapedProducts;
 };
 
-const reshapeCart = (cart: Cart): ReshapedCart => {
+export const reshapeCart = (cart: Cart): ReshapedCart => {
   if (!cart) {
     return cart as unknown as ReshapedCart;
   }
