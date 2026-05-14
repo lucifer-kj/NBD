@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useCartStore } from "@/store/cart-store";
 import { useAuth } from "@/components/providers/session-provider";
 import { updateCartBuyerIdentityAction } from "@/lib/shopify/actions";
@@ -12,10 +12,12 @@ export default function CheckoutPage() {
   const { cart, isLoading: isCartLoading, validateCart } = useCartStore();
   const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const hasStarted = useRef(false);
 
   useEffect(() => {
-    if (isCartLoading || isAuthLoading || !cart) return;
-
+    if (isCartLoading || isAuthLoading || !cart || hasStarted.current) return;
+    
+    hasStarted.current = true;
     let isMounted = true;
 
     const prepareAndRedirect = async () => {

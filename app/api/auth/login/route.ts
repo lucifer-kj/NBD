@@ -25,7 +25,14 @@ export async function POST(req: NextRequest) {
 
     const { accessToken, expiresAt } = response;
 
-    // Set secure HTTP-only cookie
+    // Get customer ID and email for session
+    const customer = await getCustomerDetails(accessToken);
+    if (customer) {
+      const { createSession } = await import('@/lib/session');
+      await createSession(customer.id, accessToken, email);
+    }
+
+    // Set secure HTTP-only cookie (legacy support)
     (await cookies()).set('customerAccessToken', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

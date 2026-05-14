@@ -1,10 +1,17 @@
-import { SignJWT, jwtVerify } from 'jose';
+import { SignJWT, jwtVerify, JWTPayload } from 'jose';
 import { cookies } from 'next/headers';
+
+export interface SessionPayload extends JWTPayload {
+  customerId: string;
+  accessToken?: string | null;
+  email?: string | null;
+  expiresAt: Date;
+}
 
 const secretKey = process.env.SESSION_SECRET || 'fallback_secret_key_for_development_only';
 const encodedKey = new TextEncoder().encode(secretKey);
 
-export async function encryptSession(payload: Record<string, unknown>) {
+export async function encryptSession(payload: SessionPayload) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
@@ -12,20 +19,20 @@ export async function encryptSession(payload: Record<string, unknown>) {
     .sign(encodedKey);
 }
 
-export async function decryptSession(session: string | undefined = '') {
+export async function decryptSession(session: string | undefined = ''): Promise<SessionPayload | null> {
   try {
     const { payload } = await jwtVerify(session, encodedKey, {
       algorithms: ['HS256'],
     });
-    return payload;
+    return payload as SessionPayload;
   } catch {
     return null;
   }
 }
 
-export async function createSession(customerId: string, accessToken: string) {
+export async function createSession(customerId: string, accessToken?: string, email?: string) {
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  const session = await encryptSession({ customerId, accessToken, expiresAt });
+  const session = await encryptSession({ customerId, accessToken: accessToken || null, email: email || null, expiresAt } as SessionPayload);
   
   const cookieStore = await cookies();
 
@@ -38,7 +45,7 @@ export async function createSession(customerId: string, accessToken: string) {
   });
 }
 
-export async function updateSession() {
+export async function updateSession(): Promise<SessionPayload | null> {
   const cookieStore = await cookies();
   const session = cookieStore.get('session')?.value;
   const payload = await decryptSession(session);
@@ -68,7 +75,7 @@ export async function deleteSession() {
   cookieStore.delete('customerAccessToken'); // Also clear the legacy token if it exists
 }
 
-export async function getSession() {
+export async function getSession(): Promise<SessionPayload | null> {
   const cookieStore = await cookies();
   const session = cookieStore.get('session')?.value;
   if (!session) return null;

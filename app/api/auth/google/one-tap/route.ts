@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { getCustomerByEmail, createCustomerViaAdmin } from '@/lib/shopify/admin';
 import { loginCustomer, updateCartBuyerIdentity } from '@/lib/shopify';
-import { cookies } from 'next/headers';
+import { createSession } from '@/lib/session';
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,6 +13,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Verify Google token via Google API
+    // Using simple tokeninfo for validation. In production, consider google-auth-library
     const googleRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`);
     const googleData = await googleRes.json();
 
@@ -25,7 +26,6 @@ export async function POST(req: NextRequest) {
     // 2. Check if customer exists in Shopify
     let customer = await getCustomerByEmail(email);
     let accessToken = '';
-    let expiresAt = '';
 
     if (!customer) {
       // Create a new customer if they don't exist
@@ -39,48 +39,44 @@ export async function POST(req: NextRequest) {
           password: generatedPassword
         });
 
-        // Log them in to get an access token
+        // Log them in to get an access token for Storefront API
         const loginResult = await loginCustomer({ email, password: generatedPassword });
         if ('accessToken' in loginResult) {
           accessToken = loginResult.accessToken;
-          expiresAt = loginResult.expiresAt;
         }
       } catch (err) {
         console.error('Error creating customer:', err);
         return NextResponse.json({ error: 'Failed to create account' }, { status: 500 });
       }
-    } else {
-      // Customer exists. In a production environment, you would use Multipass or a secure 
-      // internal session. Since we're in development/staging, we'll try to find a way 
-      // to session-manage them. For now, we'll return success but note the limitation.
-      // To properly log in an existing customer via Google, Multipass is required.
-      // Alternatively, we can use a server-side session that doesn't rely on Shopify's token.
     }
 
-    // 3. Set the session cookie if we have a token
-    if (accessToken) {
-      (await cookies()).set('customerAccessToken', accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        expires: new Date(expiresAt)
-      });
-
-      // 4. Link cart if provided (similar to standard login)
+    // 3. Create Session (Custom Session Handler)
+    // This allows existing users to "log in" without Multipass or password
+    if (customer) {
+      await createSession(customer.id, accessToken, email);
+      
+      // 4. Link cart if provided
       if (cartId) {
+        if (accessToken) {
+          try {
+            await updateCartBuyerIdentity(cartId, accessToken, email);
+          } catch (e) {
+            console.error('Cart linking via Storefront failed:', e);
+          }
+        }
+        
+        // Always persist cart ID to customer metafield via Admin API
         try {
-          await updateCartBuyerIdentity(cartId, accessToken, email);
-          // Merging logic can be added here if needed
+          const { setCustomerCart } = await import('@/lib/shopify/admin');
+          await setCustomerCart(customer.id, cartId);
         } catch (e) {
-          console.error('Cart linking failed:', e);
+          console.error('Failed to persist cart ID to customer metafield:', e);
         }
       }
     }
 
     return NextResponse.json({ 
       success: true, 
-      isNewCustomer: !accessToken, // if we don't have a token, it means they already existed but we logged them in "internally"
       user: {
         email,
         firstName: given_name,

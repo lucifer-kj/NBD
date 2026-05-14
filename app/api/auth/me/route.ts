@@ -1,30 +1,33 @@
 import { NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 import { getCustomerDetails } from '@/lib/shopify';
-import { cookies } from 'next/headers';
+import { getCustomerDetailsById } from '@/lib/shopify/admin';
+import { getSession } from '@/lib/session';
 
 export async function GET() {
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get('customerAccessToken')?.value;
-
-    if (!accessToken) {
-      return NextResponse.json(
-        { user: null },
-        { status: 200 }
-      );
+    const session = await getSession();
+    
+    if (!session) {
+      return NextResponse.json({ user: null });
     }
 
-    const customer = await getCustomerDetails(accessToken);
+    const { customerId, accessToken } = session as { customerId: string; accessToken?: string };
+
+    let customer = null;
+
+    if (accessToken) {
+      // Try fetching via Storefront API first if we have a token
+      customer = await getCustomerDetails(accessToken);
+    }
+
+    // If Storefront API failed or no token, use Admin API (Custom Session fallback)
+    if (!customer && customerId) {
+      customer = await getCustomerDetailsById(customerId);
+    }
 
     if (!customer) {
-      // Token might be expired or invalid
-      const response = NextResponse.json(
-        { user: null },
-        { status: 200 }
-      );
-      response.cookies.delete('customerAccessToken');
-      return response;
+      return NextResponse.json({ user: null });
     }
 
     return NextResponse.json({ user: customer });

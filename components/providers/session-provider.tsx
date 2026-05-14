@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
 import { useCartStore } from "@/store/cart-store";
 import { Customer } from "@/types/shopify";
 
@@ -28,12 +28,10 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<Customer | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { cartId, initCart } = useCartStore(state => ({
-    cartId: state.cartId,
-    initCart: state.initCart
-  }));
+  const cartId = useCartStore(state => state.cartId);
+  const initCart = useCartStore(state => state.initCart);
 
-  const refreshSession = async () => {
+  const refreshSession = useCallback(async () => {
     try {
       setIsLoading(true);
       const res = await fetch('/api/auth/me');
@@ -49,11 +47,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     refreshSession();
-  }, []);
+  }, [refreshSession]);
 
   // Listen for cross-tab logout
   useEffect(() => {
@@ -67,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -87,9 +85,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       return { success: false, error: 'An unexpected error occurred' };
     }
-  };
+  }, [cartId, refreshSession, initCart]);
 
-  const register = async (input: { firstName: string; lastName: string; email: string; password: string }) => {
+  const register = useCallback(async (input: { firstName: string; lastName: string; email: string; password: string }) => {
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
@@ -109,9 +107,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       return { success: false, error: 'An unexpected error occurred' };
     }
-  };
+  }, [cartId, refreshSession, initCart]);
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
       // Trigger cross-tab sync
@@ -121,9 +119,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setUser(null);
     }
-  };
+  }, []);
 
-  const loginWithGoogle = async (credential: string) => {
+  const loginWithGoogle = useCallback(async (credential: string) => {
     try {
       const res = await fetch('/api/auth/google/one-tap', {
         method: 'POST',
@@ -143,10 +141,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       return { success: false, error: 'An unexpected error occurred' };
     }
-  };
+  }, [cartId, refreshSession, initCart]);
+
+  const value = useMemo(() => ({ 
+    user, 
+    isAuthenticated: !!user, 
+    isLoading, 
+    login, 
+    register, 
+    logout, 
+    refreshSession, 
+    loginWithGoogle 
+  }), [user, isLoading, login, register, logout, refreshSession, loginWithGoogle]);
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, register, logout, refreshSession, loginWithGoogle }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

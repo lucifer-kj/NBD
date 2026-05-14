@@ -73,7 +73,7 @@ const HeroSection = () => {
           </div>
 
           <h1 className="text-4xl md:text-6xl font-headings font-bold text-white mb-4 leading-tight drop-shadow-2xl">
-            India&apos;s Most Trusted Source for <span className="text-[var(--islamic-gold)]">Authentic Islamic Books</span> Since 1967
+            Naaz <span className="text-[var(--islamic-gold)]">Book</span> Depot
           </h1>
 
           {/* Typewriter effect */}

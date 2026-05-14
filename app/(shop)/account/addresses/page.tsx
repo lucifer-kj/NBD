@@ -1,8 +1,9 @@
 import { Metadata } from 'next';
-import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getCustomerDetails } from '@/lib/shopify';
+import { getCustomerDetailsById } from '@/lib/shopify/admin';
+import { getSession } from '@/lib/session';
 import { MailingAddress } from '@/types/shopify';
 import { ChevronLeft } from 'lucide-react';
 import AddressBook from '@/components/account/address-book';
@@ -13,14 +14,22 @@ export const metadata: Metadata = {
 };
 
 export default async function AddressesPage() {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get('customerAccessToken')?.value;
+  const session = await getSession();
 
-  if (!accessToken) {
+  if (!session) {
     redirect('/');
   }
 
-  const customer = await getCustomerDetails(accessToken);
+  const { customerId, accessToken } = session as { customerId: string; accessToken?: string };
+
+  let customer = null;
+  if (accessToken) {
+    customer = await getCustomerDetails(accessToken);
+  }
+
+  if (!customer && customerId) {
+    customer = await getCustomerDetailsById(customerId);
+  }
 
   if (!customer) {
     redirect('/');
