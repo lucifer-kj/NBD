@@ -128,7 +128,7 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
               >
                 {filteredProducts.map((product) => (
                   <motion.div key={product.id} variants={fadeInUp}>
-                    <ProductCard product={product} showWishlist={false} />
+                    <ProductCard product={product} />
                   </motion.div>
                 ))}
               </motion.div>

@@ -1,3 +1,4 @@
+import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { getProduct, getProducts } from "@/lib/shopify"
 import ProductDetailsClient from "@/components/product/ProductDetailsClient"
@@ -8,7 +9,7 @@ type PageProps = {
   params: Promise<{ slug: string }>
 }
 
-export async function generateMetadata({ params }: PageProps) {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
   const product = await getProduct(slug)
 
@@ -18,9 +19,35 @@ export async function generateMetadata({ params }: PageProps) {
     }
   }
 
+  const url = process.env.NEXT_PUBLIC_APP_URL 
+    ? `${process.env.NEXT_PUBLIC_APP_URL}/products/${product.handle}` 
+    : `https://www.naazbook.in/products/${product.handle}`;
+
   return {
     title: `${product.title} | Naaz Book Depot`,
     description: product.description.slice(0, 160),
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title: product.title,
+      description: product.description.slice(0, 160),
+      url,
+      siteName: 'Naaz Book Depot',
+      images: product.images.map((img) => ({
+        url: img.url,
+        width: 800,
+        height: 800,
+        alt: img.altText || product.title,
+      })),
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: product.title,
+      description: product.description.slice(0, 160),
+      images: [product.featuredImage?.url || ''],
+    },
   }
 }
 
@@ -47,8 +74,31 @@ export default async function ProductPage({ params }: PageProps) {
     first: 4
   }).then(products => products.filter(p => p.id !== product.id))
 
+  const productJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.title,
+    description: product.description,
+    image: product.images[0]?.url,
+    offers: {
+      '@type': 'AggregateOffer',
+      availability: product.availableForSale
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+      priceCurrency: product.priceRange.minVariantPrice.currencyCode,
+      highPrice: product.priceRange.maxVariantPrice.amount,
+      lowPrice: product.priceRange.minVariantPrice.amount,
+    },
+  };
+
   return (
     <div className="bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(productJsonLd)
+        }}
+      />
       <div className="container mx-auto px-4 py-12 md:py-16">
         {/* Main Product Section */}
         <ProductDetailsClient product={product} />

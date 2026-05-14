@@ -19,7 +19,7 @@ const Footer = () => {
               Naaz Book Depot
             </h3>
             <p className="text-white/70 leading-relaxed mb-6 max-w-sm text-sm font-medium">
-              Publishing the Light of Knowledge since 1967. Specialized in authentic Islamic literature, Qur&apos;an, and premium fragrances serving the global Muslim community.
+              Naaz Book Depot — Publishing the Light of Knowledge since 1967. India&apos;s trusted source for authentic Islamic books, Quran editions, and premium Attar. Based in Kolkata, serving Muslims worldwide.
             </p>
             {/* Social / WhatsApp quick link */}
             <a

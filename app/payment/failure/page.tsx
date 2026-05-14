@@ -1,36 +1,31 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-
-function FailureContent() {
-  const searchParams = useSearchParams();
-  const reason = searchParams.get("error") || searchParams.get("payment_status");
-
-  return (
-    <div className="min-h-[60vh] flex flex-col items-center justify-center px-4 py-16 text-center">
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Payment not completed</h1>
-      <p className="text-gray-600 mb-2 max-w-md">
-        The payment was cancelled or declined. No charge has been completed.
-      </p>
-      {reason && <p className="text-sm text-gray-500 mb-8">Reference: {reason}</p>}
-      <div className="flex gap-4 flex-wrap justify-center">
-        <Link href="/cart" className="bg-[#C7A536] text-white font-semibold px-6 py-3 rounded-lg">
-          Return to cart
-        </Link>
-        <Link href="/checkout" className="border border-[var(--islamic-green)] text-[var(--islamic-green)] font-semibold px-6 py-3 rounded-lg">
-          Try checkout again
-        </Link>
-      </div>
-    </div>
-  );
-}
+import { XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function PaymentFailurePage() {
   return (
-    <Suspense fallback={<div className="min-h-[40vh] flex items-center justify-center">Loading…</div>}>
-      <FailureContent />
-    </Suspense>
+    <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-16 bg-gray-50/50">
+      <div className="text-center max-w-md bg-white p-8 rounded-3xl shadow-sm border border-red-100">
+        <div className="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-full mb-6">
+          <XCircle className="w-10 h-10 text-red-500" />
+        </div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-4 font-playfair">
+          Payment Failed
+        </h1>
+        <p className="text-gray-600 mb-8 leading-relaxed">
+          We couldn't process your payment. Don't worry, your cart is safe and no money was deducted.
+        </p>
+        <div className="flex flex-col gap-3">
+          <Button asChild className="w-full bg-[var(--islamic-green)] hover:bg-[var(--islamic-green-dark)] text-white font-bold py-6 rounded-xl shadow-md text-lg">
+            <Link href="/cart">Return to Cart & Try Again</Link>
+          </Button>
+          <Button asChild variant="ghost" className="w-full text-gray-500 hover:text-gray-900">
+            <Link href="/contact">Need Help?</Link>
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }

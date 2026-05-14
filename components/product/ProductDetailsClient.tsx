@@ -18,42 +18,56 @@ import { useCartStore } from '@/store/cart-store';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import StarRating from '@/components/star-rating';
+import { useWishlist } from '@/hooks/use-wishlist';
 
 interface ProductDetailsClientProps {
   product: ReshapedProduct;
   initialWishlisted?: boolean;
 }
 
-export default function ProductDetailsClient({ product, initialWishlisted = false }: ProductDetailsClientProps) {
+export default function ProductDetailsClient({ product }: ProductDetailsClientProps) {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(initialWishlisted);
-  const { addItem, isLoading } = useCartStore();
+  
+  // Initialize selected options with the first variant's options
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(
+    product.variants[0]?.selectedOptions.reduce((acc, opt) => ({
+      ...acc,
+      [opt.name]: opt.value
+    }), {}) || {}
+  );
 
-  // Fetch wishlist status on client if authenticated
-  React.useEffect(() => {
-    async function checkWishlist() {
-      try {
-        const res = await fetch('/api/auth/me');
-        const data = await res.json();
-        if (data.user && data.user.wishlist) {
-          const wishlistIds = JSON.parse(data.user.wishlist.value);
-          const variantId = product.variants[0]?.id;
-          if (variantId && wishlistIds.includes(variantId)) {
-            setIsWishlisted(true);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch wishlist status:', error);
-      }
-    }
-    checkWishlist();
-  }, [product.variants]);
+  const { addItem, isLoading } = useCartStore();
+  const { isInWishlist, toggleWishlist, isSyncing } = useWishlist();
+  const isItemInWishlist = isInWishlist(product.id);
+
+  // Find the selected variant based on selected options
+  const selectedVariant = product.variants.find(variant => 
+    variant.selectedOptions.every(opt => selectedOptions[opt.name] === opt.value)
+  ) || product.variants[0];
 
   const handleAddToCart = async () => {
-    const variantId = product.variants[0]?.id;
-    if (variantId) {
-      await addItem(variantId, quantity);
+    if (selectedVariant?.id) {
+      await addItem(selectedVariant.id, quantity);
+    }
+  };
+
+  const handleOptionChange = (name: string, value: string) => {
+    setSelectedOptions(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    // Optionally update image if the variant has one
+    const matchingVariant = product.variants.find(v => 
+      v.selectedOptions.every(opt => 
+        opt.name === name ? opt.value === value : selectedOptions[opt.name] === opt.value
+      )
+    );
+    
+    if (matchingVariant?.image) {
+      const imgIdx = images.findIndex(img => img.url === matchingVariant.image?.url);
+      if (imgIdx !== -1) setSelectedImage(imgIdx);
     }
   };
 
@@ -68,48 +82,15 @@ export default function ProductDetailsClient({ product, initialWishlisted = fals
     }).format(parseFloat(amount));
   };
 
+  const handleWishlistToggle = () => {
+    toggleWishlist(product.id);
+  };
+
   // Extract metafields
   const ratingMeta = product.metafields?.find(m => m && m.namespace === 'reviews' && m.key === 'rating');
   const ratingValue = ratingMeta ? JSON.parse(ratingMeta.value).value : 4.8; // Fallback
   const careInstructions = product.metafields?.find(m => m && m.namespace === 'custom' && m.key === 'care_instructions')?.value;
   const techSpecs = product.metafields?.find(m => m && m.namespace === 'custom' && m.key === 'technical_specs')?.value;
-
-  const handleWishlistToggle = async () => {
-    // Optimistic UI
-    setIsWishlisted(!isWishlisted);
-    
-    try {
-      // Fetch user from /api/auth/me
-      const meRes = await fetch('/api/auth/me');
-      const meData = await meRes.json();
-      
-      if (!meData.user) {
-        alert("Please login to use wishlist");
-        setIsWishlisted(false);
-        return;
-      }
-
-      const customerId = meData.user.id;
-      const currentWishlist = meData.user.wishlist ? JSON.parse(meData.user.wishlist.value) : [];
-      const variantId = product.variants[0]?.id;
-      
-      let newWishlist;
-      if (isWishlisted) {
-        newWishlist = currentWishlist.filter((id: string) => id !== variantId);
-      } else {
-        newWishlist = [...currentWishlist, variantId];
-      }
-
-      await fetch('/api/wishlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customerId, variantIds: newWishlist })
-      });
-    } catch (error) {
-      console.error('Wishlist error:', error);
-      setIsWishlisted(!isWishlisted); // Revert on failure
-    }
-  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -200,16 +181,45 @@ export default function ProductDetailsClient({ product, initialWishlisted = fals
         <div className="mb-8">
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-bold text-[var(--islamic-green)]">
-              {formatPrice(product.priceRange.minVariantPrice.amount, product.priceRange.minVariantPrice.currencyCode)}
+              {formatPrice(selectedVariant?.price.amount || product.priceRange.minVariantPrice.amount, selectedVariant?.price.currencyCode || product.priceRange.minVariantPrice.currencyCode)}
             </span>
-            {parseFloat(product.variants[0]?.compareAtPrice?.amount || "0") > parseFloat(product.priceRange.minVariantPrice.amount) && (
+            {parseFloat(selectedVariant?.compareAtPrice?.amount || "0") > parseFloat(selectedVariant?.price.amount || "0") && (
               <span className="text-xl text-gray-400 line-through">
-                {formatPrice(product.variants[0].compareAtPrice!.amount, product.variants[0].compareAtPrice!.currencyCode)}
+                {formatPrice(selectedVariant!.compareAtPrice!.amount, selectedVariant!.compareAtPrice!.currencyCode)}
               </span>
             )}
           </div>
           <p className="text-sm text-gray-500 mt-1">Inclusive of all taxes</p>
         </div>
+
+        {/* Variant Options */}
+        {product.options.length > 0 && product.options[0].name !== 'Title' && (
+          <div className="space-y-6 mb-8">
+            {product.options.map((option) => (
+              <div key={option.id} className="space-y-3">
+                <p className="text-sm font-bold text-gray-900 uppercase tracking-wider">{option.name}</p>
+                <div className="flex flex-wrap gap-2">
+                  {option.values.map((value) => {
+                    const isActive = selectedOptions[option.name] === value;
+                    return (
+                      <button
+                        key={value}
+                        onClick={() => handleOptionChange(option.name, value)}
+                        className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
+                          isActive 
+                            ? 'border-[var(--islamic-green)] bg-[var(--islamic-green)] text-white' 
+                            : 'border-gray-100 bg-gray-50 text-gray-600 hover:border-gray-200'
+                        }`}
+                      >
+                        {value}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Metafields Info */}
         {(careInstructions || techSpecs) && (
@@ -265,29 +275,29 @@ export default function ProductDetailsClient({ product, initialWishlisted = fals
 
             <Button 
               onClick={async () => {
-                const variantId = product.variants[0]?.id;
-                if (variantId) {
-                  await addItem(variantId, quantity);
+                if (selectedVariant?.id) {
+                  await addItem(selectedVariant.id, quantity);
                   window.location.href = '/cart';
                 }
               }}
-              disabled={!product.availableForSale || isLoading}
+              disabled={!selectedVariant?.availableForSale || isLoading}
               variant="outline"
               className="flex-1 border-2 border-[var(--islamic-green)] text-[var(--islamic-green)] h-14 rounded-xl text-lg font-bold hover:bg-[var(--islamic-green)] hover:text-white transition-all duration-300 gap-2"
             >
-              Buy Now
-              <ArrowRight size={20} className="shrink-0" />
+              {isLoading ? "Processing..." : "Buy Now"}
+              {!isLoading && <ArrowRight size={20} className="shrink-0" />}
             </Button>
 
             <button 
               onClick={handleWishlistToggle}
+              disabled={isSyncing}
               className={`p-4 rounded-xl border-2 transition-all ${
-                isWishlisted 
+                isItemInWishlist 
                   ? 'bg-red-50 border-red-100 text-red-500' 
                   : 'bg-gray-50 border-gray-100 text-gray-400 hover:text-red-500 hover:bg-red-50'
               }`}
             >
-              <Heart size={24} fill={isWishlisted ? "currentColor" : "none"} />
+              <Heart size={24} fill={isItemInWishlist ? "currentColor" : "none"} />
             </button>
           </div>
 

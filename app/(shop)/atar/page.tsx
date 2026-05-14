@@ -4,8 +4,8 @@ import { getProducts } from '@/lib/shopify';
 import { ReshapedProduct } from '@/types/shopify';
 
 export const metadata = {
-  title: 'Premium Atar Selection | Naaz Book Depot',
-  description: 'Experience our exclusive collection of non-alcoholic premium fragrances.',
+  title: 'Pure Alcohol-Free Attar & Premium Itr | Naaz Book Depot Fragrances',
+  description: 'Discover India\'s finest collection of natural, 100% alcohol-free Attar and premium Itr. Hand-curated blends for prayer and daily wear since 1967.',
 };
 
 export const revalidate = 3600;
@@ -28,7 +28,7 @@ export default async function AtarPage() {
         <h1 className="text-4xl md:text-5xl font-headings font-bold text-[var(--islamic-green)] mb-4">Premium Fragrances</h1>
         <div className="h-1 w-24 bg-[var(--islamic-gold)] rounded mx-auto mb-6" />
         <p className="text-lg text-[var(--charcoal)]/70 max-w-2xl mx-auto font-light">
-          Experience the essence of Islamic heritage with our hand-curated, 100% alcohol-free premium attars.
+          Experience the essence of Islamic heritage with our hand-curated, 100% alcohol-free premium Attar and natural fragrances.
         </p>
       </div>
       

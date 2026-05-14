@@ -5,8 +5,8 @@ import { getBlogArticles } from '@/lib/shopify';
 import { Calendar, User, ChevronRight } from 'lucide-react';
 
 export const metadata = {
-  title: 'Blog | Naaz Book Depot',
-  description: 'Latest spiritual insights, book reviews, and updates from Naaz Book Depot.',
+  title: 'Islamic Insights & Spiritual Articles | Naaz Book Depot Blog',
+  description: 'Read articles on Islamic spirituality, Quranic guidance, book reviews, and Muslim lifestyle — curated by the team at Naaz Book Depot since 1967.',
 };
 
 export const revalidate = 3600;
@@ -32,9 +32,9 @@ export default async function BlogPage() {
       {/* Hero Section */}
       <section className="bg-[var(--islamic-green)] py-20 text-white">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-headings font-bold mb-4">Spiritual Insights</h1>
+          <h1 className="text-4xl md:text-5xl font-headings font-bold mb-4">Islamic Insights</h1>
           <p className="text-lg opacity-90 max-w-2xl mx-auto">
-            Explore articles on Islamic spirituality, history, and wisdom curated for the modern seeker.
+            Spiritual articles, Quranic guidance, and book reviews curated by the team at Naaz Book Depot since 1967.
           </p>
         </div>
       </section>

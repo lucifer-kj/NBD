@@ -4,8 +4,8 @@ import { getProducts } from '@/lib/shopify';
 import { ReshapedProduct } from '@/types/shopify';
 
 export const metadata = {
-  title: 'Islamic Books | Naaz Book Depot',
-  description: 'Explore our vast collection of authentic Islamic literature and Qurans.',
+  title: 'Authentic Islamic Books & Quran Editions | Naaz Book Depot Store',
+  description: 'Buy authentic Islamic books online in India. Wide selection of Quran, Hadith, Tafsir, and Islamic literature from India\'s trusted publishing house since 1967.',
 };
 
 export const revalidate = 3600;

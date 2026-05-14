@@ -66,6 +66,9 @@ export const getCustomerQuery = `
       wishlist: metafield(namespace: "wishlist", key: "items") {
         value
       }
+      cart_id: metafield(namespace: "custom", key: "cart_id") {
+        value
+      }
     }
   }
 `;

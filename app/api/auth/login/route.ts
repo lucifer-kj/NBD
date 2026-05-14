@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { loginCustomer, updateCartBuyerIdentity } from '@/lib/shopify';
+export const dynamic = 'force-dynamic';
+import { loginCustomer, updateCartBuyerIdentity, getCustomerDetails, getCart, addToCart, setCustomerCart } from '@/lib/shopify';
 import { cookies } from 'next/headers';
 
 export async function POST(req: NextRequest) {
@@ -33,13 +34,37 @@ export async function POST(req: NextRequest) {
       expires: new Date(expiresAt)
     });
 
-    // If there's an active cart, link the buyer identity
+    // If there's an active cart, link the buyer identity and merge old items
     if (cartId) {
       try {
-        await updateCartBuyerIdentity(cartId, accessToken, email);
+        // 1. Get customer details and their preferred cart ID
+        const customer = await getCustomerDetails(accessToken);
+        
+        if (customer) {
+          const oldCartId = customer.cart_id?.value;
+          
+          // 2. If they have an old cart, merge its lines into the guest cart
+          if (oldCartId && oldCartId !== cartId) {
+            const oldCart = await getCart(oldCartId);
+            if (oldCart && oldCart.lines.length > 0) {
+              const linesToMerge = oldCart.lines.map(line => ({
+                merchandiseId: line.merchandise.id,
+                quantity: line.quantity
+              }));
+              
+              await addToCart(cartId, linesToMerge);
+            }
+          }
+          
+          // 3. Update the guest cart (now merged) with the buyer's identity
+          await updateCartBuyerIdentity(cartId, accessToken, email);
+          
+          // 4. Persist this cart ID as the new preferred cart for the customer
+          await setCustomerCart(customer.id, cartId);
+        }
       } catch (e) {
-        console.error('Failed to link cart identity:', e);
-        // We don't want to fail the login if cart linking fails
+        console.error('Failed to link or merge cart:', e);
+        // We don't want to fail the login if cart linking/merging fails
       }
     }
 

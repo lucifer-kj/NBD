@@ -28,14 +28,14 @@ export default function LegacySection() {
             <h2 className="text-section-fluid font-headings font-bold text-[var(--islamic-green)] mb-3">
               A Legacy of Knowledge
               <br />
-              <span className="text-[var(--islamic-gold)] italic font-light">Since 1967</span>
+              <span className="text-[var(--islamic-gold)] italic font-light">Serving the Ummah Since 1967</span>
             </h2>
             <div className="gold-divider mb-8" />
             <p className="text-base md:text-xl text-[var(--charcoal)]/85 mb-6 leading-relaxed font-light">
-              Founded in the heart of Kolkata, Naaz Book Depot has been a beacon of Islamic knowledge for over five decades. Our journey began with a simple mission: to make authentic Islamic literature accessible to every seeker of knowledge.
+              What began as a small bookshop on Ismail Madani Lane, Kolkata, has grown into one of India&apos;s most respected Islamic publishing and retail houses. For over 57 years, Naaz Book Depot has supplied authentic Qur&apos;an copies, Islamic books, and scholarly texts to masjids, madrasas, libraries, and individual Muslim households across India and abroad.
             </p>
             <p className="text-base md:text-lg text-[var(--charcoal)]/70 mb-10 leading-relaxed max-w-xl italic">
-              &ldquo;Our commitment remains steadfast: preserving authenticity while embracing the digital era to serve the global Ummah.&rdquo;
+              &ldquo;Knowledge is the legacy we carry. Every book that leaves our shelf carries the light of the Qur&apos;an into a new home.&rdquo;
             </p>
             <Link
               href="/about"

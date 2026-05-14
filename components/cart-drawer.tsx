@@ -12,23 +12,42 @@ import { cartSlideIn } from "@/lib/motion.config";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useMounted } from "@/hooks/use-mounted";
+import { formatPrice } from "@/lib/utils";
+import DiscountCodeInput from "./cart/DiscountCodeInput";
+import ShippingProgressBar from "./cart/ShippingProgressBar";
 
 export default function CartDrawer() {
-  const { cart, isCartDrawerOpen, closeCartDrawer, openCartDrawer, removeItem, updateItem, clearCart, isLoading } = useCartStore()
+  const { 
+    cart, 
+    isCartDrawerOpen, 
+    closeCartDrawer, 
+    openCartDrawer, 
+    removeItem, 
+    updateItem, 
+    clearCart, 
+    isLoading,
+    validateCart,
+    unavailableItems,
+    discountError,
+    clearDiscountError
+  } = useCartStore()
   const reduced = useReducedMotion();
   const mounted = useMounted();
 
   const lines = cart?.lines || []
   const count = lines.reduce((acc, line) => acc + line.quantity, 0)
   const totalAmount = cart?.cost?.totalAmount?.amount || "0.00"
-  const currencyCode = cart?.cost?.totalAmount?.currencyCode || "INR"
 
-  const formatPrice = (amount: string) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: currencyCode,
-    }).format(parseFloat(amount))
-  }
+
+  const handleCheckout = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    const { valid } = await validateCart();
+    if (valid && cart?.checkoutUrl) {
+      window.location.href = cart.checkoutUrl;
+    }
+  };
+
+  const isCheckoutDisabled = lines.length === 0 || isLoading || unavailableItems.length > 0;
 
   return (
     <Drawer.Root open={isCartDrawerOpen} onOpenChange={(open) => !open && closeCartDrawer()}>
@@ -77,6 +96,20 @@ export default function CartDrawer() {
 
               {/* Cart Items */}
               <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
+                {lines.length > 0 && (
+                  <div className="mb-4">
+                    <ShippingProgressBar />
+                  </div>
+                )}
+                {discountError && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600 flex justify-between items-center animate-in fade-in slide-in-from-top-1">
+                    <span>{discountError}</span>
+                    <button onClick={clearDiscountError} className="p-1 hover:bg-red-100 rounded-full transition-colors">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
                 {isLoading && lines.length === 0 ? (
                    <div className="text-center text-gray-500 py-16">
                      <p>Loading cart...</p>
@@ -88,15 +121,29 @@ export default function CartDrawer() {
                   />
                 ) : (
                   <div className="space-y-4">
-                    {lines.map(line => (
-                      <div key={line.id} className="flex gap-3 md:gap-4 items-start bg-white rounded-lg shadow-sm p-3 md:p-4 border">
-                        <Image 
-                          src={line.merchandise.product.featuredImage?.url || "/Images/p1.jpg"} 
-                          alt={line.merchandise.product.title} 
-                          width={60} 
-                          height={60} 
-                          className="rounded-md object-cover border flex-shrink-0" 
-                        />
+                    {lines.map(line => {
+                      const isUnavailable = unavailableItems.some(item => item.id === line.id);
+                      return (
+                      <div 
+                        key={line.id} 
+                        className={`flex gap-3 md:gap-4 items-start bg-white rounded-lg shadow-sm p-3 md:p-4 border transition-colors ${
+                          isUnavailable ? 'border-red-200 bg-red-50/30' : 'border-gray-200'
+                        }`}
+                      >
+                        <div className="relative flex-shrink-0">
+                          <Image 
+                            src={line.merchandise.product.featuredImage?.url || "/Images/p1.jpg"} 
+                            alt={line.merchandise.product.title} 
+                            width={60} 
+                            height={60} 
+                            className="rounded-md object-cover border" 
+                          />
+                          {isUnavailable && (
+                            <div className="absolute inset-0 bg-white/60 flex items-center justify-center rounded-md">
+                              <span className="text-[10px] font-bold text-red-600 uppercase">OOS</span>
+                            </div>
+                          )}
+                        </div>
                         <div className="flex-1 min-w-0">
                           <div className="font-semibold text-sm md:text-base mb-1 line-clamp-2">
                             <Link href={`/products/${line.merchandise.product.handle}`} className="hover:text-[var(--primary)]" onClick={closeCartDrawer}>
@@ -108,9 +155,15 @@ export default function CartDrawer() {
                               {line.merchandise.title}
                             </div>
                           )}
-                          <div className="text-[var(--islamic-green)] font-bold mb-2 text-sm md:text-base">
-                            {formatPrice(line.cost.totalAmount.amount)}
-                          </div>
+                          {isUnavailable ? (
+                            <div className="text-red-600 font-bold text-xs mb-2">
+                              Currently Unavailable
+                            </div>
+                          ) : (
+                            <div className="text-[var(--islamic-green)] font-bold mb-2 text-sm md:text-base">
+                              {formatPrice(line.cost.totalAmount.amount)}
+                            </div>
+                          )}
                           <div className="flex items-center gap-2">
                             <Button 
                               size="sm" 
@@ -145,18 +198,30 @@ export default function CartDrawer() {
                           <Trash2 className="w-4 h-4 text-red-500" />
                         </Button>
                       </div>
-                    ))}
+                    )})}
                   </div>
                 )}
               </div>
 
               {/* Footer */}
               <div className="p-4 md:p-6 border-t bg-white">
+                <div className="mb-6">
+                  <DiscountCodeInput />
+                </div>
+
                 <div className="rounded-lg border bg-gray-50 p-3 md:p-4 mb-4">
                   <div className="flex items-center justify-between text-sm md:text-base font-semibold mb-2">
                     <span>Subtotal</span>
                     <span>{formatPrice(totalAmount)}</span>
                   </div>
+                  {cart?.discountCodes?.some(d => d.applicable) && (
+                    <div className="flex items-center justify-between text-sm text-[var(--islamic-green)] font-medium mb-2">
+                      <span>Discount applied</span>
+                      <span>- {formatPrice(
+                        Number(cart.cost.subtotalAmount.amount) - Number(totalAmount)
+                      )}</span>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between text-xs md:text-sm text-gray-500">
                     <span>Shipping</span>
                     <span>Calculated at checkout</span>
@@ -168,14 +233,17 @@ export default function CartDrawer() {
                 </div>
                 
                 <div className="space-y-2">
+                  {unavailableItems.length > 0 && (
+                    <p className="text-xs text-red-600 text-center mb-2 font-medium">
+                      Please remove out-of-stock items to proceed
+                    </p>
+                  )}
                   <Button 
-                    asChild 
-                    disabled={lines.length === 0 || isLoading} 
+                    onClick={handleCheckout}
+                    disabled={isCheckoutDisabled} 
                     className="w-full bg-[var(--islamic-green)] hover:bg-[var(--islamic-green)]/90 text-white text-sm md:text-base font-semibold py-3 rounded-md shadow-md transition-all duration-300 hover:shadow-lg"
                   >
-                    <a href={cart?.checkoutUrl || "#"}>
-                      Checkout on Shopify
-                    </a>
+                    {isLoading ? "Validating..." : "Checkout on Shopify"}
                   </Button>
                   {lines.length > 0 && (
                     <Button 

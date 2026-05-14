@@ -14,12 +14,12 @@ export default async function BlogSection() {
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
           <div className="max-w-2xl">
-            <h2 className="text-sm font-bold text-[var(--islamic-gold)] uppercase tracking-[0.2em] mb-3">Spiritual Insights</h2>
+            <h2 className="text-sm font-bold text-[var(--islamic-gold)] uppercase tracking-[0.2em] mb-3">Islamic Insights</h2>
             <h3 className="text-3xl md:text-4xl font-headings font-bold text-[var(--islamic-green)]">
-              Latest from Our Blog
+              Spiritual Articles & Guidance
             </h3>
             <p className="text-gray-600 mt-4 text-lg">
-              Dive deep into the wisdom of the ages with articles curated by our team of scholars and researchers.
+              Explore articles on Islamic spirituality, Quranic guidance, book reviews, and Muslim lifestyle — curated by the team at Naaz Book Depot since 1967.
             </p>
           </div>
           <Link 

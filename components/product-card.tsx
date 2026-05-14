@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Heart, ShoppingCart } from "lucide-react";
 import { useCartStore } from "@/store/cart-store";
 import { motion } from "framer-motion";
@@ -12,23 +12,18 @@ import { Star } from "lucide-react";
 import { fadeInUp } from "@/lib/motion.config";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { useScrollReveal } from "@/lib/useScrollReveal";
-
+import { useWishlist } from "@/hooks/use-wishlist";
+import { formatPrice } from "@/lib/utils";
 import { ReshapedProduct } from "@/types/shopify";
 
 interface ProductCardProps {
   product: ReshapedProduct;
   showWishlist?: boolean;
-  onWishlistToggle?: (productId: string) => void;
-  isInWishlist?: boolean;
-  wishlistLoading?: boolean;
 }
 
 export default function ProductCard({
   product,
   showWishlist = true,
-  onWishlistToggle,
-  isInWishlist = false,
-  wishlistLoading = false,
 }: ProductCardProps) {
   const addToCart = useCartStore((state) => state.addItem);
   const [cartLoading, setCartLoading] = useState(false);
@@ -46,23 +41,15 @@ export default function ProductCard({
     setCartLoading(false);
   };
 
+  const { isInWishlist, toggleWishlist, isSyncing } = useWishlist();
+  const isItemInWishlist = isInWishlist(product.id);
+
   const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
-    if (onWishlistToggle) {
-      onWishlistToggle(product.id);
-    }
+    toggleWishlist(product.id);
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      minimumFractionDigits: 2,
-    }).format(price);
-  };
-
-  // Determine if product is new based on tags
-  const isNew = product.tags.some(tag => tag.toLowerCase() === 'new');
   const imageAlt = product.title ? `${product.title} product image` : "Product image";
 
   // Stock status
@@ -87,12 +74,12 @@ export default function ProductCard({
           <Button
             variant="ghost"
             size="icon"
-            aria-label={isInWishlist ? "Remove from wishlist" : "Add to wishlist"}
-            className="absolute top-3 right-3 z-20 bg-white/90 backdrop-blur-md hover:bg-white focus:ring-2 focus:ring-[var(--islamic-gold)] w-10 h-10 rounded-full shadow-lg transition-transform duration-300 hover:scale-110"
+            aria-label={isItemInWishlist ? "Remove from wishlist" : "Add to wishlist"}
+            className="absolute top-3 right-3 z-20 bg-white/90 backdrop-blur-md hover:bg-white focus:ring-2 focus:ring-[var(--islamic-gold)] w-10 h-10 rounded-full shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 group/heart"
             onClick={handleWishlistToggle}
-            disabled={wishlistLoading}
+            disabled={isSyncing}
           >
-            <Heart className={`w-5 h-5 ${isInWishlist ? "fill-red-500 text-red-500" : "text-[var(--islamic-green)]"}`} />
+            <Heart className={`w-5 h-5 transition-colors duration-300 ${isItemInWishlist ? "fill-red-500 text-red-500" : "text-[var(--islamic-green)] group-hover/heart:text-red-400"}`} />
           </Button>
         )}
 

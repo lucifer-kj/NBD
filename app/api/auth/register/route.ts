@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 import { createCustomer, loginCustomer, updateCartBuyerIdentity } from '@/lib/shopify';
 import { cookies } from 'next/headers';
 

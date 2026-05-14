@@ -46,8 +46,37 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     notFound();
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://www.naazbook.in"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Insights",
+        "item": "https://www.naazbook.in/blog"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": article.title,
+        "item": `https://www.naazbook.in/blog/${blogHandle}/${articleHandle}`
+      }
+    ]
+  };
+
   return (
     <article className="bg-[#FDFCFB] min-h-screen pb-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Header / Hero */}
       <header className="relative h-[40vh] md:h-[60vh] w-full bg-black">
         <Image 

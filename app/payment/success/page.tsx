@@ -4,8 +4,12 @@ import { useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useCartStore } from "@/store/cart-store";
 
+import { useSearchParams } from "next/navigation";
+
 function SuccessContent() {
   const clearCart = useCartStore((s) => s.clearCart);
+  const searchParams = useSearchParams();
+  const orderId = searchParams.get("order_id") || searchParams.get("id");
 
   useEffect(() => {
     // In a Shopify headless flow, we typically reach this page after 
@@ -22,10 +26,16 @@ function SuccessContent() {
         <h1 className="text-3xl font-bold text-[var(--islamic-green)] mb-4 font-playfair">
           Order Placed!
         </h1>
-        <p className="text-gray-600 mb-8 leading-relaxed">
+        <p className="text-gray-600 mb-4 leading-relaxed">
           Thank you for shopping with Naaz Book Depot. Your order is being processed and you will receive an email confirmation shortly.
         </p>
-        <div className="flex flex-col gap-3">
+        {orderId && (
+          <div className="bg-gray-50 border border-gray-100 rounded-lg p-4 mb-8">
+            <p className="text-sm text-gray-500 mb-1">Order Reference</p>
+            <p className="font-mono font-bold text-gray-900">#{orderId}</p>
+          </div>
+        )}
+        <div className="flex flex-col gap-3 mt-4">
           <Link 
             href="/account" 
             className="inline-block bg-[var(--islamic-green)] text-white font-semibold px-8 py-3 rounded-lg hover:bg-opacity-90 transition-all shadow-md"

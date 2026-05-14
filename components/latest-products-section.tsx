@@ -57,7 +57,7 @@ export default function LatestProductsSection({ products, loading = false }: Lat
                     viewport={{ once: true, margin: "-40px" }}
                     variants={reduced ? undefined : fadeInUp}
                   >
-                    <ProductCard product={product} showWishlist={false} />
+                    <ProductCard product={product} />
                   </motion.div>
                 ))}
           </div>
@@ -76,7 +76,7 @@ export default function LatestProductsSection({ products, loading = false }: Lat
                 {loading ? (
                   <ProductSkeleton />
                 ) : (
-                  <ProductCard product={item as ReshapedProduct} showWishlist={false} />
+                  <ProductCard product={item as ReshapedProduct} />
                 )}
               </motion.div>
             ))}

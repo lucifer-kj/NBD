@@ -172,6 +172,9 @@ export type Customer = {
   wishlist?: {
     value: string;
   };
+  cart_id?: {
+    value: string;
+  };
 };
 
 export type Article = {
@@ -192,4 +195,10 @@ export type Article = {
 export type CustomerAccessToken = {
   accessToken: string;
   expiresAt: string;
+};
+
+export type ShopifyUserError = {
+  code?: string;
+  field?: string[];
+  message: string;
 };

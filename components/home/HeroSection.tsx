@@ -73,7 +73,7 @@ const HeroSection = () => {
           </div>
 
           <h1 className="text-4xl md:text-6xl font-headings font-bold text-white mb-4 leading-tight drop-shadow-2xl">
-            Naaz <span className="text-[var(--islamic-gold)]">Book</span> Depot
+            India&apos;s Most Trusted Source for <span className="text-[var(--islamic-gold)]">Authentic Islamic Books</span> Since 1967
           </h1>
 
           {/* Typewriter effect */}
@@ -85,23 +85,22 @@ const HeroSection = () => {
           </div>
 
           <p className="text-base md:text-lg text-white/80 mb-8 leading-relaxed max-w-xl font-light">
-            A pioneering publishing company for over five decades, specializing in authentic Islamic literature
-            and the Qur&apos;an in multiple languages, serving the global Muslim community.
+            Buy authentic Quran copies, Islamic literature, scholarly texts, and premium Attar — curated and published from Kolkata for Muslims across India and worldwide.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
             <Link
-              href="/about"
+              href="/books"
               className="group bg-[var(--islamic-gold)] text-[var(--islamic-green-dark)] px-8 py-3 rounded-xl font-bold hover:bg-[var(--islamic-gold-dark)] transition-all duration-300 text-center shadow-lg hover:shadow-[var(--islamic-gold)]/20 flex items-center justify-center gap-2 text-sm"
             >
-              Discover Our Legacy
+              Browse Islamic Books
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
-              href="/books"
+              href="/atar"
               className="group border-2 border-white/30 text-white px-8 py-3 rounded-xl font-bold hover:bg-white hover:text-[var(--islamic-green-dark)] transition-all duration-300 text-center flex items-center justify-center gap-2 backdrop-blur-sm text-sm"
             >
-              Explore Collection
+              Shop Premium Attar
               <BookOpen size={18} className="group-hover:scale-110 transition-transform" />
             </Link>
           </div>

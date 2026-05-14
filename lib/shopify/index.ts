@@ -1,5 +1,5 @@
-import { SHOPIFY_GRAPHQL_API_ENDPOINT } from './utils';
-import { getProductQuery, getProductsQuery, getCustomerQuery, predictiveSearchQuery, getOrderQuery, getProductsByIdsQuery, getBlogArticlesQuery, getArticleQuery } from './queries';
+import { SHOPIFY_GRAPHQL_API_ENDPOINT, fetchWithRetry } from './utils';
+import { getProductQuery, getProductsQuery, getCartQuery, getCustomerQuery, predictiveSearchQuery, getOrderQuery, getProductsByIdsQuery, getBlogArticlesQuery, getArticleQuery } from './queries';
 import {
   createCartMutation,
   addToCartMutation,
@@ -13,7 +13,10 @@ import {
   customerAddressCreateMutation,
   customerAddressUpdateMutation,
   customerAddressDeleteMutation,
-  customerDefaultAddressUpdateMutation
+  customerDefaultAddressUpdateMutation,
+  customerRecoverMutation,
+  customerResetByUrlMutation,
+  setMetafieldsMutation
 } from './mutations';
 import {
   Product,
@@ -24,7 +27,8 @@ import {
   Customer,
   Order,
   Article,
-  CustomerAccessToken
+  CustomerAccessToken,
+  ShopifyUserError
 } from '../../types/shopify';
 
 const domain = process.env.SHOPIFY_STORE_DOMAIN
@@ -44,13 +48,21 @@ if (!key) {
   console.warn('SHOPIFY_STOREFRONT_ACCESS_TOKEN is not defined in environment variables.');
 }
 
+const adminKey = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN || '';
+const adminEndpoint = domain ? `${domain}/admin/api/2026-04/graphql.json` : '';
+
+if (!adminKey) {
+  console.warn('SHOPIFY_ADMIN_ACCESS_TOKEN is not defined in environment variables.');
+}
+
 export async function shopifyFetch<T>({
   cache = 'force-cache',
   headers,
   query,
   tags,
   variables,
-  revalidate = 3600
+  revalidate = 3600,
+  retries = 0
 }: {
   cache?: RequestCache;
   headers?: HeadersInit;
@@ -58,9 +70,11 @@ export async function shopifyFetch<T>({
   tags?: string[];
   variables?: Record<string, unknown>;
   revalidate?: number | false;
+  /** Number of retries for transient failures. Use 3 for mutations, 0 for cached queries. */
+  retries?: number;
 }): Promise<{ status: number; body: T } | never> {
   try {
-    const result = await fetch(endpoint, {
+    const fetchOptions: RequestInit = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -76,7 +90,12 @@ export async function shopifyFetch<T>({
         tags,
         revalidate
       }
-    });
+    } as RequestInit;
+
+    // Use retry-capable fetch for mutations (retries > 0), standard fetch for cached queries
+    const result = retries > 0
+      ? await fetchWithRetry(endpoint, fetchOptions, retries)
+      : await fetch(endpoint, fetchOptions);
 
     const body = await result.json();
 
@@ -98,6 +117,47 @@ export async function shopifyFetch<T>({
         query 
       }
     });
+  }
+}
+
+export async function shopifyAdminFetch<T>({
+  query,
+  variables,
+  retries = 3
+}: {
+  query: string;
+  variables?: Record<string, unknown>;
+  retries?: number;
+}): Promise<{ status: number; body: T } | never> {
+  try {
+    const fetchOptions: RequestInit = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Shopify-Access-Token': adminKey
+      },
+      body: JSON.stringify({
+        ...(query && { query }),
+        ...(variables && { variables })
+      }),
+      cache: 'no-store'
+    };
+
+    const result = await fetchWithRetry(adminEndpoint, fetchOptions, retries);
+    const body = await result.json();
+
+    if (body.errors) {
+      const error = body.errors[0];
+      throw new Error(error.message || 'Shopify Admin API Error', { cause: error });
+    }
+
+    return {
+      status: result.status,
+      body
+    };
+  } catch (e: unknown) {
+    if (e instanceof Error) throw e;
+    throw new Error('Error fetching from Shopify Admin API', { cause: e });
   }
 }
 
@@ -176,21 +236,36 @@ export async function getProducts({
 export async function createCart(): Promise<ReshapedCart> {
   const res = await shopifyFetch<{ data: { cartCreate: { cart: Cart } } }>({
     query: createCartMutation,
-    cache: 'no-store'
+    cache: 'no-store',
+    retries: 3
   });
 
   return reshapeCart(res.body.data.cartCreate.cart);
 }
 
+export async function getCart(cartId: string): Promise<ReshapedCart | null> {
+  const res = await shopifyFetch<{ data: { cart: Cart } }>({
+    query: getCartQuery,
+    variables: { cartId },
+    cache: 'no-store'
+  });
+
+  if (!res.body.data.cart) {
+    return null;
+  }
+
+  return reshapeCart(res.body.data.cart);
+}
+
 export async function addToCart(
   cartId: string,
   lines: { merchandiseId: string; quantity: number }[]
-): Promise<{ cart: ReshapedCart; userErrors: any[] }> {
+): Promise<{ cart: ReshapedCart; userErrors: ShopifyUserError[] }> {
   const res = await shopifyFetch<{ 
     data: { 
       cartLinesAdd: { 
         cart: Cart;
-        userErrors: any[];
+        userErrors: ShopifyUserError[];
       } 
     } 
   }>({
@@ -199,7 +274,8 @@ export async function addToCart(
       cartId,
       lines
     },
-    cache: 'no-store'
+    cache: 'no-store',
+    retries: 3
   });
 
   return {
@@ -211,12 +287,12 @@ export async function addToCart(
 export async function removeFromCart(
   cartId: string, 
   lineIds: string[]
-): Promise<{ cart: ReshapedCart; userErrors: any[] }> {
+): Promise<{ cart: ReshapedCart; userErrors: ShopifyUserError[] }> {
   const res = await shopifyFetch<{ 
     data: { 
       cartLinesRemove: { 
         cart: Cart;
-        userErrors: any[];
+        userErrors: ShopifyUserError[];
       } 
     } 
   }>({
@@ -225,7 +301,8 @@ export async function removeFromCart(
       cartId,
       lineIds
     },
-    cache: 'no-store'
+    cache: 'no-store',
+    retries: 3
   });
 
   return {
@@ -237,12 +314,12 @@ export async function removeFromCart(
 export async function updateCart(
   cartId: string,
   lines: { id: string; merchandiseId: string; quantity: number }[]
-): Promise<{ cart: ReshapedCart; userErrors: any[] }> {
+): Promise<{ cart: ReshapedCart; userErrors: ShopifyUserError[] }> {
   const res = await shopifyFetch<{ 
     data: { 
       cartLinesUpdate: { 
         cart: Cart;
-        userErrors: any[];
+        userErrors: ShopifyUserError[];
       } 
     } 
   }>({
@@ -251,7 +328,8 @@ export async function updateCart(
       cartId,
       lines
     },
-    cache: 'no-store'
+    cache: 'no-store',
+    retries: 3
   });
 
   return {
@@ -287,7 +365,7 @@ export async function logoutCustomer(customerAccessToken: string): Promise<boole
   const res = await shopifyFetch<{
     data: {
       customerAccessTokenDelete: {
-        userErrors: any[];
+        userErrors: ShopifyUserError[];
       };
     };
   }>({
@@ -349,7 +427,8 @@ export async function updateCartBuyerIdentity(cartId: string, customerAccessToke
         email
       }
     },
-    cache: 'no-store'
+    cache: 'no-store',
+    retries: 3
   });
 
   return reshapeCart(res.body.data.cartBuyerIdentityUpdate.cart);
@@ -400,7 +479,8 @@ export async function updateCartDiscount(cartId: string, discountCodes: string[]
       cartId,
       discountCodes
     },
-    cache: 'no-store'
+    cache: 'no-store',
+    retries: 3
   });
 
   return res.body.data.cartDiscountCodesUpdate.cart;
@@ -502,4 +582,76 @@ export async function updateDefaultAddress(customerAccessToken: string, addressI
   });
 
   return res.body.data.customerDefaultAddressUpdate;
+}
+
+export async function recoverCustomerPassword(email: string): Promise<{ errors?: string[] }> {
+  const res = await shopifyFetch<{
+    data: {
+      customerRecover: {
+        customerUserErrors: { message: string }[];
+      };
+    };
+  }>({
+    query: customerRecoverMutation,
+    variables: { email },
+    cache: 'no-store'
+  });
+
+  const errors = res.body.data.customerRecover?.customerUserErrors || [];
+  if (errors.length > 0) {
+    return { errors: errors.map((e) => e.message) };
+  }
+  return {};
+}
+
+export async function resetCustomerPassword(resetUrl: string, password: string): Promise<{ customer?: Customer, customerAccessToken?: CustomerAccessToken, errors?: string[] }> {
+  const res = await shopifyFetch<{
+    data: {
+      customerResetByUrl: {
+        customer: Customer;
+        customerAccessToken: CustomerAccessToken;
+        customerUserErrors: { message: string }[];
+      };
+    };
+  }>({
+    query: customerResetByUrlMutation,
+    variables: { resetUrl, password },
+    cache: 'no-store'
+  });
+
+  const payload = res.body.data.customerResetByUrl;
+  const errors = payload?.customerUserErrors || [];
+  if (errors.length > 0) {
+    return { errors: errors.map((e) => e.message) };
+  }
+  return { 
+    customer: payload.customer, 
+    customerAccessToken: payload.customerAccessToken 
+  };
+}
+
+export async function setCustomerCart(customerId: string, cartId: string): Promise<boolean> {
+  const res = await shopifyAdminFetch<{
+    data: {
+      metafieldsSet: {
+        metafields: unknown[];
+        userErrors: ShopifyUserError[];
+      };
+    };
+  }>({
+    query: setMetafieldsMutation,
+    variables: {
+      metafields: [
+        {
+          ownerId: customerId,
+          namespace: 'custom',
+          key: 'cart_id',
+          value: cartId,
+          type: 'single_line_text_field'
+        }
+      ]
+    }
+  });
+
+  return !res.body.data.metafieldsSet.userErrors.length;
 }

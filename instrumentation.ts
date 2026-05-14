@@ -8,7 +8,7 @@ export function register() {
       globalThis.localStorage.getItem = () => null;
       globalThis.localStorage.setItem = () => {};
       globalThis.localStorage.removeItem = () => {};
-    } catch (e) {
+    } catch {
       // Ignore
     }
   }

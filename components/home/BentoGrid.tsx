@@ -24,11 +24,11 @@ export default function BentoGrid() {
           className="text-center mb-12 md:mb-16"
         >
           <motion.h2 variants={fadeInUp} className="text-section-fluid font-headings font-bold text-[var(--islamic-green)] mb-3">
-            Premium Collections
+            Explore Our Collections
           </motion.h2>
           <motion.div variants={fadeInUp} className="gold-divider mx-auto mb-4" />
           <motion.p variants={fadeInUp} className="text-subtitle text-[var(--charcoal)]/70 max-w-xl mx-auto uppercase tracking-widest text-xs font-semibold">
-            Curated Islamic Excellence
+            From hand-curated Qur&apos;an editions to rare Islamic manuscripts and authentic Attar
           </motion.p>
         </motion.div>
 
@@ -47,13 +47,13 @@ export default function BentoGrid() {
             <Link href="/books" className="absolute inset-0 z-10" />
             <Image
               src="/Images/Books.jpeg"
-              alt="Islamic Books Collection"
+              alt="Authentic Quran editions and Islamic literature in multiple languages"
               fill
               className="object-cover transition-transform duration-1000 group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-8 flex flex-col justify-end">
               <h3 className="text-2xl md:text-4xl font-headings font-bold text-white mb-2">Islamic Literature</h3>
-              <p className="text-white/80 text-sm md:text-base max-w-xs mb-4">Authentic Qur&apos;an and scholarly works in multiple languages.</p>
+              <p className="text-white/80 text-sm md:text-base max-w-xs mb-4">Authentic Qur&apos;an editions, Hadith collections, Tafsir, Fiqh, and Islamic history books — available in Arabic, Urdu, English, and Bengali.</p>
               <span className="text-[var(--islamic-gold)] flex items-center gap-2 text-sm font-bold uppercase tracking-widest">
                 Explore Collection <ArrowRight size={16} />
               </span>
@@ -68,12 +68,13 @@ export default function BentoGrid() {
             <Link href="/atar" className="absolute inset-0 z-10" />
             <Image
               src="/Images/ittars.jpeg"
-              alt="Premium Attar Fragrances"
+              alt="Pure alcohol-free Attar and Islamic fragrances"
               fill
               className="object-cover transition-transform duration-1000 group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-6 flex flex-col justify-end">
               <h3 className="text-xl md:text-2xl font-headings font-bold text-white mb-1">Premium Attar</h3>
+              <p className="text-white/70 text-xs mb-2 line-clamp-1">Pure, alcohol-free Attar sourced from the finest ingredients.</p>
               <span className="text-[var(--islamic-gold)] text-xs font-bold uppercase tracking-widest">Discover Fragrances</span>
             </div>
           </motion.div>
@@ -86,12 +87,13 @@ export default function BentoGrid() {
             <Link href="/products?search=rehal" className="absolute inset-0 z-10" />
             <Image
               src="/Images/Rehals.jpeg"
-              alt="Handcrafted Quran Stands"
+              alt="Handcrafted wooden and brass Quran stands (Rehals)"
               fill
               className="object-cover transition-transform duration-1000 group-hover:scale-110"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-6 flex flex-col justify-end">
               <h3 className="text-xl md:text-2xl font-headings font-bold text-white mb-1">Qur&apos;an Stands</h3>
+              <p className="text-white/70 text-xs mb-2 line-clamp-1">Beautifully crafted wooden and brass Rehals — handmade and perfect for gifts.</p>
               <span className="text-[var(--islamic-gold)] text-xs font-bold uppercase tracking-widest">Shop Artisanal Rehals</span>
             </div>
           </motion.div>

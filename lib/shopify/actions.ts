@@ -3,7 +3,7 @@
 import { revalidateTag } from 'next/cache'
 import { createCart, addToCart, removeFromCart, updateCart, shopifyFetch, reshapeCart } from './index'
 import { cartFragment } from './fragments'
-import { ReshapedCart } from '@/types/shopify'
+import { Cart } from '@/types/shopify'
 
 export async function createCartAction() {
   return await createCart()
@@ -29,7 +29,7 @@ export async function updateCartAction(cartId: string, lines: { id: string; merc
 
 export async function getCartAction(cartId: string) {
   try {
-    const res = await shopifyFetch<{ data: { cart: any } }>({
+    const res = await shopifyFetch<{ data: { cart: Cart } }>({
       query: `
         query getCart($cartId: ID!) {
           cart(id: $cartId) {
@@ -58,7 +58,24 @@ export async function updateCartDiscountAction(cartId: string, discountCodes: st
   return { cart: reshapeCart(cart) }
 }
 
-export async function createAddressAction(address: any) {
+export async function updateCartBuyerIdentityAction(cartId: string, email: string) {
+  const { cookies } = await import('next/headers')
+  const { updateCartBuyerIdentity } = await import('./index')
+  const token = (await cookies()).get('customerAccessToken')?.value
+  
+  if (!token) return { error: 'Not authenticated' }
+  
+  try {
+    const cart = await updateCartBuyerIdentity(cartId, token, email)
+    revalidateTag('cart')
+    return { cart }
+  } catch (error) {
+    console.error('Error updating cart buyer identity:', error)
+    return { error: 'Failed to update buyer identity' }
+  }
+}
+
+export async function createAddressAction(address: unknown) {
   const { cookies } = await import('next/headers')
   const { createCustomerAddress } = await import('./index')
   const token = (await cookies()).get('customerAccessToken')?.value
@@ -66,7 +83,7 @@ export async function createAddressAction(address: any) {
   return await createCustomerAddress(token, address)
 }
 
-export async function updateAddressAction(id: string, address: any) {
+export async function updateAddressAction(id: string, address: unknown) {
   const { cookies } = await import('next/headers')
   const { updateCustomerAddress } = await import('./index')
   const token = (await cookies()).get('customerAccessToken')?.value

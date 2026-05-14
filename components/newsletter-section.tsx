@@ -52,9 +52,9 @@ export default function NewsletterSection() {
             variants={fadeInUp}
             className="text-section-fluid font-headings font-bold text-white mb-2"
           >
-            Stay Updated,{" "}
+            Join 10,000+ Muslims{" "}
             <span className="text-[var(--islamic-gold)] italic font-light">
-              Stay Enlightened
+              Seeking Knowledge
             </span>
           </motion.h2>
           <motion.div variants={fadeInUp} className="gold-divider mx-auto mb-4" />
@@ -62,7 +62,7 @@ export default function NewsletterSection() {
             variants={fadeInUp}
             className="text-white/75 mb-8 text-subtitle max-w-md mx-auto"
           >
-            Be the first to know about new books, offers, and knowledge updates.
+            Subscribe for new arrivals, exclusive offers, Ramadan book guides, and curated reading lists.
           </motion.p>
 
           <motion.div variants={fadeInUp}>
@@ -90,7 +90,7 @@ export default function NewsletterSection() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
+                  placeholder="Your email address"
                   className={`rounded-xl px-5 py-3.5 text-[var(--islamic-green)] bg-white/95 border-2 focus:outline-none focus:ring-2 focus:ring-[var(--islamic-gold)] flex-1 transition-all duration-200 text-sm touch-target ${
                     error ? "border-red-400" : "border-transparent"
                   }`}
@@ -114,10 +114,13 @@ export default function NewsletterSection() {
                   ) : (
                     <Send size={16} />
                   )}
-                  {loading ? "Subscribing..." : "Subscribe"}
+                  {loading ? "Subscribing..." : "Subscribe & Stay Enlightened"}
                 </motion.button>
               </form>
             )}
+            <p className="text-white/50 text-[10px] mt-4 uppercase tracking-[0.2em] font-medium">
+              No spam. Unsubscribe anytime. We send only what matters.
+            </p>
             {error && !success && (
               <motion.div
                 id="newsletter-error"

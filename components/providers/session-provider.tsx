@@ -26,7 +26,10 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<Customer | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const cartId = useCartStore(state => state.cartId);
+  const { cartId, initCart } = useCartStore(state => ({
+    cartId: state.cartId,
+    initCart: state.initCart
+  }));
 
   const refreshSession = async () => {
     try {
@@ -50,6 +53,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshSession();
   }, []);
 
+  // Listen for cross-tab logout
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'auth-sync-logout') {
+        setUser(null);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   const login = async (email: string, password: string) => {
     try {
       const res = await fetch('/api/auth/login', {
@@ -62,6 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (res.ok && data.success) {
         await refreshSession();
+        await initCart();
         return { success: true };
       } else {
         return { success: false, error: data.error || 'Login failed' };
@@ -83,6 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (res.ok && data.success) {
         await refreshSession();
+        await initCart();
         return { success: true };
       } else {
         return { success: false, error: data.error || 'Registration failed' };
@@ -95,6 +112,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
+      // Trigger cross-tab sync
+      localStorage.setItem('auth-sync-logout', Date.now().toString());
     } catch (error) {
       console.error('Logout failed:', error);
     } finally {
