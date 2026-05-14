@@ -19,10 +19,12 @@ export default function DiscountCodeInput() {
     if (!code.trim() || isLoading) return;
 
     setIsSubmitting(true);
+    if (discountError) clearDiscountError();
+    
     try {
       await applyDiscount(code.trim());
       setCode('');
-    } catch (error) {
+    } catch {
       // Error is handled in the store and surfaced via discountError
     } finally {
       setIsSubmitting(false);

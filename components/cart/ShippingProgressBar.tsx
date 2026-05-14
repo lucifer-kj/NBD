@@ -25,9 +25,9 @@ export default function ShippingProgressBar() {
         <div className="flex-1">
           <p className="text-sm font-bold text-gray-900">
             {isFreeShipping ? (
-              <span className="text-[var(--islamic-green)]">You've unlocked free shipping!</span>
+              <span className="text-[var(--islamic-green)]">You&apos;ve unlocked free shipping!</span>
             ) : (
-              <span>Add <span className="text-[var(--islamic-green)]">{formatPrice(remaining)}</span> more for free shipping</span>
+              <span className="text-gray-500 italic">You&apos;re only {formatPrice(remaining.toString(), 'INR')} away from free shipping</span>
             )}
           </p>
         </div>

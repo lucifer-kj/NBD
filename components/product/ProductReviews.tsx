@@ -16,12 +16,12 @@ interface Review {
     name: string;
   };
 }
-
 interface ProductReviewsProps {
   productId: string;
+  productTitle?: string;
 }
 
-export default function ProductReviews({ productId }: ProductReviewsProps) {
+export default function ProductReviews({ productId, productTitle }: ProductReviewsProps) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -45,7 +45,6 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
 
   const handleReviewSubmit = async (review: { name: string; email: string; rating: number; title: string; comment: string }) => {
     setIsSubmitting(true);
-    // Extract numerical ID from GID if needed
     const numericalId = productId.includes('gid://') ? productId.split('/').pop() : productId;
     
     try {
@@ -64,13 +63,14 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
 
       if (res.ok) {
         alert('Review submitted successfully! It will appear after moderation.');
-        fetchReviews(); // Refetch to show the new review (if moderation allows)
+        fetchReviews();
       } else {
         const errorData = await res.json();
         throw new Error(errorData.error || 'Failed to submit review');
       }
-    } catch (error: any) {
-      alert(error.message || 'Error submitting review. Please try again.');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Error submitting review. Please try again.';
+      alert(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -79,7 +79,9 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
   return (
     <div className="mt-20 pt-10 border-t border-gray-100">
       <div className="flex items-center justify-between mb-10">
-        <h2 className="text-2xl font-headings font-bold text-[var(--islamic-green)]">Customer Reviews</h2>
+        <h2 className="text-2xl font-headings font-bold text-[var(--islamic-green)]">
+          Customer Reviews {productTitle && <span className="text-gray-400 font-normal">for {productTitle}</span>}
+        </h2>
         <div className="flex items-center gap-2">
           <Star size={20} fill="#D4AF37" className="text-[var(--islamic-gold)]" />
           <span className="font-bold">
@@ -121,11 +123,11 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
                 </div>
                 
                 <div className="relative mb-6">
-                  <span className="absolute -left-2 -top-2 text-4xl text-gray-100 font-serif leading-none opacity-50">"</span>
+                  <span className="absolute -left-2 -top-2 text-4xl text-gray-100 font-serif leading-none opacity-50">&quot;</span>
                   <p className="text-gray-600 text-sm leading-relaxed relative z-10 italic">
                     {review.body}
                   </p>
-                  <span className="absolute -right-2 -bottom-4 text-4xl text-gray-100 font-serif leading-none opacity-50">"</span>
+                  <span className="absolute -right-2 -bottom-4 text-4xl text-gray-100 font-serif leading-none opacity-50">&quot;</span>
                 </div>
 
                 <div className="flex items-center gap-3 pt-4 border-t border-gray-50">

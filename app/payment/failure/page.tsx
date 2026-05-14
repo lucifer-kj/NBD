@@ -15,7 +15,7 @@ export default function PaymentFailurePage() {
           Payment Failed
         </h1>
         <p className="text-gray-600 mb-8 leading-relaxed">
-          We couldn't process your payment. Don't worry, your cart is safe and no money was deducted.
+          We couldn&apos;t process your payment. Don&apos;t worry, your cart is safe and no money was deducted.
         </p>
         <div className="flex flex-col gap-3">
           <Button asChild className="w-full bg-[var(--islamic-green)] hover:bg-[var(--islamic-green-dark)] text-white font-bold py-6 rounded-xl shadow-md text-lg">

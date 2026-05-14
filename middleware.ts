@@ -5,40 +5,68 @@ import { decryptSession } from '@/lib/session';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Protect /account routes
-  if (pathname.startsWith('/account')) {
-    const sessionCookie = request.cookies.get('session')?.value;
-    const legacyToken = request.cookies.get('customerAccessToken')?.value;
-    
-    // Check if we have a valid session or at least the legacy token
-    let isAuthenticated = false;
-    
-    if (sessionCookie) {
-      const payload = await decryptSession(sessionCookie);
-      if (payload) {
-        isAuthenticated = true;
-      }
-    } else if (legacyToken) {
-      // Fallback for transition period if we still have the old cookie format
+  const sessionCookie = request.cookies.get('session')?.value;
+  const legacyToken = request.cookies.get('customerAccessToken')?.value;
+  
+  // Check authentication status
+  let isAuthenticated = false;
+  if (sessionCookie) {
+    const payload = await decryptSession(sessionCookie);
+    if (payload) {
       isAuthenticated = true;
     }
-    
+  } else if (legacyToken) {
+    isAuthenticated = true;
+  }
+
+  // Security: Basic Bot Protection
+  const userAgent = request.headers.get('user-agent') || '';
+  if (/bot|spider|crawler|curl|wget/i.test(userAgent) && !/google|bing|yandex|duckduckgo|whatsapp/i.test(userAgent)) {
+     // Optional: track aggressive custom bots
+  }
+
+  // Prepare standard response
+  const response = NextResponse.next();
+
+  // Security: Content Security Policy & Security Headers
+  const cspHeader = `
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.shopify.com https://vitals.vercel-insights.com;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    img-src 'self' blob: data: https://cdn.shopify.com https://v.fastly.net;
+    font-src 'self' https://fonts.gstatic.com;
+    object-src 'none';
+    base-uri 'self';
+    form-action 'self' https://*.shopify.com;
+    frame-ancestors 'none';
+    block-all-mixed-content;
+    upgrade-insecure-requests;
+  `.replace(/\s{2,}/g, ' ').trim();
+
+  response.headers.set('Content-Security-Policy', cspHeader);
+  response.headers.set('X-DNS-Prefetch-Control', 'on');
+  response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+  response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('Referrer-Policy', 'origin-when-cross-origin');
+
+  // Handle Protected Routes (/account)
+  if (pathname.startsWith('/account')) {
     if (!isAuthenticated) {
-      // Redirect to home with a login param
       const url = request.nextUrl.clone();
       url.pathname = '/';
       url.searchParams.set('login', 'true');
-      return NextResponse.redirect(url);
+      const redirectResponse = NextResponse.redirect(url);
+      // Re-apply security headers to redirect response
+      redirectResponse.headers.set('Content-Security-Policy', cspHeader);
+      redirectResponse.headers.set('X-Frame-Options', 'SAMEORIGIN');
+      return redirectResponse;
     }
   }
-  
-  // Protect /checkout if necessary (assuming it might be a custom checkout or we need to ensure cart is synced)
-  // For headless Shopify, checkout usually redirects to Shopify's domain, but if we have a custom route:
-  // if (pathname.startsWith('/checkout') && !isAuthenticated) { ... }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
-  matcher: ['/account/:path*'],
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
 };

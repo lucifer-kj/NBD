@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
     
     // Filter reviews for the specific product if productId is provided
     // We compare strings to be safe with types
-    const filteredReviews = data.reviews.filter((review: any) => 
+    const filteredReviews = data.reviews.filter((review: { product_external_id: number | string }) => 
       review.product_external_id?.toString() === productId.toString()
     );
 

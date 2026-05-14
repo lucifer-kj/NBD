@@ -139,6 +139,7 @@ export type Order = {
   financialStatus: string;
   fulfillmentStatus: string;
   totalPrice: Money;
+  currentTotalPrice: Money;
   totalShippingPrice: Money;
   totalTax: Money;
   subtotalPrice: Money;
@@ -181,12 +182,18 @@ export type Article = {
   id: string;
   handle: string;
   title: string;
+  content: string;
   contentHtml: string;
   excerpt: string;
+  excerptHtml?: string;
   publishedAt: string;
   image?: Image;
   authorV2: {
     name: string;
+  };
+  blog?: {
+    handle: string;
+    title: string;
   };
   seo: SEO;
   tags: string[];

@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getCustomerDetails } from '@/lib/shopify';
+import { MailingAddress } from '@/types/shopify';
 import { ChevronLeft } from 'lucide-react';
 import AddressBook from '@/components/account/address-book';
 
@@ -25,7 +26,7 @@ export default async function AddressesPage() {
     redirect('/');
   }
 
-  const addresses = customer.addresses?.edges?.map((edge: any) => edge.node) || [];
+  const addresses = (customer.addresses?.edges || []).map((edge: { node: MailingAddress }) => edge.node);
   const defaultAddressId = customer.defaultAddress?.id;
 
   return (

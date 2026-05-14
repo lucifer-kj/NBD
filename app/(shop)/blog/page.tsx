@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getBlogArticles } from '@/lib/shopify';
+import { Article } from '@/types/shopify';
 import { Calendar, User, ChevronRight } from 'lucide-react';
 
 export const metadata = {
@@ -42,7 +43,7 @@ export default async function BlogPage() {
       {/* Articles Grid */}
       <section className="container mx-auto px-4 -mt-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {blog.articles.map((article: any) => (
+          {blog.articles.map((article: Article) => (
             <article 
               key={article.id} 
               className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow border border-gray-100 flex flex-col"

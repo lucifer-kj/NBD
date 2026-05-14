@@ -17,7 +17,7 @@ export const revalidate = 3600;
 export async function generateStaticParams() {
   const blog = await getBlogArticles('news', 10);
   if (!blog) return [];
-  return blog.articles.map((article: any) => ({
+  return blog.articles.map((article: { handle: string }) => ({
     blogHandle: 'news',
     articleHandle: article.handle,
   }));

@@ -11,6 +11,7 @@ interface AuthContextType {
   register: (input: { firstName: string; lastName: string; email: string; password: string }) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   refreshSession: () => Promise<void>;
+  loginWithGoogle: (credential: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -21,6 +22,7 @@ const AuthContext = createContext<AuthContextType>({
   register: async () => ({ success: false, error: 'Not initialized' }),
   logout: async () => {},
   refreshSession: async () => {},
+  loginWithGoogle: async () => ({ success: false, error: 'Not initialized' }),
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -82,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         return { success: false, error: data.error || 'Login failed' };
       }
-    } catch (error) {
+    } catch {
       return { success: false, error: 'An unexpected error occurred' };
     }
   };
@@ -104,7 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         return { success: false, error: data.error || 'Registration failed' };
       }
-    } catch (error) {
+    } catch {
       return { success: false, error: 'An unexpected error occurred' };
     }
   };
@@ -121,8 +123,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const loginWithGoogle = async (credential: string) => {
+    try {
+      const res = await fetch('/api/auth/google/one-tap', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential, cartId })
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        await refreshSession();
+        await initCart();
+        return { success: true };
+      } else {
+        return { success: false, error: data.error || 'Google login failed' };
+      }
+    } catch {
+      return { success: false, error: 'An unexpected error occurred' };
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, register, logout, refreshSession }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, register, logout, refreshSession, loginWithGoogle }}>
       {children}
     </AuthContext.Provider>
   );

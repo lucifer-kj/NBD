@@ -5,9 +5,15 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Search, Loader2, X } from 'lucide-react';
 
+interface SearchResult {
+  products: Array<{ id: string; handle: string; title: string; featuredImage?: { url: string } }>;
+  collections: Array<{ id: string; handle: string; title: string }>;
+  articles: Array<{ id: string; handle: string; title: string }>;
+}
+
 export default function PredictiveSearch() {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<SearchResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -69,23 +75,23 @@ export default function PredictiveSearch() {
         )}
       </div>
 
-      {isOpen && (results?.products?.length > 0 || results?.collections?.length > 0 || results?.articles?.length > 0 || isLoading) && (
+      {isOpen && ((results?.products?.length ?? 0) > 0 || (results?.collections?.length ?? 0) > 0 || (results?.articles?.length ?? 0) > 0 || isLoading) && (
         <div className="absolute top-full left-0 w-full mt-3 bg-white border border-gray-100 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] z-[100] overflow-hidden animate-in fade-in zoom-in-95 duration-200 backdrop-blur-xl bg-white/95">
           {isLoading ? (
             <div className="p-8 flex flex-col items-center justify-center gap-3">
               <Loader2 className="w-6 h-6 text-primary animate-spin" />
               <p className="text-sm text-gray-500 font-medium italic">Searching our library...</p>
             </div>
-          ) : (
+          ) : results ? (
             <div className="p-2">
-              {results.products?.length > 0 && (
+              {(results.products?.length ?? 0) > 0 && (
                 <div className="mb-4">
                   <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-4 py-2">Suggested Products</h3>
                   <div className="space-y-1">
-                    {results.products.map((p: any) => (
+                    {results.products.map((p) => (
                       <Link
                         key={p.id}
-                        href={`/product/${p.handle}`}
+                        href={`/products/${p.handle}`}
                         className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-2xl transition-all group"
                         onClick={() => setIsOpen(false)}
                       >
@@ -108,14 +114,14 @@ export default function PredictiveSearch() {
                 </div>
               )}
 
-              {results.collections?.length > 0 && (
+              {(results.collections?.length ?? 0) > 0 && (
                 <div className="border-t border-gray-50 mt-2 pt-2">
                   <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-4 py-2">Collections</h3>
                   <div className="grid grid-cols-2 gap-1 p-1">
-                    {results.collections.map((c: any) => (
+                    {results.collections.map((c) => (
                       <Link
                         key={c.id}
-                        href={`/search/${c.handle}`}
+                        href={`/collections/${c.handle}`}
                         className="px-4 py-3 text-sm font-medium text-gray-700 hover:bg-primary/5 hover:text-primary rounded-xl transition-all"
                         onClick={() => setIsOpen(false)}
                       >
@@ -126,11 +132,11 @@ export default function PredictiveSearch() {
                 </div>
               )}
 
-              {results.articles?.length > 0 && (
+              {(results.articles?.length ?? 0) > 0 && (
                 <div className="border-t border-gray-50 mt-2 pt-2">
                   <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-4 py-2">Insights & Articles</h3>
                   <div className="space-y-1">
-                    {results.articles.map((a: any) => (
+                    {results.articles.map((a) => (
                       <Link
                         key={a.id}
                         href={`/blog/news/${a.handle}`}
@@ -149,11 +155,11 @@ export default function PredictiveSearch() {
               
               <div className="p-3 bg-gray-50 rounded-b-2xl text-center">
                  <button className="text-xs font-bold text-primary hover:underline">
-                    View all results for "{query}"
+                    View all results for &quot;{query}&quot;
                  </button>
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       )}
     </div>

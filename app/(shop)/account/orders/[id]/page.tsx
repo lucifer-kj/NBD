@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { redirect } from 'next/navigation';
 import { getOrder } from '@/lib/shopify';
+import { OrderLineItem } from '@/types/shopify';
 import { ChevronLeft, Package, MapPin, CreditCard, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -79,7 +80,7 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
               <Package size={20} className="text-[var(--islamic-gold)]" /> Items Ordered
             </h2>
             <div className="divide-y divide-gray-100">
-              {order.lineItems.edges.map((edge: any, idx: number) => {
+              {order.lineItems.edges.map((edge: { node: OrderLineItem }, idx: number) => {
                 const item = edge.node;
                 return (
                   <div key={idx} className="py-6 flex gap-6 group">
@@ -99,7 +100,7 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-gray-900">
-                        {formatPrice(item.variant?.price.amount, item.variant?.price.currencyCode)}
+                        {formatPrice(item.variant?.price?.amount || '0', item.variant?.price?.currencyCode || 'INR')}
                       </p>
                     </div>
                   </div>

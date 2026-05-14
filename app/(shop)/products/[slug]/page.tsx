@@ -114,7 +114,7 @@ export default async function ProductPage({ params }: PageProps) {
         </div>
 
         {/* Reviews Section */}
-        <ProductReviews productId={product.id} />
+        <ProductReviews productId={product.id} productTitle={product.title} />
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (

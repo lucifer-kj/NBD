@@ -33,8 +33,9 @@ const CartDrawer = () => {
     try {
       await applyDiscount(discountCode);
       setDiscountCode('');
-    } catch (err: any) {
-      setDiscountError(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to apply discount';
+      setDiscountError(message);
     } finally {
       setIsApplyingDiscount(false);
     }

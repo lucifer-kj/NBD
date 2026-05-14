@@ -93,7 +93,7 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
   const techSpecs = product.metafields?.find(m => m && m.namespace === 'custom' && m.key === 'technical_specs')?.value;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 pb-28 lg:pb-0">
       {/* Left Column: Image Gallery */}
       <motion.div 
         initial={{ opacity: 0, x: -20 }}
@@ -319,6 +319,26 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
           </div>
         </div>
       </motion.div>
+
+      {/* Sticky Mobile Add to Cart */}
+      <div className="lg:hidden fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-gray-100 p-4 z-[100] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] animate-in slide-in-from-bottom duration-300">
+        <div className="flex items-center gap-4 max-w-xl mx-auto">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold text-[var(--islamic-green)] truncate">{product.title}</p>
+            <p className="text-sm font-black text-gray-900">
+              {formatPrice(selectedVariant?.price.amount || product.priceRange.minVariantPrice.amount, selectedVariant?.price.currencyCode || product.priceRange.minVariantPrice.currencyCode)}
+            </p>
+          </div>
+          <Button 
+            onClick={handleAddToCart}
+            disabled={!product.availableForSale || isLoading}
+            className="bg-[var(--islamic-green)] hover:bg-[var(--islamic-green-dark)] text-white h-12 px-6 rounded-xl text-sm font-bold gap-2 shadow-lg shadow-[var(--islamic-green)]/20"
+          >
+            <ShoppingCart size={18} />
+            {isLoading ? "..." : "Add"}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -32,7 +32,7 @@ export default async function BlogSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {blog.articles.map((article: any) => (
+          {blog.articles.map((article: { id: string; handle: string; title: string; excerpt?: string; image?: { url: string; altText?: string }; publishedAt: string; content: string }) => (
             <Link 
               key={article.id} 
               href={`/blog/news/${article.handle}`}

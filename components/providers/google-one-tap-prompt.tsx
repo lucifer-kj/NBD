@@ -2,26 +2,27 @@
 
 import { useGoogleOneTapLogin } from "@react-oauth/google";
 import { useAuth } from "@/components/providers/session-provider";
+import { useMounted } from "@/hooks/use-mounted";
 
 /**
- * Must render only inside GoogleOAuthProvider when NEXT_PUBLIC_GOOGLE_CLIENT_ID is set.
+ * Renders the Google One Tap login prompt if the user is not authenticated.
+ * This component should only be rendered inside GoogleOAuthProvider.
  */
 export function GoogleOneTapPrompt() {
-  // const { isAuthenticated, loginWithGoogle } = useAuth();
+  const { loginWithGoogle, isAuthenticated } = useAuth();
+  const mounted = useMounted();
 
-  // useGoogleOneTapLogin({
-  //   onSuccess: async (credentialResponse) => {
-  //     const c = credentialResponse.credential;
-  //     if (!c) return;
-  //     try {
-  //       await loginWithGoogle(c);
-  //     } catch {
-  //       /* modal / toast can show later */
-  //     }
-  //   },
-  //   disabled: isAuthenticated,
-  //   cancel_on_tap_outside: true,
-  // });
+  useGoogleOneTapLogin({
+    onSuccess: async (credentialResponse) => {
+      if (credentialResponse.credential) {
+        await loginWithGoogle(credentialResponse.credential);
+      }
+    },
+    onError: () => {
+      console.error("Google One Tap login failed");
+    },
+    disabled: !mounted || isAuthenticated,
+  });
 
   return null;
 }

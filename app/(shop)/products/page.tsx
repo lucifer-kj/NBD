@@ -21,5 +21,9 @@ export default async function ProductsPage() {
     console.error("Error fetching products on server:", error)
   }
 
-  return <ProductsClient initialProducts={products} />
+  return (
+    <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading products...</div>}>
+      <ProductsClient initialProducts={products} />
+    </React.Suspense>
+  )
 }

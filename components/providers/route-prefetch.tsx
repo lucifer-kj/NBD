@@ -6,20 +6,15 @@ import { useRouter, usePathname } from 'next/navigation';
 // Routes that should be prefetched for optimal performance
 const IMPORTANT_ROUTES = [
   '/products',
-  '/categories',
+  '/books',
+  '/atar',
   '/cart',
-  '/dashboard/profile',
-  '/dashboard/orders',
-  '/dashboard/wishlist',
-  '/categories/shampoo',
-  '/categories/conditioner',
-  '/categories/treatment',
+  '/account',
+  '/wishlist',
+  '/blog',
   '/about',
   '/contact',
 ];
-
-// Categories for dynamic prefetching
-const CATEGORIES = ['shampoo', 'conditioner', 'treatment', 'styling', 'accessories'];
 
 // Type for NetworkInformation API
 interface NetworkInformation extends Navigator {
@@ -67,12 +62,7 @@ export function RoutePrefetcher() {
       setTimeout(prefetchRoutes, 200);
     }
     
-    // Prefetch category routes dynamically
-    if (pathname === '/categories' || pathname === '/products') {
-      CATEGORIES.forEach(category => {
-        router.prefetch(`/categories/${category}`);
-      });
-    }
+    // All important routes are already handled above
   }, [router, pathname]);
 
   // This component doesn't render anything

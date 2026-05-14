@@ -137,7 +137,7 @@ export function UserActions() {
       } else {
         setAuthError(result.error || (authMode === 'login' ? "Invalid credentials" : "Registration failed"));
       }
-    } catch (_err) {
+    } catch {
       setAuthError("An unexpected error occurred");
     } finally {
       setIsSubmitting(false);

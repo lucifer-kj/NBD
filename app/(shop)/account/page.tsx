@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getCustomerDetails } from '@/lib/shopify';
+import { Order } from '@/types/shopify';
 import { Package, Heart, User, ChevronRight, ShoppingBag, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import LogoutButton from './logout-button';
@@ -33,7 +34,7 @@ export default async function AccountPage() {
     }).format(parseFloat(amount));
   };
 
-  const orders = customer.orders?.edges?.map((edge: any) => edge.node) || [];
+  const orders = (customer.orders?.edges || []).map((edge: { node: Order }) => edge.node);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12 md:py-20">
@@ -119,7 +120,7 @@ export default async function AccountPage() {
 
             {orders.length > 0 ? (
               <div className="grid grid-cols-1 gap-4">
-                {orders.map((order: any) => (
+                {orders.map((order: Order) => (
                   <Link 
                     key={order.id} 
                     href={`/account/orders/${order.id.split('/').pop()}`}
@@ -132,7 +133,7 @@ export default async function AccountPage() {
                     
                     <div className="flex flex-wrap gap-4 items-center">
                       <div className="text-right">
-                        <p className="font-bold text-gray-900">{formatPrice(order.currentTotalPrice.amount, order.currentTotalPrice.currencyCode)}</p>
+                        <p className="font-bold text-gray-900">{formatPrice(order.currentTotalPrice?.amount || '0', order.currentTotalPrice?.currencyCode || 'INR')}</p>
                         <p className="text-xs text-gray-500">{order.lineItems.edges.length} items</p>
                       </div>
                       

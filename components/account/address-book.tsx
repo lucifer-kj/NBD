@@ -339,7 +339,7 @@ export default function AddressBook({ addresses: initialAddresses, defaultAddres
         {addresses.length === 0 && (
           <div className="md:col-span-2 bg-gray-50 rounded-3xl p-16 text-center border border-dashed border-gray-200">
             <MapPin size={48} className="mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500 italic">You haven't added any addresses yet.</p>
+            <p className="text-gray-500 text-sm">You haven&apos;t added any addresses yet.</p>
           </div>
         )}
       </div>

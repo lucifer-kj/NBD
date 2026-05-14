@@ -1,11 +1,12 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
-import { Search, SlidersHorizontal, Grid2X2, List, X, Filter } from 'lucide-react'
+import React, { useState } from 'react'
+import { Search, Grid2X2, List, SlidersHorizontal } from 'lucide-react'
 import ProductCard from "@/components/product-card"
 import { ReshapedProduct } from "@/types/shopify"
 import { motion, AnimatePresence } from "framer-motion"
 import { fadeInUp, staggerContainer } from "@/lib/motion.config"
+import { useSearchParams } from 'next/navigation'
 
 const CATEGORIES = ['All Products', 'Books', 'Atar', 'Prayer Mats', 'Rehals', 'Newest']
 
@@ -14,8 +15,11 @@ interface ProductsClientProps {
 }
 
 export default function ProductsClient({ initialProducts }: ProductsClientProps) {
+  const searchParams = useSearchParams()
+  const initialQuery = searchParams.get('search') || ''
+  
   const [activeCategory, setActiveCategory] = useState('All Products')
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchQuery, setSearchQuery] = useState(initialQuery)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showFilters, setShowFilters] = useState(false)
   
@@ -25,7 +29,7 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                          product.description?.toLowerCase().includes(searchQuery.toLowerCase())
     
     if (activeCategory === 'All Products') return matchesSearch
-    if (activeCategory === 'Newest') return matchesSearch // In a real app, this might involve sorting
+    if (activeCategory === 'Newest') return matchesSearch
     
     const matchesCategory = product.tags?.some(tag => 
       tag.toLowerCase() === activeCategory.toLowerCase()
@@ -142,6 +146,9 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                   <Search className="text-gray-400" size={24} />
                 </div>
                 <h3 className="text-xl font-bold text-[var(--charcoal)] mb-2">No products found</h3>
+                {searchQuery && (
+                   <span className="text-gray-400 italic block mb-2">No products matching &quot;{searchQuery}&quot; found</span>
+                )}
                 <p className="text-gray-500 max-w-xs mx-auto">Try adjusting your filters or search query to find what you&apos;re looking for.</p>
                 <button 
                   onClick={() => { setActiveCategory('All Products'); setSearchQuery(''); }}
