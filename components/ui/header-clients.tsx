@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react';
+import { GoogleLogin } from '@react-oauth/google';
 import Link from 'next/link';
 import { ChevronDown, Search, User, LogOut, Menu, X, Heart } from 'lucide-react';
 import { useAuth } from '../providers/session-provider';
@@ -107,7 +108,7 @@ export function UserActions() {
   const [lastName, setLastName] = useState("");
   const [authError, setAuthError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user, isAuthenticated, logout, login, register } = useAuth();
+  const { user, isAuthenticated, logout, login, register, loginWithGoogle } = useAuth();
   const mounted = useMounted();
 
   const handleSignOut = () => {
@@ -254,13 +255,44 @@ export function UserActions() {
               />
               {authError && <p className="text-xs text-red-600 font-medium">{authError}</p>}
               
-                <button 
+              <button 
                 disabled={isSubmitting}
-                className="w-full bg-[var(--islamic-gold)] hover:bg-[var(--islamic-gold-dark)] text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50"
+                className="w-full bg-[var(--islamic-gold)] hover:bg-[var(--islamic-gold-dark)] text-[var(--islamic-green-dark)] font-bold py-3 rounded-lg transition-colors disabled:opacity-50 shadow-md"
                 onClick={handleAuth}
               >
                 {isSubmitting ? 'Processing...' : (authMode === 'login' ? 'Sign In' : 'Create Account')}
               </button>
+
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200"></div>
+                </div>
+                <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-widest">
+                  <span className="px-3 bg-white text-gray-400">Or continue with</span>
+                </div>
+              </div>
+
+              <div className="flex justify-center w-full">
+                <GoogleLogin
+                  onSuccess={async (credentialResponse) => {
+                    if (credentialResponse.credential) {
+                      const result = await loginWithGoogle(credentialResponse.credential);
+                      if (result.success) {
+                        setShowLoginModal(false);
+                      } else {
+                        setAuthError(result.error || "Google login failed");
+                      }
+                    }
+                  }}
+                  onError={() => {
+                    setAuthError("Google login failed");
+                  }}
+                  useOneTap={false}
+                  theme="outline"
+                  shape="rectangular"
+                  width="100%"
+                />
+              </div>
 
               <div className="text-center pt-2">
                 <button 

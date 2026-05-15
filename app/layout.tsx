@@ -14,6 +14,7 @@ import { ToastProvider } from "@/components/ui/toast"
 import { GoogleOAuthWrapper } from "@/components/providers/google-oauth-wrapper";
 import WhatsAppButton from "@/components/ui/whatsapp-button";
 import { SessionInitializer } from "@/components/session-initializer";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -216,11 +217,13 @@ export default function RootLayout({
         {/* GA4 - Google Analytics */}
         {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
           <>
-            <script
-              async
+            <Script
+              strategy="afterInteractive"
               src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
             />
-            <script
+            <Script
+              id="google-analytics"
+              strategy="afterInteractive"
               dangerouslySetInnerHTML={{
                 __html: `
                   window.dataLayer = window.dataLayer || [];

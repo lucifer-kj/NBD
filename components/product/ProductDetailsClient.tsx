@@ -11,7 +11,9 @@ import {
   ChevronRight, 
   ShieldCheck, 
   Truck,
-  ArrowRight
+  ArrowRight,
+  Maximize2,
+  X as CloseIcon
 } from 'lucide-react';
 import { ReshapedProduct } from '@/types/shopify';
 import { useCartStore } from '@/store/cart-store';
@@ -19,6 +21,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import StarRating from '@/components/star-rating';
 import { useWishlist } from '@/hooks/use-wishlist';
+import { trackViewItem, trackAddToCart } from '@/lib/analytics';
+import { useEffect } from 'react';
+import { useToast } from '@/components/ui/toast';
 
 interface ProductDetailsClientProps {
   product: ReshapedProduct;
@@ -28,6 +33,8 @@ interface ProductDetailsClientProps {
 export default function ProductDetailsClient({ product }: ProductDetailsClientProps) {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   
   // Initialize selected options with the first variant's options
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(
@@ -37,8 +44,9 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
     }), {}) || {}
   );
 
-  const { addItem, isLoading } = useCartStore();
+  const { addItem, isLoading, openCartDrawer } = useCartStore();
   const { isInWishlist, toggleWishlist, isSyncing } = useWishlist();
+  const { showToast } = useToast();
   const isItemInWishlist = isInWishlist(product.id);
 
   // Find the selected variant based on selected options
@@ -46,9 +54,27 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
     variant.selectedOptions.every(opt => selectedOptions[opt.name] === opt.value)
   ) || product.variants[0];
 
+  useEffect(() => {
+    trackViewItem({
+      item_id: product.id,
+      item_name: product.title,
+      price: parseFloat(selectedVariant?.price.amount || product.priceRange.minVariantPrice.amount),
+      currency: selectedVariant?.price.currencyCode || product.priceRange.minVariantPrice.currencyCode,
+    });
+  }, [product, selectedVariant]);
+
   const handleAddToCart = async () => {
     if (selectedVariant?.id) {
+      trackAddToCart({
+        item_id: product.id,
+        item_name: product.title,
+        price: parseFloat(selectedVariant.price.amount),
+        currency: selectedVariant.price.currencyCode,
+        quantity: quantity
+      });
       await addItem(selectedVariant.id, quantity);
+      showToast(`${product.title} added to cart!`, "success");
+      openCartDrawer();
     }
   };
 
@@ -84,6 +110,7 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
 
   const handleWishlistToggle = () => {
     toggleWishlist(product.id);
+    showToast(isItemInWishlist ? "Removed from wishlist" : "Added to wishlist", "info");
   };
 
   // Extract metafields
@@ -99,7 +126,7 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
-        className="space-y-4"
+        className="space-y-4 lg:sticky lg:top-32 h-fit"
       >
         <div className="relative aspect-square overflow-hidden rounded-3xl bg-gray-100 border border-gray-200">
           <AnimatePresence mode="wait">
@@ -109,7 +136,8 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="w-full h-full"
+              className="w-full h-full cursor-zoom-in"
+              onClick={() => setIsLightboxOpen(true)}
             >
               <Image
                 src={images[selectedImage].url}
@@ -118,6 +146,9 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
                 className="object-contain p-4 md:p-8"
                 priority
               />
+              <div className="absolute bottom-4 right-4 p-2 bg-white/80 backdrop-blur-sm rounded-full text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Maximize2 size={18} />
+              </div>
             </motion.div>
           </AnimatePresence>
           
@@ -239,9 +270,30 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
           </div>
         )}
 
-        {/* Short Description */}
-        <div className="prose prose-sm text-gray-600 mb-8 max-w-none">
-          <div dangerouslySetInnerHTML={{ __html: product.descriptionHtml }} />
+        {/* Short Description with Read More */}
+        <div className="relative mb-8">
+          <div 
+            className={`prose prose-sm text-gray-600 max-w-none transition-all duration-500 overflow-hidden ${
+              isDescriptionExpanded ? 'max-h-[2000px]' : 'max-h-32'
+            }`}
+          >
+            <div dangerouslySetInnerHTML={{ __html: product.descriptionHtml }} />
+          </div>
+          
+          {!isDescriptionExpanded && (
+            <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+          )}
+          
+          <button 
+            onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+            className="mt-2 text-sm font-bold text-[var(--islamic-gold)] hover:text-[var(--islamic-green)] transition-colors flex items-center gap-1"
+          >
+            {isDescriptionExpanded ? (
+              <>Show Less <Plus size={14} className="rotate-45" /></>
+            ) : (
+              <>Read More <Plus size={14} /></>
+            )}
+          </button>
         </div>
 
         {/* Actions */}
@@ -339,6 +391,52 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
           </Button>
         </div>
       </div>
+
+      {/* Image Lightbox */}
+      <AnimatePresence>
+        {isLightboxOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-4 md:p-12"
+          >
+            <button 
+              onClick={() => setIsLightboxOpen(false)}
+              className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all"
+            >
+              <CloseIcon size={28} />
+            </button>
+            
+            <div className="relative w-full h-full max-w-5xl">
+              <Image
+                src={images[selectedImage].url}
+                alt={images[selectedImage].altText || product.title}
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+
+            {/* Lightbox Thumbnails */}
+            {images.length > 1 && (
+              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3 overflow-x-auto p-2 bg-white/5 rounded-2xl backdrop-blur-md">
+                {images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedImage(idx)}
+                    className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                      selectedImage === idx ? 'border-[var(--islamic-gold)]' : 'border-transparent opacity-40 hover:opacity-100'
+                    }`}
+                  >
+                    <Image src={img.url} alt="" fill className="object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

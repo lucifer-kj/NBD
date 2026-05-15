@@ -1,10 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { usePathname } from "next/navigation";
 
 export default function WhatsAppButton() {
+  const pathname = usePathname();
   const whatsappNumber = "919051085118"; // From previous context
   const whatsappUrl = `https://wa.me/${whatsappNumber}`;
+
+  // Hide on product pages for mobile devices to avoid overlap with sticky Buy Now bar
+  const isProductPage = pathname?.startsWith('/products/');
 
   return (
     <motion.a
@@ -15,7 +20,9 @@ export default function WhatsAppButton() {
       animate={{ scale: 1, opacity: 1 }}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
-      className="fixed bottom-6 right-6 z-[100] bg-[#25D366] text-white p-4 rounded-full shadow-2xl flex items-center justify-center group"
+      className={`fixed bottom-6 right-6 z-[100] bg-[#25D366] text-white p-4 rounded-full shadow-2xl flex items-center justify-center group ${
+        isProductPage ? 'hidden md:flex' : 'flex'
+      }`}
       aria-label="Contact us on WhatsApp"
     >
       <div className="absolute -inset-2 bg-[#25D366]/20 rounded-full animate-ping group-hover:hidden" />

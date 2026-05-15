@@ -7,6 +7,7 @@ import { updateCartBuyerIdentityAction } from "@/lib/shopify/actions";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { AlertCircle, Loader2 } from "lucide-react";
+import { trackBeginCheckout } from "@/lib/analytics";
 
 export default function CheckoutPage() {
   const { cart, isLoading: isCartLoading, validateCart } = useCartStore();
@@ -25,6 +26,14 @@ export default function CheckoutPage() {
         if (!cart.checkoutUrl) {
           throw new Error("No checkout URL found for this cart.");
         }
+
+        // Track beginning of checkout
+        trackBeginCheckout(cart.lines.map(line => ({
+          item_id: line.merchandise.product.id,
+          item_name: line.merchandise.product.title,
+          price: parseFloat(line.cost.totalAmount.amount) / line.quantity,
+          quantity: line.quantity
+        })));
 
         // Final Inventory Validation before redirect
         const { valid, unavailableLines } = await validateCart();

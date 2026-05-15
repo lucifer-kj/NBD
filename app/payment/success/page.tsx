@@ -5,17 +5,30 @@ import Link from "next/link";
 import { useCartStore } from "@/store/cart-store";
 
 import { useSearchParams } from "next/navigation";
+import { trackPurchase } from "@/lib/analytics";
 
 function SuccessContent() {
-  const clearCart = useCartStore((s) => s.clearCart);
+  const { cart, clearCart } = useCartStore();
   const searchParams = useSearchParams();
   const orderId = searchParams.get("order_id") || searchParams.get("id");
 
   useEffect(() => {
-    // In a Shopify headless flow, we typically reach this page after 
-    // a successful checkout redirect. We should clear the local cart.
+    if (orderId && cart) {
+      trackPurchase({
+        transaction_id: orderId,
+        value: parseFloat(cart.cost.totalAmount.amount),
+        currency: cart.cost.totalAmount.currencyCode,
+        items: cart.lines.map(line => ({
+          item_id: line.merchandise.product.id,
+          item_name: line.merchandise.product.title,
+          price: parseFloat(line.cost.totalAmount.amount) / line.quantity,
+          quantity: line.quantity
+        }))
+      });
+    }
+    // Clear the cart after tracking the purchase
     clearCart();
-  }, [clearCart]);
+  }, [orderId, clearCart, cart]);
 
   return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center px-4 py-16">

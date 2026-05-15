@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Search, Loader2, X } from 'lucide-react';
+import { trackSearch } from '@/lib/analytics';
 
 interface SearchResult {
   products: Array<{ id: string; handle: string; title: string; featuredImage?: { url: string } }>;
@@ -42,6 +43,9 @@ export default function PredictiveSearch() {
         const data = await res.json();
         setResults(data);
         setIsOpen(true);
+        
+        // Track search query
+        trackSearch(query);
       } catch (error) {
         console.error('Search error:', error);
       } finally {

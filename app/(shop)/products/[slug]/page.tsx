@@ -103,16 +103,6 @@ export default async function ProductPage({ params }: PageProps) {
         {/* Main Product Section */}
         <ProductDetailsClient product={product} />
 
-        {/* Product Details Tabs / Sections */}
-        <div className="mt-20 pt-10 border-t border-gray-100">
-          <div className="max-w-3xl">
-            <h2 className="text-2xl font-headings font-bold text-[var(--islamic-green)] mb-6">Product Details</h2>
-            <div className="prose prose-sm md:prose-base text-gray-600 max-w-none">
-              <div dangerouslySetInnerHTML={{ __html: product.descriptionHtml }} />
-            </div>
-          </div>
-        </div>
-
         {/* Reviews Section */}
         <ProductReviews productId={product.id} productTitle={product.title} />
 

@@ -52,7 +52,7 @@ export default function StarRating({
             className={cn(
               sizeClasses[size],
               i < Math.floor(rating)
-                ? 'text-yellow-400 fill-current'
+                ? 'text-[var(--islamic-gold)] fill-current'
                 : 'text-gray-300'
             )}
           />
