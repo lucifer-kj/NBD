@@ -49,7 +49,7 @@ export async function GET(request: Request) {
   try {
     const res = await fetch(tokenUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': 'Basic ' + Buffer.from(clientId + ':' + clientSecret).toString('base64') },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': 'Basic ' + btoa(clientId + ':' + clientSecret) },
       body,
     });
 
@@ -68,7 +68,7 @@ export async function GET(request: Request) {
     if (id_token) {
       const parts = id_token.split('.');
       if (parts.length === 3) {
-        const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf-8'));
+        const payload = JSON.parse(atob(parts[1]));
         email = payload.email || null;
         customerId = payload.sub || '';
         
