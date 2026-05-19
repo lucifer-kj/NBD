@@ -54,8 +54,7 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith('/account')) {
     if (!isAuthenticated) {
       const url = request.nextUrl.clone();
-      url.pathname = '/';
-      url.searchParams.set('login', 'true');
+      url.pathname = '/api/auth/login';
       const redirectResponse = NextResponse.redirect(url);
       // Re-apply security headers to redirect response
       redirectResponse.headers.set('Content-Security-Policy', cspHeader);

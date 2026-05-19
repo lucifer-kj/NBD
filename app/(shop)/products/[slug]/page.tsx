@@ -19,11 +19,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
   }
 
-  const url = process.env.NEXT_PUBLIC_APP_URL 
-    ? `${process.env.NEXT_PUBLIC_APP_URL}/products/${product.handle}` 
-    : `https://www.naazbook.in/products/${product.handle}`;
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in';
+  const url = `${siteUrl}/products/${product.handle}`;
 
   return {
+    metadataBase: new URL(siteUrl),
     title: `${product.title} | Naaz Book Depot`,
     description: product.description.slice(0, 160),
     alternates: {

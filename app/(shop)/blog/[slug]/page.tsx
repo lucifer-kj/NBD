@@ -33,6 +33,7 @@ export async function generateMetadata({ params }: BlogPostPageProps) {
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in';
 
   return {
+    metadataBase: new URL(siteUrl),
     title: `${post.title} | Naaz Book Depot`,
     description: post.excerpt,
     alternates: {

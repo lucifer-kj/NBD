@@ -22,11 +22,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  const url = process.env.NEXT_PUBLIC_APP_URL 
-    ? `${process.env.NEXT_PUBLIC_APP_URL}/collections/${collection.handle}` 
-    : `https://www.naazbook.in/collections/${collection.handle}`;
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in';
+  const url = `${siteUrl}/collections/${collection.handle}`;
 
   return {
+    metadataBase: new URL(siteUrl),
     title: `${collection.title} | Authentic Islamic Literature | Naaz Book Depot`,
     description: collection.description || `Explore our high-quality curation of ${collection.title} at Naaz Book Depot. Find authentic translations and beautiful prints.`,
     alternates: {

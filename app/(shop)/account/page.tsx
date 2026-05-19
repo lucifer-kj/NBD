@@ -38,6 +38,20 @@ export default async function AccountPage() {
     }).format(parseFloat(amount));
   };
 
+  const firstInitial = customer.firstName ? customer.firstName.charAt(0) : '';
+  const lastInitial = customer.lastName ? customer.lastName.charAt(0) : '';
+  const initials = (firstInitial + lastInitial).toUpperCase() || customer.email.charAt(0).toUpperCase() || 'U';
+  const displayName = [customer.firstName, customer.lastName].filter(Boolean).join(' ') || 'Valued Customer';
+
+  let wishlistLength = 0;
+  if (customer.wishlist?.value) {
+    try {
+      wishlistLength = JSON.parse(customer.wishlist.value).length;
+    } catch (e) {
+      console.error('Failed to parse wishlist value:', e);
+    }
+  }
+
   const orders = (customer.orders?.edges || []).map((edge: { node: Order }) => edge.node);
 
   return (
@@ -48,10 +62,10 @@ export default async function AccountPage() {
           <div className="p-6 rounded-3xl bg-[var(--islamic-green)] text-white shadow-xl shadow-[var(--islamic-green)]/20">
             <div className="flex items-center gap-4 mb-4">
               <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center font-bold text-xl uppercase">
-                {customer.firstName[0]}{customer.lastName[0]}
+                {initials}
               </div>
               <div>
-                <p className="font-bold">{customer.firstName} {customer.lastName}</p>
+                <p className="font-bold truncate max-w-[150px]">{displayName}</p>
                 <p className="text-xs text-white/70 truncate">{customer.email}</p>
               </div>
             </div>
@@ -83,7 +97,7 @@ export default async function AccountPage() {
         {/* Main Content */}
         <main className="flex-1 space-y-10">
           <header>
-            <h1 className="text-4xl font-headings font-bold text-[var(--islamic-green)]">Ahlan, {customer.firstName}!</h1>
+            <h1 className="text-4xl font-headings font-bold text-[var(--islamic-green)]">Ahlan, {customer.firstName || 'User'}!</h1>
             <p className="text-gray-500 mt-2">Welcome to your personal dashboard. Track your spiritual journey and orders here.</p>
           </header>
 
@@ -102,7 +116,7 @@ export default async function AccountPage() {
               </div>
               <p className="text-sm text-gray-500 uppercase tracking-widest font-black">Wishlist Items</p>
               <p className="text-2xl font-bold text-gray-900">
-                {customer.wishlist ? JSON.parse(customer.wishlist.value).length : 0}
+                {wishlistLength}
               </p>
             </div>
             <div className="p-6 rounded-3xl border border-gray-100 bg-white shadow-sm">

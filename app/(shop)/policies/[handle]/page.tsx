@@ -49,7 +49,10 @@ export async function generateMetadata({ params }: PolicyPageProps) {
   
   if (!policy) return { title: 'Policy Not Found' };
 
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in';
+
   return {
+    metadataBase: new URL(siteUrl),
     title: `${policy.title} | Naaz Book Depot`,
     description: `Read the official ${policy.title} of Naaz Book Depot, established 1967.`,
   };
