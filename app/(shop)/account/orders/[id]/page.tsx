@@ -23,7 +23,12 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
   const {} = session as { accessToken?: string };
 
   let order = null;
-  order = await getOrderById(id);
+  try {
+    order = await getOrderById(id);
+  } catch (error) {
+    console.error('Failed to load order details:', error);
+    redirect('/api/auth/login?error=api_connection_failed');
+  }
 
   if (!order) {
     return (

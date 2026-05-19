@@ -1,4 +1,7 @@
-export const SHOPIFY_GRAPHQL_API_ENDPOINT = '/api/2026-04/graphql.json';
+export const SHOPIFY_STOREFRONT_API_VERSION = process.env.SHOPIFY_STOREFRONT_API_VERSION || '2026-04';
+export const SHOPIFY_ADMIN_API_VERSION = process.env.SHOPIFY_ADMIN_API_VERSION || '2024-04';
+
+export const SHOPIFY_GRAPHQL_API_ENDPOINT = `/api/${SHOPIFY_STOREFRONT_API_VERSION}/graphql.json`;
 
 /**
  * Status codes that are safe to retry (transient failures).

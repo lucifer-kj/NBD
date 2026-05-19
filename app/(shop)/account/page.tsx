@@ -23,12 +23,17 @@ export default async function AccountPage() {
   const { customerId } = session as { customerId: string };
 
   let customer = null;
-  if (customerId) {
-    customer = await getCustomerDetailsById(customerId);
-  }
-
-  if (!customer) {
-    redirect('/api/auth/login');
+  try {
+    if (customerId) {
+      customer = await getCustomerDetailsById(customerId);
+    }
+    if (!customer) {
+      console.error('Customer details returned null from Shopify');
+      redirect('/api/auth/login?error=customer_not_found');
+    }
+  } catch (error) {
+    console.error('Failed to load customer profile details:', error);
+    redirect('/api/auth/login?error=api_connection_failed');
   }
 
   const formatPrice = (amount: string, currency: string) => {
@@ -40,7 +45,7 @@ export default async function AccountPage() {
 
   const firstInitial = customer.firstName ? customer.firstName.charAt(0) : '';
   const lastInitial = customer.lastName ? customer.lastName.charAt(0) : '';
-  const initials = (firstInitial + lastInitial).toUpperCase() || customer.email.charAt(0).toUpperCase() || 'U';
+  const initials = (firstInitial + lastInitial).toUpperCase() || customer.email?.charAt(0).toUpperCase() || 'U';
   const displayName = [customer.firstName, customer.lastName].filter(Boolean).join(' ') || 'Valued Customer';
 
   let wishlistLength = 0;

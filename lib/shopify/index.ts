@@ -1,4 +1,5 @@
-import { SHOPIFY_GRAPHQL_API_ENDPOINT, fetchWithRetry } from './utils';
+import { SHOPIFY_GRAPHQL_API_ENDPOINT, fetchWithRetry, SHOPIFY_ADMIN_API_VERSION } from './utils';
+import { Redis } from '@upstash/redis';
 import { getProductQuery, getProductsQuery, getCartQuery, getCustomerQuery, predictiveSearchQuery, getOrderQuery, getProductsByIdsQuery, getCollectionsQuery, getPoliciesQuery, getCollectionQuery } from './queries';
 import {
   createCartMutation,
@@ -49,12 +50,78 @@ if (!key) {
   console.warn('SHOPIFY_STOREFRONT_ACCESS_TOKEN is not defined in environment variables.');
 }
 
-const adminKey = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN || '';
-const adminEndpoint = domain ? `${domain}/admin/api/2026-04/graphql.json` : '';
-
-if (!adminKey) {
-  console.warn('SHOPIFY_ADMIN_ACCESS_TOKEN is not defined in environment variables.');
+let redisClient: Redis | null = null;
+function getRedisClient() {
+  if (!redisClient && (process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL)) {
+    redisClient = new Redis({
+      url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL!,
+      token: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN!,
+    });
+  }
+  return redisClient;
 }
+
+export class ShopifyUnauthorizedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ShopifyUnauthorizedError';
+  }
+}
+
+async function handleTokenFailure(failedToken: string): Promise<boolean> {
+  try {
+    const redis = getRedisClient();
+    if (!redis) return false;
+
+    // Retrieve what is currently active in Redis
+    const activeToken = await redis.get<string>('shopify:admin_access_token');
+
+    // Only proceed if the token that failed is actually the one currently stored as active
+    // This avoids double-invalidation if concurrent requests fail on the same token
+    if (activeToken === failedToken) {
+      console.warn('Shopify Admin Access Token returned 401 in storefront fetch. Invalidating from Redis...');
+      await redis.del('shopify:admin_access_token');
+
+      // Check if there is a backup standby token
+      const backupToken = await redis.get<string>('shopify:admin_access_token:backup');
+      if (backupToken && backupToken !== failedToken) {
+        console.info('Standby backup token found in storefront fetch! Promoting to active...');
+        await redis.set('shopify:admin_access_token', backupToken);
+        await redis.set('shopify:admin_access_token:status', 'ROTATED_TO_BACKUP');
+        await redis.set('shopify:admin_access_token:last_rotation', Date.now().toString());
+        return true; // Successfully rotated
+      }
+
+      // No backup token exists or the backup is the same as the failed token
+      console.error('No valid standby backup token found in Redis in storefront fetch.');
+      await redis.set('shopify:admin_access_token:status', 'REVOKED');
+      await redis.set('shopify:admin_access_token:revocation_time', Date.now().toString());
+    }
+  } catch (e) {
+    console.error('Failed to handle Shopify Admin Token failure in Redis:', e);
+  }
+  return false; // Did not rotate/recover
+}
+
+async function getAdminAccessToken(): Promise<string> {
+  // 1. Try to load from Redis dynamic vault first to support seamless key rotation
+  try {
+    const redis = getRedisClient();
+    if (redis) {
+      const dynamicToken = await redis.get<string>('shopify:admin_access_token');
+      if (dynamicToken) {
+        return dynamicToken;
+      }
+    }
+  } catch (e) {
+    console.error('Failed to retrieve dynamic Shopify Admin Access Token from Redis:', e);
+  }
+
+  // 2. Fall back to the environment variable
+  return process.env.SHOPIFY_ADMIN_ACCESS_TOKEN || '';
+}
+
+const adminEndpoint = domain ? `${domain}/admin/api/${SHOPIFY_ADMIN_API_VERSION}/graphql.json` : '';
 
 export async function shopifyFetch<T>({
   cache = 'force-cache',
@@ -130,12 +197,18 @@ export async function shopifyAdminFetch<T>({
   variables?: Record<string, unknown>;
   retries?: number;
 }): Promise<{ status: number; body: T } | never> {
+  const token = await getAdminAccessToken();
+
+  if (!token) {
+    throw new Error('SHOPIFY_ADMIN_ACCESS_TOKEN is missing');
+  }
+
   try {
     const fetchOptions: RequestInit = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Shopify-Access-Token': adminKey
+        'X-Shopify-Access-Token': token
       },
       body: JSON.stringify({
         ...(query && { query }),
@@ -145,10 +218,31 @@ export async function shopifyAdminFetch<T>({
     };
 
     const result = await fetchWithRetry(adminEndpoint, fetchOptions, retries);
+
+    if (result.status === 401) {
+      const didRotate = await handleTokenFailure(token);
+      if (didRotate) {
+        console.info('Retrying shopifyAdminFetch after successful token rotation...');
+        return shopifyAdminFetch<T>({ query, variables, retries });
+      }
+      throw new ShopifyUnauthorizedError('Shopify Admin access token is invalid or expired, and no active backup exists.');
+    }
+
     const body = await result.json();
 
     if (body.errors) {
       const error = body.errors[0];
+      const isTokenError = error.message?.includes('Invalid API key') || 
+                           error.message?.includes('access token') ||
+                           error.message?.includes('Unauthorized');
+      if (isTokenError) {
+        const didRotate = await handleTokenFailure(token);
+        if (didRotate) {
+          console.info('Retrying shopifyAdminFetch after successful token rotation...');
+          return shopifyAdminFetch<T>({ query, variables, retries });
+        }
+        throw new ShopifyUnauthorizedError(error.message || 'Shopify Admin access token is invalid or expired.');
+      }
       throw new Error(error.message || 'Shopify Admin API Error', { cause: error });
     }
 
@@ -157,7 +251,7 @@ export async function shopifyAdminFetch<T>({
       body
     };
   } catch (e: unknown) {
-    if (e instanceof Error) throw e;
+    if (e instanceof ShopifyUnauthorizedError || e instanceof Error) throw e;
     throw new Error('Error fetching from Shopify Admin API', { cause: e });
   }
 }

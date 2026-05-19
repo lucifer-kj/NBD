@@ -72,7 +72,7 @@ export async function GET(request: Request) {
     let data;
     try {
       data = JSON.parse(responseText);
-    } catch (parseError) {
+    } catch {
       console.error('Failed to parse Shopify token response as JSON:', responseText);
       return NextResponse.json({ 
         error: 'Shopify returned non-JSON response', 

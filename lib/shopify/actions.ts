@@ -142,11 +142,16 @@ export async function updateDefaultAddressAction(addressId: string) {
 }
 
 export async function getOrderAction(orderId: string) {
-  const { getSession } = await import('@/lib/session')
-  const { getOrderById } = await import('./admin')
-  const session = await getSession()
-  
-  if (!session) return null
-  
-  return await getOrderById(orderId)
+  try {
+    const { getSession } = await import('@/lib/session')
+    const { getOrderById } = await import('./admin')
+    const session = await getSession()
+    
+    if (!session) return null
+    
+    return await getOrderById(orderId)
+  } catch (error) {
+    console.error('Error in getOrderAction:', error);
+    return null;
+  }
 }

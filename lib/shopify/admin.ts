@@ -1,4 +1,6 @@
 import { Customer, ShopifyUserError, Money, Metafield, Connection, Image, MailingAddress, Order } from '../../types/shopify';
+import { Redis } from '@upstash/redis';
+import { SHOPIFY_ADMIN_API_VERSION } from './utils';
 
 type AdminCustomer = {
   id: string;
@@ -67,8 +69,78 @@ const domain = process.env.SHOPIFY_STORE_DOMAIN
     : `https://${process.env.SHOPIFY_STORE_DOMAIN.replace(/\/$/, '')}`
   : null;
 
-const endpoint = domain ? `${domain}/admin/api/2024-04/graphql.json` : '';
-const key = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN || '';
+const endpoint = domain ? `${domain}/admin/api/${SHOPIFY_ADMIN_API_VERSION}/graphql.json` : '';
+
+let redisClient: Redis | null = null;
+function getRedisClient() {
+  if (!redisClient && (process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL)) {
+    redisClient = new Redis({
+      url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL!,
+      token: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN!,
+    });
+  }
+  return redisClient;
+}
+
+export class ShopifyUnauthorizedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ShopifyUnauthorizedError';
+  }
+}
+
+async function handleTokenFailure(failedToken: string): Promise<boolean> {
+  try {
+    const redis = getRedisClient();
+    if (!redis) return false;
+
+    // Retrieve what is currently active in Redis
+    const activeToken = await redis.get<string>('shopify:admin_access_token');
+
+    // Only proceed if the token that failed is actually the one currently stored as active
+    // This avoids double-invalidation if concurrent requests fail on the same token
+    if (activeToken === failedToken) {
+      console.warn('Shopify Admin Access Token returned 401. Invalidating from Redis...');
+      await redis.del('shopify:admin_access_token');
+
+      // Check if there is a backup standby token
+      const backupToken = await redis.get<string>('shopify:admin_access_token:backup');
+      if (backupToken && backupToken !== failedToken) {
+        console.info('Standby backup token found! Promoting to active...');
+        await redis.set('shopify:admin_access_token', backupToken);
+        await redis.set('shopify:admin_access_token:status', 'ROTATED_TO_BACKUP');
+        await redis.set('shopify:admin_access_token:last_rotation', Date.now().toString());
+        return true; // Successfully rotated
+      }
+
+      // No backup token exists or the backup is the same as the failed token
+      console.error('No valid standby backup token found in Redis.');
+      await redis.set('shopify:admin_access_token:status', 'REVOKED');
+      await redis.set('shopify:admin_access_token:revocation_time', Date.now().toString());
+    }
+  } catch (e) {
+    console.error('Failed to handle Shopify Admin Token failure in Redis:', e);
+  }
+  return false; // Did not rotate/recover
+}
+
+async function getAdminAccessToken(): Promise<string> {
+  // 1. Try to load from Redis dynamic vault first to support seamless key rotation
+  try {
+    const redis = getRedisClient();
+    if (redis) {
+      const dynamicToken = await redis.get<string>('shopify:admin_access_token');
+      if (dynamicToken) {
+        return dynamicToken;
+      }
+    }
+  } catch (e) {
+    console.error('Failed to retrieve dynamic Shopify Admin Access Token from Redis:', e);
+  }
+
+  // 2. Fall back to the environment variable
+  return process.env.SHOPIFY_ADMIN_ACCESS_TOKEN || '';
+}
 
 export async function shopifyAdminFetch<T>({
   query,
@@ -77,7 +149,9 @@ export async function shopifyAdminFetch<T>({
   query: string;
   variables?: Record<string, unknown>;
 }): Promise<{ status: number; body: T } | never> {
-  if (!key) {
+  const token = await getAdminAccessToken();
+
+  if (!token) {
     throw new Error('SHOPIFY_ADMIN_ACCESS_TOKEN is missing');
   }
 
@@ -86,7 +160,7 @@ export async function shopifyAdminFetch<T>({
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Shopify-Access-Token': key,
+        'X-Shopify-Access-Token': token,
       },
       body: JSON.stringify({
         ...(query && { query }),
@@ -95,10 +169,30 @@ export async function shopifyAdminFetch<T>({
       cache: 'no-store',
     });
 
+    if (result.status === 401) {
+      const didRotate = await handleTokenFailure(token);
+      if (didRotate) {
+        console.info('Retrying shopifyAdminFetch after successful token rotation...');
+        return shopifyAdminFetch<T>({ query, variables });
+      }
+      throw new ShopifyUnauthorizedError('Shopify Admin access token is invalid or expired, and no active backup exists.');
+    }
+
     const body = await result.json();
 
     if (body.errors) {
       const error = body.errors[0];
+      const isTokenError = error.message?.includes('Invalid API key') || 
+                           error.message?.includes('access token') ||
+                           error.message?.includes('Unauthorized');
+      if (isTokenError) {
+        const didRotate = await handleTokenFailure(token);
+        if (didRotate) {
+          console.info('Retrying shopifyAdminFetch after successful token rotation...');
+          return shopifyAdminFetch<T>({ query, variables });
+        }
+        throw new ShopifyUnauthorizedError(error.message || 'Shopify Admin access token is invalid or expired.');
+      }
       throw new Error(error.message || 'Shopify Admin API Error', { cause: error });
     }
 
@@ -107,7 +201,7 @@ export async function shopifyAdminFetch<T>({
       body,
     };
   } catch (e: unknown) {
-    if (e instanceof Error) throw e;
+    if (e instanceof ShopifyUnauthorizedError || e instanceof Error) throw e;
 
     throw new Error('Error fetching from Shopify Admin', {
       cause: {
@@ -276,12 +370,12 @@ export async function getCustomerDetailsById(id: string): Promise<ReshapedAdminC
   // Reshape to match Storefront API structure as much as possible for compatibility
   return {
     ...customer,
-    wishlist: customer.metafields.edges.find((e) => e.node.namespace === 'wishlist' && e.node.key === 'items')?.node,
-    cart_id: customer.metafields.edges.find((e) => e.node.namespace === 'custom' && e.node.key === 'cart_id')?.node,
-    addresses: customer.addresses,
+    wishlist: (customer.metafields?.edges || []).find((e) => e.node.namespace === 'wishlist' && e.node.key === 'items')?.node,
+    cart_id: (customer.metafields?.edges || []).find((e) => e.node.namespace === 'custom' && e.node.key === 'cart_id')?.node,
+    addresses: customer.addresses || { edges: [] },
     defaultAddress: customer.defaultAddress || undefined,
     orders: {
-      edges: customer.orders.edges.map((edge: { node: AdminOrder }) => ({
+      edges: (customer.orders?.edges || []).map((edge: { node: AdminOrder }) => ({
         node: {
           ...edge.node,
           fulfillmentStatus: edge.node.displayFulfillmentStatus || 'UNFULFILLED',
@@ -292,7 +386,7 @@ export async function getCustomerDetailsById(id: string): Promise<ReshapedAdminC
           subtotalPrice: edge.node.subtotalPriceSet?.shopMoney || { amount: '0', currencyCode: 'INR' },
           shippingAddress: edge.node.shippingAddress || undefined,
           lineItems: {
-            edges: edge.node.lineItems.edges.map((lineEdge) => ({
+            edges: (edge.node.lineItems?.edges || []).map((lineEdge) => ({
               node: {
                 ...lineEdge.node,
                 variant: lineEdge.node.variant ? {
@@ -300,7 +394,7 @@ export async function getCustomerDetailsById(id: string): Promise<ReshapedAdminC
                   image: lineEdge.node.variant.image || undefined,
                   price: {
                     amount: lineEdge.node.variant.price,
-                    currencyCode: edge.node.totalPriceSet?.shopMoney.currencyCode || 'INR'
+                    currencyCode: edge.node.totalPriceSet?.shopMoney?.currencyCode || edge.node.currentTotalPriceSet?.shopMoney?.currencyCode || 'INR'
                   }
                 } : undefined
               }
@@ -402,7 +496,7 @@ export async function getOrderById(orderId: string): Promise<ReshapedAdminOrder 
     subtotalPrice: order.subtotalPriceSet?.shopMoney || { amount: '0', currencyCode: 'INR' },
     shippingAddress: order.shippingAddress || undefined,
     lineItems: {
-      edges: order.lineItems.edges.map((edge: { node: AdminLineItem }) => ({
+      edges: (order.lineItems?.edges || []).map((edge: { node: AdminLineItem }) => ({
         node: {
           ...edge.node,
           variant: edge.node.variant ? {
@@ -410,7 +504,7 @@ export async function getOrderById(orderId: string): Promise<ReshapedAdminOrder 
             image: edge.node.variant.image || undefined,
             price: {
               amount: edge.node.variant.price,
-              currencyCode: order.totalPriceSet?.shopMoney.currencyCode || 'INR'
+              currencyCode: order.totalPriceSet?.shopMoney?.currencyCode || order.currentTotalPriceSet?.shopMoney?.currencyCode || 'INR'
             }
           } : undefined
         }
