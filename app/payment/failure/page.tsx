@@ -1,4 +1,5 @@
 "use client";
+import { useCartStore } from "@/store/cart-store";
 
 import Link from "next/link";
 import { XCircle } from "lucide-react";
@@ -19,7 +20,7 @@ export default function PaymentFailurePage() {
         </p>
         <div className="flex flex-col gap-3">
           <Button asChild className="w-full bg-[var(--islamic-green)] hover:bg-[var(--islamic-green-dark)] text-white font-bold py-6 rounded-xl shadow-md text-lg">
-            <Link href="/cart">Return to Cart & Try Again</Link>
+            <Link href="#" onClick={(e) => { e.preventDefault(); useCartStore.getState().openCartDrawer(); }}>Return to Cart & Try Again</Link>
           </Button>
           <Button asChild variant="ghost" className="w-full text-gray-500 hover:text-gray-900">
             <Link href="/contact">Need Help?</Link>

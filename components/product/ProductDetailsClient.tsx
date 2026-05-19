@@ -329,7 +329,7 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
               onClick={async () => {
                 if (selectedVariant?.id) {
                   await addItem(selectedVariant.id, quantity);
-                  window.location.href = '/cart';
+                  openCartDrawer();
                 }
               }}
               disabled={!selectedVariant?.availableForSale || isLoading}
