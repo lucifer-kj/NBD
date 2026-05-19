@@ -16,9 +16,14 @@ export async function GET(request: Request) {
 
   const clientId = process.env.SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID;
   const clientSecret = process.env.SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_SECRET;
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  
+  // Resolve host dynamically to match the exact domain used to initiate OAuth
+  const host = request.headers.get('host') || 'www.naazbook.in';
+  const protocol = request.headers.get('x-forwarded-proto') || 'https';
+  const baseUrl = `${protocol}://${host}`;
   const redirectUri = `${baseUrl}/api/auth/callback`;
-  let accountUrl = process.env.NEXT_PUBLIC_SHOPIFY_ACCOUNT_URL || 'https://shopify.com/70963200109';
+  
+  let accountUrl = process.env.NEXT_PUBLIC_SHOPIFY_ACCOUNT_URL || 'https://account.naazbook.in';
   if (accountUrl.includes('shopify.com/3xbr00-f7')) {
     accountUrl = accountUrl.replace('shopify.com/3xbr00-f7', 'shopify.com/70963200109');
   }
@@ -34,34 +39,55 @@ export async function GET(request: Request) {
       ? `${accountUrl}/authentication/oauth/token` 
       : `${accountUrl}/auth/oauth/token`;
   }
+  
   if (!clientId || !clientSecret) {
     return NextResponse.json({ error: 'Missing credentials' }, { status: 500 });
   }
 
+  // Under client_secret_basic, credentials are passed in the Authorization header.
+  // DO NOT include client_secret in the body parameters.
   const body = new URLSearchParams({
     grant_type: 'authorization_code',
     client_id: clientId,
-    client_secret: clientSecret,
     redirect_uri: redirectUri,
     code,
   });
 
+  // Base64 encode client credentials for HTTP Basic auth scheme
+  const authHeader = 'Basic ' + Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+
   try {
     const res = await fetch(tokenUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: { 
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': authHeader,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Origin': baseUrl
+      },
       body,
     });
 
-    const data = await res.json();
+    const responseText = await res.text();
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('Failed to parse Shopify token response as JSON:', responseText);
+      return NextResponse.json({ 
+        error: 'Shopify returned non-JSON response', 
+        status: res.status,
+        details: responseText.slice(0, 500) 
+      }, { status: res.status === 200 ? 502 : res.status });
+    }
+
     if (!res.ok) {
-      console.error('Token exchange error:', data);
+      console.error('Shopify Token exchange error:', data);
       return NextResponse.json({ error: 'Failed to exchange token', details: data }, { status: res.status });
     }
 
     const { access_token, id_token } = data;
 
-    // Decode id_token to get email or customer ID if available, though usually you query the customer account API
     let email = null;
     let customerId = '';
     
@@ -72,25 +98,23 @@ export async function GET(request: Request) {
         email = payload.email || null;
         customerId = payload.sub || '';
         
-        // Ensure customerId is a valid Admin GraphQL GID
         if (customerId && customerId.startsWith('urn:shopify:customer:')) {
           const numericId = customerId.split(':').pop();
           customerId = `gid://shopify/Customer/${numericId}`;
         } else if (customerId && !customerId.startsWith('gid://')) {
-          // Fallback if it's just a numeric ID
           customerId = `gid://shopify/Customer/${customerId}`;
         }
       }
     }
 
-    // Save session using the custom createSession which we'll update if needed
-    // Store access_token in the session
     await createSession(customerId, access_token, email || undefined, id_token);
     
-    // Redirect to account page
     return NextResponse.redirect(new URL('/account', request.url));
   } catch (error) {
-    console.error('Auth callback error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error('Auth callback server-side error:', error);
+    return NextResponse.json({ 
+      error: 'Internal Server Error during token exchange',
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 });
   }
 }

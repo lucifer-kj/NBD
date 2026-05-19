@@ -2,9 +2,13 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import crypto from 'crypto';
 
-export async function GET() {
+export async function GET(request: Request) {
   const clientId = process.env.SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID;
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  
+  // Resolve host dynamically to support local dev, www, and non-www automatically
+  const host = request.headers.get('host') || 'www.naazbook.in';
+  const protocol = request.headers.get('x-forwarded-proto') || 'https';
+  const baseUrl = `${protocol}://${host}`;
   const redirectUri = `${baseUrl}/api/auth/callback`;
 
   if (!clientId) {
@@ -32,7 +36,7 @@ export async function GET() {
   authorizationUrl.searchParams.append('client_id', clientId);
   authorizationUrl.searchParams.append('response_type', 'code');
   authorizationUrl.searchParams.append('redirect_uri', redirectUri);
-  authorizationUrl.searchParams.append('scope', 'openid email https://api.shopify.com/auth/shop.storefront.id');
+  authorizationUrl.searchParams.append('scope', 'openid email customer-account-api:full');
   authorizationUrl.searchParams.append('state', state);
   authorizationUrl.searchParams.append('nonce', nonce);
 
