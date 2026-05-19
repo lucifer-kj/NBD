@@ -34,3 +34,11 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# local scratch directory
+/scratch/
+
+# editors
+.vscode/
+.idea/
+
