@@ -1,7 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { getCustomerDetails } from '@/lib/shopify';
 import { getCustomerDetailsById } from '@/lib/shopify/admin';
 import { getSession } from '@/lib/session';
 import { MailingAddress } from '@/types/shopify';
@@ -20,14 +19,10 @@ export default async function AddressesPage() {
     redirect('/');
   }
 
-  const { customerId, accessToken } = session as { customerId: string; accessToken?: string };
+  const { customerId } = session as { customerId: string };
 
   let customer = null;
-  if (accessToken) {
-    customer = await getCustomerDetails(accessToken);
-  }
-
-  if (!customer && customerId) {
+  if (customerId) {
     customer = await getCustomerDetailsById(customerId);
   }
 

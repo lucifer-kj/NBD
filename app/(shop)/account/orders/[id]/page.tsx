@@ -2,7 +2,6 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { redirect } from 'next/navigation';
-import { getOrder } from '@/lib/shopify';
 import { getOrderById } from '@/lib/shopify/admin';
 import { getSession } from '@/lib/session';
 import { OrderLineItem } from '@/types/shopify';
@@ -21,17 +20,10 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
     redirect('/');
   }
 
-  const { accessToken } = session as { accessToken?: string };
+  const {} = session as { accessToken?: string };
 
   let order = null;
-  if (accessToken) {
-    order = await getOrder(accessToken, id);
-  }
-
-  if (!order) {
-    // If Storefront API failed or no token, try Admin API
-    order = await getOrderById(id);
-  }
+  order = await getOrderById(id);
 
   if (!order) {
     return (

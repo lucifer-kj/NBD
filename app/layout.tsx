@@ -2,7 +2,6 @@ import React from "react";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from "@/components/providers/session-provider";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/footer";
 import ClientRoot from "@/components/providers/client-root";
@@ -11,10 +10,18 @@ import AnimatedLayoutClient from "@/components/providers/animated-layout-client"
 import RoutePrefetcher from "@/components/providers/route-prefetch";
 
 import { ToastProvider } from "@/components/ui/toast"
-import { GoogleOAuthWrapper } from "@/components/providers/google-oauth-wrapper";
 import WhatsAppButton from "@/components/ui/whatsapp-button";
-import { SessionInitializer } from "@/components/session-initializer";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/react";
+import { BotIdClient } from 'botid/client';
+
+const protectedRoutes = [
+  { path: '/api/checkout', method: 'POST' },
+  { path: '/api/auth/register', method: 'POST' },
+  { path: '/api/auth/login', method: 'POST' },
+  { path: '/api/auth/reset', method: 'POST' },
+  { path: '/api/auth/google/one-tap', method: 'POST' },
+];
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,6 +36,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.naazbook.in"),
   title: "Naaz Book Depot | Authentic Islamic Books, Quran & Attar — Since 1967",
   description: "Buy authentic Islamic books, Quran editions in Arabic, Urdu & English, premium Attar and Qur'an stands. India's trusted Islamic publisher since 1967. Based in Kolkata.",
   // Improve SEO and sharing
@@ -41,7 +49,7 @@ export const metadata: Metadata = {
     locale: "en_IN",
     images: [
       {
-        url: "https://www.naazbook.in/og-image.jpg",
+        url: "/Images/og-image.jpeg",
         width: 1200,
         height: 630,
         alt: "Naaz Book Depot",
@@ -52,7 +60,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Naaz Book Depot | Authentic Islamic Books & Quran",
     description: "India's trusted Islamic publisher since 1967. Buy authentic Quran editions, Islamic books, and premium Attar.",
-    images: ["https://www.naazbook.in/og-image.jpg"],
+    images: ["/Images/og-image.jpeg"],
   },
   icons: {
     icon: "/favicon.ico",
@@ -214,6 +222,22 @@ export default function RootLayout({
             })
           }}
         />
+        {/* Google Tag Manager */}
+        {process.env.NEXT_PUBLIC_GTM_ID && (
+          <Script
+            id="google-tag-manager"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+                new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+                j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+                'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+                })(window,document,'script','dataLayer','${process.env.NEXT_PUBLIC_GTM_ID}');
+              `,
+            }}
+          />
+        )}
         {/* GA4 - Google Analytics */}
         {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
           <>
@@ -237,31 +261,38 @@ export default function RootLayout({
             />
           </>
         )}
+        <BotIdClient protect={protectedRoutes} />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* Google Tag Manager (noscript) */}
+        {process.env.NEXT_PUBLIC_GTM_ID && (
+          <noscript>
+            <iframe
+              src={`https://www.googletagmanager.com/ns.html?id=${process.env.NEXT_PUBLIC_GTM_ID}`}
+              height="0"
+              width="0"
+              style={{ display: "none", visibility: "hidden" }}
+            />
+          </noscript>
+        )}
         <ToastProvider>
-
-          <AuthProvider>
-            <GoogleOAuthWrapper>
-              <ClientRoot>
-                <SessionInitializer />
-                <div className="min-h-screen flex flex-col">
-                  <Navbar />
-                  <main className="flex-1">
-                    <ErrorBoundary>
-                      <AnimatedLayoutClient>{children}</AnimatedLayoutClient>
-                    </ErrorBoundary>
-                  </main>
-                  <Footer />
-                  <WhatsAppButton />
-                  <RoutePrefetcher />
-                </div>
-              </ClientRoot>
-            </GoogleOAuthWrapper>
-          </AuthProvider>
+          <ClientRoot>
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <main className="flex-1">
+                <ErrorBoundary>
+                  <AnimatedLayoutClient>{children}</AnimatedLayoutClient>
+                </ErrorBoundary>
+              </main>
+              <Footer />
+              <WhatsAppButton />
+              <RoutePrefetcher />
+            </div>
+          </ClientRoot>
         </ToastProvider>
+        <Analytics />
       </body>
     </html>
   );

@@ -1,37 +1,26 @@
 import { NextResponse } from 'next/server';
-import { logoutCustomer } from '@/lib/shopify';
-import { cookies } from 'next/headers';
-import { deleteSession, decryptSession } from '@/lib/session';
+import { deleteSession, getSession } from '@/lib/session';
 
-export async function POST() {
-  try {
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get('session')?.value;
-    const legacyToken = cookieStore.get('customerAccessToken')?.value;
+export async function GET() {
+  const session = await getSession();
+  const idToken = session?.idToken; // Note: We might need to store idToken if Shopify requires it for logout
 
-    let accessToken = legacyToken;
+  await deleteSession();
 
-    if (sessionCookie) {
-      const payload = await decryptSession(sessionCookie);
-      if (payload?.accessToken) {
-        accessToken = payload.accessToken as string;
-      }
-    }
+  const clientId = process.env.SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const postLogoutRedirectUri = `${baseUrl}/`;
 
-    if (accessToken) {
-      // Invalidate the token on Shopify's side
-      await logoutCustomer(accessToken);
-    }
-
-    // Delete the local session cookie
-    await deleteSession();
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Logout error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+  // The logout URL for Customer Account API
+  const logoutUrl = new URL(`https://shopify.com/3xbr00-f7/auth/logout`);
+  
+  if (idToken) {
+    logoutUrl.searchParams.append('id_token_hint', idToken);
+  } else if (clientId) {
+    logoutUrl.searchParams.append('client_id', clientId);
   }
+  
+  logoutUrl.searchParams.append('post_logout_redirect_uri', postLogoutRedirectUri);
+
+  return NextResponse.redirect(logoutUrl.toString());
 }

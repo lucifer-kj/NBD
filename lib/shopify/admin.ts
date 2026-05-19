@@ -284,7 +284,7 @@ export async function getCustomerDetailsById(id: string): Promise<ReshapedAdminC
       edges: customer.orders.edges.map((edge: { node: AdminOrder }) => ({
         node: {
           ...edge.node,
-          fulfillmentStatus: edge.node.displayFulfillmentStatus,
+          fulfillmentStatus: edge.node.displayFulfillmentStatus || 'UNFULFILLED',
           currentTotalPrice: edge.node.currentTotalPriceSet?.shopMoney || { amount: '0', currencyCode: 'INR' },
           totalPrice: edge.node.totalPriceSet?.shopMoney || edge.node.currentTotalPriceSet?.shopMoney || { amount: '0', currencyCode: 'INR' },
           totalShippingPrice: edge.node.totalShippingPriceSet?.shopMoney || { amount: '0', currencyCode: 'INR' },

@@ -1,20 +1,15 @@
 'use client';
 
 import { LogOut } from 'lucide-react';
-import { useAuth } from '@/components/providers/session-provider';
+import Link from 'next/link';
 
 export default function LogoutButton() {
-  const { logout } = useAuth();
-
   return (
-    <button 
-      onClick={() => {
-        logout();
-        window.location.href = '/';
-      }} 
-      className="flex items-center gap-3 p-2 rounded-xl text-red-600 hover:bg-red-50 transition-colors w-full text-left"
+    <Link 
+      href="/api/auth/logout"
+      className="flex items-center gap-3 p-2 rounded-xl text-red-100 hover:bg-white/10 transition-colors w-full text-left"
     >
       <LogOut size={18} /> Sign Out
-    </button>
+    </Link>
   );
 }

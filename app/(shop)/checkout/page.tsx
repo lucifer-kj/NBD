@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useCartStore } from "@/store/cart-store";
-import { useAuth } from "@/components/providers/session-provider";
 import { updateCartBuyerIdentityAction } from "@/lib/shopify/actions";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -11,12 +10,11 @@ import { trackBeginCheckout } from "@/lib/analytics";
 
 export default function CheckoutPage() {
   const { cart, isLoading: isCartLoading, validateCart } = useCartStore();
-  const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const hasStarted = useRef(false);
 
   useEffect(() => {
-    if (isCartLoading || isAuthLoading || !cart || hasStarted.current) return;
+    if (isCartLoading || !cart || hasStarted.current) return;
     
     hasStarted.current = true;
     let isMounted = true;
@@ -43,9 +41,7 @@ export default function CheckoutPage() {
         }
 
         // Sync buyer identity if logged in to pre-fill address
-        if (isAuthenticated && user?.email) {
-          await updateCartBuyerIdentityAction(cart.id, user.email);
-        }
+        await updateCartBuyerIdentityAction(cart.id);
 
         if (isMounted) {
           window.location.href = cart.checkoutUrl;
@@ -63,7 +59,7 @@ export default function CheckoutPage() {
     return () => {
       isMounted = false;
     };
-  }, [cart, user, isAuthenticated, isCartLoading, isAuthLoading, validateCart]);
+  }, [cart, isCartLoading, validateCart]);
 
   if (error) {
     return (
@@ -88,11 +84,9 @@ export default function CheckoutPage() {
                 Try Again
               </Button>
             </div>
-            {!isAuthenticated && (
-              <p className="text-xs text-gray-500 mt-2">
-                Tip: <Link href="/?login=true&redirect=/checkout" className="text-[var(--islamic-green)] underline">Login</Link> to your account for faster checkout and pre-filled address.
-              </p>
-            )}
+            <p className="text-xs text-gray-500 mt-2">
+              Tip: <Link href="/account" className="text-[var(--islamic-green)] underline">Login</Link> to your account for faster checkout and pre-filled address.
+            </p>
           </div>
         </div>
       </div>
@@ -108,7 +102,7 @@ export default function CheckoutPage() {
           Secure Checkout
         </h1>
         <p className="text-gray-600">
-          {isAuthenticated ? "Pre-filling your details..." : "Preparing your checkout..."}
+          Preparing your checkout...
         </p>
         <p className="text-gray-400 text-sm mt-2">Redirecting to Shopify for secure payment...</p>
       </div>

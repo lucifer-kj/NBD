@@ -15,6 +15,7 @@ import { useScrollReveal } from "@/lib/useScrollReveal";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { formatPrice } from "@/lib/utils";
 import { ReshapedProduct } from "@/types/shopify";
+import { trackAddToCart } from "@/lib/analytics";
 
 interface ProductCardProps {
   product: ReshapedProduct;
@@ -37,6 +38,15 @@ export default function ProductCard({
     const firstVariantId = product.variants[0]?.id;
     if (firstVariantId) {
       await addToCart(firstVariantId, 1);
+      
+      // Fire GA4 add_to_cart event
+      trackAddToCart({
+        item_id: firstVariantId,
+        item_name: product.title,
+        price: parseFloat(product.priceRange.minVariantPrice.amount),
+        currency: "INR",
+        quantity: 1
+      });
     }
     setCartLoading(false);
   };

@@ -1,5 +1,5 @@
 import { SHOPIFY_GRAPHQL_API_ENDPOINT, fetchWithRetry } from './utils';
-import { getProductQuery, getProductsQuery, getCartQuery, getCustomerQuery, predictiveSearchQuery, getOrderQuery, getProductsByIdsQuery, getBlogArticlesQuery, getArticleQuery } from './queries';
+import { getProductQuery, getProductsQuery, getCartQuery, getCustomerQuery, predictiveSearchQuery, getOrderQuery, getProductsByIdsQuery, getCollectionsQuery, getPoliciesQuery, getCollectionQuery } from './queries';
 import {
   createCartMutation,
   addToCartMutation,
@@ -26,9 +26,10 @@ import {
   Connection,
   Customer,
   Order,
-  Article,
   CustomerAccessToken,
-  ShopifyUserError
+  ShopifyUserError,
+  Collection,
+  Policy
 } from '../../types/shopify';
 
 const domain = process.env.SHOPIFY_STORE_DOMAIN
@@ -411,7 +412,7 @@ export async function getCustomerDetails(customerAccessToken: string): Promise<C
   return res.body.data.customer || null;
 }
 
-export async function updateCartBuyerIdentity(cartId: string, customerAccessToken: string, email: string): Promise<ReshapedCart> {
+export async function updateCartBuyerIdentity(cartId: string, buyerIdentity: { email?: string; customerAccessToken?: string }): Promise<ReshapedCart> {
   const res = await shopifyFetch<{
     data: {
       cartBuyerIdentityUpdate: {
@@ -422,10 +423,7 @@ export async function updateCartBuyerIdentity(cartId: string, customerAccessToke
     query: cartBuyerIdentityUpdateMutation,
     variables: {
       cartId,
-      buyerIdentity: {
-        customerAccessToken,
-        email
-      }
+      buyerIdentity
     },
     cache: 'no-store',
     retries: 3
@@ -484,46 +482,6 @@ export async function updateCartDiscount(cartId: string, discountCodes: string[]
   });
 
   return res.body.data.cartDiscountCodesUpdate.cart;
-}
-
-export async function getBlogArticles(blogHandle: string, first: number = 20) {
-  const res = await shopifyFetch<{
-    data: {
-      blog: {
-        title: string;
-        articles: Connection<Article>;
-      };
-    };
-  }>({
-    query: getBlogArticlesQuery,
-    variables: { blogHandle, first },
-    cache: 'force-cache',
-    tags: ['articles']
-  });
-
-  if (!res.body.data.blog) return null;
-
-  return {
-    title: res.body.data.blog.title,
-    articles: removeEdgesAndNodes(res.body.data.blog.articles)
-  };
-}
-
-export async function getArticle(blogHandle: string, articleHandle: string) {
-  const res = await shopifyFetch<{
-    data: {
-      blog: {
-        articleByHandle: Article;
-      };
-    };
-  }>({
-    query: getArticleQuery,
-    variables: { blogHandle, articleHandle },
-    cache: 'force-cache',
-    tags: ['articles']
-  });
-
-  return res.body.data.blog?.articleByHandle || null;
 }
 
 export async function predictiveSearch(query: string) {
@@ -655,3 +613,107 @@ export async function setCustomerCart(customerId: string, cartId: string): Promi
 
   return !res.body.data.metafieldsSet.userErrors.length;
 }
+
+export async function getCollections(): Promise<Collection[]> {
+  try {
+    const res = await shopifyFetch<{ data: { collections: Connection<Collection> } }>({
+      query: getCollectionsQuery,
+      tags: ['collections'],
+      variables: { first: 250 }
+    });
+
+    if (!res.body?.data?.collections) return [];
+    return removeEdgesAndNodes(res.body.data.collections);
+  } catch (error) {
+    console.error('Error fetching collections:', error);
+    return [];
+  }
+}
+
+export async function getPolicies(): Promise<Policy[]> {
+  try {
+    const res = await shopifyFetch<{
+      data: {
+        shop: {
+          privacyPolicy: Policy | null;
+          refundPolicy: Policy | null;
+          shippingPolicy: Policy | null;
+          termsOfService: Policy | null;
+        };
+      };
+    }>({
+      query: getPoliciesQuery,
+      tags: ['policies'],
+      cache: 'force-cache'
+    });
+
+    const shop = res.body?.data?.shop;
+    if (!shop) return [];
+    
+    const policies: Policy[] = [];
+    if (shop.privacyPolicy) policies.push(shop.privacyPolicy);
+    if (shop.refundPolicy) policies.push(shop.refundPolicy);
+    if (shop.shippingPolicy) policies.push(shop.shippingPolicy);
+    if (shop.termsOfService) policies.push(shop.termsOfService);
+
+    return policies;
+  } catch (error) {
+    console.error('Error fetching policies:', error);
+    return [];
+  }
+}
+
+export type CollectionWithProducts = Collection & {
+  description: string;
+  image: {
+    url: string;
+    altText: string;
+    width: number;
+    height: number;
+  } | null;
+  products: ReshapedProduct[];
+};
+
+export async function getCollectionByHandle(handle: string): Promise<CollectionWithProducts | null> {
+  try {
+    const res = await shopifyFetch<{
+      data: {
+        collection: {
+          id: string;
+          handle: string;
+          title: string;
+          description: string;
+          image: {
+            url: string;
+            altText: string;
+            width: number;
+            height: number;
+          } | null;
+          products: Connection<Product>;
+        } | null;
+      };
+    }>({
+      query: getCollectionQuery,
+      tags: ['collections', `collection-${handle}`],
+      variables: { handle }
+    });
+
+    const collection = res.body?.data?.collection;
+    if (!collection) return null;
+
+    return {
+      id: collection.id,
+      handle: collection.handle,
+      title: collection.title,
+      updatedAt: '', // Standard Collection type requires updatedAt, default to empty
+      description: collection.description || '',
+      image: collection.image,
+      products: reshapeProducts(removeEdgesAndNodes(collection.products))
+    };
+  } catch (error) {
+    console.error(`Error fetching collection ${handle}:`, error);
+    return null;
+  }
+}
+
+

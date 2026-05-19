@@ -2,12 +2,12 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Calendar, ChevronRight } from 'lucide-react';
-import { getBlogArticles } from '@/lib/shopify';
+import { getBlogPosts, BlogPost } from '@/lib/blog';
 
 export default async function BlogSection() {
-  const blog = await getBlogArticles('news', 3);
+  const posts = getBlogPosts().slice(0, 3);
 
-  if (!blog || blog.articles.length === 0) return null;
+  if (!posts || posts.length === 0) return null;
 
   return (
     <section className="py-24 bg-[#FDFCFB]">
@@ -32,16 +32,16 @@ export default async function BlogSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {blog.articles.map((article: { id: string; handle: string; title: string; excerpt?: string; image?: { url: string; altText?: string }; publishedAt: string; content: string }) => (
+          {posts.map((post: BlogPost) => (
             <Link 
-              key={article.id} 
-              href={`/blog/news/${article.handle}`}
+              key={post.slug} 
+              href={`/blog/${post.slug}`}
               className="group flex flex-col h-full bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100"
             >
               <div className="relative h-64 w-full overflow-hidden">
                 <Image 
-                  src={article.image?.url || '/Images/Books.jpeg'} 
-                  alt={article.image?.altText || article.title}
+                  src={post.image || '/Images/Books.jpeg'} 
+                  alt={post.title}
                   fill
                   className="object-cover group-hover:scale-110 transition-transform duration-700"
                 />
@@ -51,7 +51,7 @@ export default async function BlogSection() {
               <div className="p-8 flex flex-col flex-1">
                 <div className="flex items-center gap-3 text-xs text-gray-400 mb-4 font-medium uppercase tracking-wider">
                   <Calendar size={14} className="text-[var(--islamic-gold)]" />
-                  {new Date(article.publishedAt).toLocaleDateString('en-IN', {
+                  {new Date(post.publishedAt).toLocaleDateString('en-IN', {
                     day: 'numeric',
                     month: 'short',
                     year: 'numeric'
@@ -59,11 +59,11 @@ export default async function BlogSection() {
                 </div>
                 
                 <h4 className="text-xl font-headings font-bold text-[var(--islamic-green)] mb-4 line-clamp-2 group-hover:text-[var(--islamic-gold)] transition-colors">
-                  {article.title}
+                  {post.title}
                 </h4>
                 
                 <p className="text-gray-600 text-sm line-clamp-3 mb-6 flex-1 leading-relaxed">
-                  {article.excerpt || article.content.substring(0, 120) + '...'}
+                  {post.excerpt || (post.content.length > 120 ? post.content.substring(0, 120) + '...' : post.content)}
                 </p>
                 
                 <span className="inline-flex items-center gap-1 text-sm font-bold text-[var(--islamic-green)] group-hover:gap-2 transition-all">

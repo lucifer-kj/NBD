@@ -1,13 +1,11 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardTitle } from "@/components/ui/card"
 import StarRating from "./star-rating"
-
-import { useAuth } from "./providers/session-provider"
 
 interface ReviewFormProps {
   onSubmit: (review: { name: string; email: string; rating: number; title: string; comment: string }) => void
@@ -15,20 +13,11 @@ interface ReviewFormProps {
 }
 
 export default function ReviewForm({ onSubmit, isSubmitting = false }: ReviewFormProps) {
-  const { user } = useAuth()
-  const [name, setName] = useState(user ? `${user.firstName} ${user.lastName}` : "")
-  const [email, setEmail] = useState(user?.email || "")
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
   const [rating, setRating] = useState(0)
   const [title, setTitle] = useState("")
   const [comment, setComment] = useState("")
-
-  // Update name/email if user logs in after component mounted
-  useEffect(() => {
-    if (user) {
-      if (!name) setName(`${user.firstName} ${user.lastName}`)
-      if (!email) setEmail(user.email)
-    }
-  }, [user, name, email])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()

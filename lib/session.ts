@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 export interface SessionPayload extends JWTPayload {
   customerId: string;
   accessToken?: string | null;
+  idToken?: string | null;
   email?: string | null;
   expiresAt: Date;
 }
@@ -30,9 +31,9 @@ export async function decryptSession(session: string | undefined = ''): Promise<
   }
 }
 
-export async function createSession(customerId: string, accessToken?: string, email?: string) {
+export async function createSession(customerId: string, accessToken?: string, email?: string, idToken?: string) {
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  const session = await encryptSession({ customerId, accessToken: accessToken || null, email: email || null, expiresAt } as SessionPayload);
+  const session = await encryptSession({ customerId, accessToken: accessToken || null, idToken: idToken || null, email: email || null, expiresAt } as SessionPayload);
   
   const cookieStore = await cookies();
 

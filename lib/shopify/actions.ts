@@ -58,16 +58,17 @@ export async function updateCartDiscountAction(cartId: string, discountCodes: st
   return { cart: reshapeCart(cart) }
 }
 
-export async function updateCartBuyerIdentityAction(cartId: string, email: string) {
+export async function updateCartBuyerIdentityAction(cartId: string, email?: string) {
   const { getSession } = await import('@/lib/session')
   const { updateCartBuyerIdentity } = await import('./index')
   const session = await getSession()
-  const token = session?.accessToken
   
-  if (!token) return { error: 'Not authenticated for Storefront API operations' }
+  const buyerEmail = email || session?.email || undefined
+  
+  if (!buyerEmail) return { error: 'No email available to identify buyer' }
   
   try {
-    const cart = await updateCartBuyerIdentity(cartId, token, email)
+    const cart = await updateCartBuyerIdentity(cartId, { email: buyerEmail })
     revalidateTag('cart')
     return { cart }
   } catch (error) {
@@ -78,21 +79,12 @@ export async function updateCartBuyerIdentityAction(cartId: string, email: strin
 
 export async function createAddressAction(address: unknown) {
   const { getSession } = await import('@/lib/session')
-  const { createCustomerAddress } = await import('./index')
   const { createCustomerAddressAdmin } = await import('./admin')
   const session = await getSession()
   
   if (!session) return { error: 'Not authenticated' }
   
-  const { customerId, accessToken } = session
-  
-  if (accessToken) {
-    try {
-      return await createCustomerAddress(accessToken, address)
-    } catch (e) {
-      console.error('Storefront address creation failed, trying Admin:', e)
-    }
-  }
+  const { customerId } = session
   
   if (customerId) {
     return await createCustomerAddressAdmin(customerId, address)
@@ -103,21 +95,12 @@ export async function createAddressAction(address: unknown) {
 
 export async function updateAddressAction(id: string, address: unknown) {
   const { getSession } = await import('@/lib/session')
-  const { updateCustomerAddress } = await import('./index')
   const { updateCustomerAddressAdmin } = await import('./admin')
   const session = await getSession()
   
   if (!session) return { error: 'Not authenticated' }
   
-  const { customerId, accessToken } = session
-  
-  if (accessToken) {
-    try {
-      return await updateCustomerAddress(accessToken, id, address)
-    } catch (e) {
-      console.error('Storefront address update failed, trying Admin:', e)
-    }
-  }
+  const { customerId } = session
   
   if (customerId) {
     return await updateCustomerAddressAdmin(customerId, id, address)
@@ -128,21 +111,12 @@ export async function updateAddressAction(id: string, address: unknown) {
 
 export async function deleteAddressAction(id: string) {
   const { getSession } = await import('@/lib/session')
-  const { deleteCustomerAddress } = await import('./index')
   const { deleteCustomerAddressAdmin } = await import('./admin')
   const session = await getSession()
   
   if (!session) return { error: 'Not authenticated' }
   
-  const { customerId, accessToken } = session
-  
-  if (accessToken) {
-    try {
-      return await deleteCustomerAddress(accessToken, id)
-    } catch (e) {
-      console.error('Storefront address deletion failed, trying Admin:', e)
-    }
-  }
+  const { customerId } = session
   
   if (customerId) {
     return await deleteCustomerAddressAdmin(customerId, id)
@@ -153,21 +127,12 @@ export async function deleteAddressAction(id: string) {
 
 export async function updateDefaultAddressAction(addressId: string) {
   const { getSession } = await import('@/lib/session')
-  const { updateDefaultAddress } = await import('./index')
   const { updateDefaultAddressAdmin } = await import('./admin')
   const session = await getSession()
   
   if (!session) return { error: 'Not authenticated' }
   
-  const { customerId, accessToken } = session
-  
-  if (accessToken) {
-    try {
-      return await updateDefaultAddress(accessToken, addressId)
-    } catch (e) {
-      console.error('Storefront default address update failed, trying Admin:', e)
-    }
-  }
+  const { customerId } = session
   
   if (customerId) {
     return await updateDefaultAddressAdmin(customerId, addressId)
@@ -178,22 +143,10 @@ export async function updateDefaultAddressAction(addressId: string) {
 
 export async function getOrderAction(orderId: string) {
   const { getSession } = await import('@/lib/session')
-  const { getOrder } = await import('./index')
   const { getOrderById } = await import('./admin')
   const session = await getSession()
   
   if (!session) return null
-  
-  const { accessToken } = session
-  
-  if (accessToken) {
-    try {
-      const order = await getOrder(accessToken, orderId)
-      if (order) return order
-    } catch (e) {
-      console.error('Storefront getOrder failed, trying Admin:', e)
-    }
-  }
   
   return await getOrderById(orderId)
 }

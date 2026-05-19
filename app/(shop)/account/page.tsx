@@ -1,7 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { getCustomerDetails } from '@/lib/shopify';
 import { getCustomerDetailsById } from '@/lib/shopify/admin';
 import { getSession } from '@/lib/session';
 import { Order } from '@/types/shopify';
@@ -18,22 +17,18 @@ export default async function AccountPage() {
   const session = await getSession();
 
   if (!session) {
-    redirect('/');
+    redirect('/api/auth/login');
   }
 
-  const { customerId, accessToken } = session as { customerId: string; accessToken?: string };
+  const { customerId } = session as { customerId: string };
 
   let customer = null;
-  if (accessToken) {
-    customer = await getCustomerDetails(accessToken);
-  }
-
-  if (!customer && customerId) {
+  if (customerId) {
     customer = await getCustomerDetailsById(customerId);
   }
 
   if (!customer) {
-    redirect('/');
+    redirect('/api/auth/login');
   }
 
   const formatPrice = (amount: string, currency: string) => {

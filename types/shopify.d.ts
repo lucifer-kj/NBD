@@ -72,6 +72,7 @@ export type Product = {
   tags: string[];
   updatedAt: string;
   metafields?: Metafield[];
+  vendor?: string;
 };
 
 // Reshaped Product for easier UI consumption
@@ -209,3 +210,17 @@ export type ShopifyUserError = {
   field?: string[];
   message: string;
 };
+
+export type Collection = {
+  id: string;
+  handle: string;
+  title: string;
+  updatedAt: string;
+};
+
+export type Policy = {
+  title: string;
+  handle: string;
+  body: string;
+};
+

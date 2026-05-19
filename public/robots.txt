@@ -1,3 +1,17 @@
 User-agent: *
 Allow: /
-Sitemap: https://naazbookdepot.com/sitemap.xml
+
+# Protect checkout, search, and dynamic auth APIs from aggressive AI bots
+User-agent: GPTBot
+Disallow: /api/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /account
+
+User-agent: ClaudeBot
+Disallow: /api/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /account
+
+Sitemap: https://www.naazbook.in/sitemap.xml

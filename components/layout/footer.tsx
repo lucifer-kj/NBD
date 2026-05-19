@@ -11,7 +11,7 @@ const Footer = () => {
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12 mb-12">
           {/* Brand & About */}
-          <div className="lg:col-span-2">
+          <div>
             <h3
               className="text-2xl font-headings font-bold mb-4 tracking-wide"
               style={{ background: 'linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
@@ -60,6 +60,33 @@ const Footer = () => {
               <li>
                 <Link href="/contact" className="text-white/70 hover:text-[var(--islamic-gold)] transition-colors duration-300 text-sm font-medium">
                   FAQs
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Store Policies */}
+          <div>
+            <h4 className="text-sm font-bold uppercase tracking-wider mb-5 text-[var(--islamic-gold)]">Store Policies</h4>
+            <ul className="space-y-3">
+              <li>
+                <Link href="/policies/privacy-policy" className="text-white/70 hover:text-[var(--islamic-gold)] transition-colors duration-300 text-sm font-medium">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/policies/terms-of-service" className="text-white/70 hover:text-[var(--islamic-gold)] transition-colors duration-300 text-sm font-medium">
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link href="/policies/refund-policy" className="text-white/70 hover:text-[var(--islamic-gold)] transition-colors duration-300 text-sm font-medium">
+                  Refund Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/policies/shipping-policy" className="text-white/70 hover:text-[var(--islamic-gold)] transition-colors duration-300 text-sm font-medium">
+                  Shipping Policy
                 </Link>
               </li>
             </ul>

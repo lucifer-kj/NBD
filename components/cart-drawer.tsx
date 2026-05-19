@@ -15,6 +15,7 @@ import { useMounted } from "@/hooks/use-mounted";
 import { formatPrice } from "@/lib/utils";
 import DiscountCodeInput from "./cart/DiscountCodeInput";
 import ShippingProgressBar from "./cart/ShippingProgressBar";
+import { trackBeginCheckout } from "@/lib/analytics";
 
 export default function CartDrawer() {
   const { 
@@ -43,6 +44,15 @@ export default function CartDrawer() {
     e.preventDefault();
     const { valid } = await validateCart();
     if (valid && cart?.checkoutUrl) {
+      // Fire GA4 begin_checkout event
+      const checkoutItems = lines.map(line => ({
+        item_id: line.merchandise.id,
+        item_name: line.merchandise.product.title,
+        price: parseFloat(line.cost.totalAmount.amount),
+        quantity: line.quantity,
+      }));
+      trackBeginCheckout(checkoutItems);
+      
       window.location.href = cart.checkoutUrl;
     }
   };
@@ -68,7 +78,7 @@ export default function CartDrawer() {
         </button>
       </Drawer.Trigger>
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 bg-black/30 z-40" onClick={closeCartDrawer} />
+        <Drawer.Overlay className="fixed inset-0 bg-black/45 backdrop-blur-sm z-40 transition-opacity duration-300" onClick={closeCartDrawer} />
         <AnimatePresence>
           {isCartDrawerOpen && (
             <motion.aside
@@ -77,32 +87,37 @@ export default function CartDrawer() {
               animate="show"
               exit="exit"
               variants={reduced ? undefined : cartSlideIn}
-              className="fixed top-0 right-0 w-full sm:max-w-md h-full bg-white shadow-2xl z-50 flex flex-col"
+              className="fixed top-0 right-0 w-[calc(100%-48px)] sm:max-w-md h-full bg-white shadow-2xl z-50 flex flex-col border-l border-gray-100"
             >
               <Drawer.Title asChild>
                 <VisuallyHidden>Cart</VisuallyHidden>
               </Drawer.Title>
               
               {/* Header */}
-              <div className="flex items-center justify-between p-4 md:p-6 border-b">
-                <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2">
-                  <ShoppingCart className="w-5 h-5 md:w-6 md:h-6" /> 
+              <div className="flex items-center justify-between p-5 md:p-6 border-b border-gray-100">
+                <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2.5 text-[var(--islamic-green-dark)]">
+                  <ShoppingCart className="w-5 h-5 md:w-6 md:h-6 text-[var(--islamic-gold)]" /> 
                   Cart ({count})
                 </h2>
-                <Button variant="ghost" size="icon" onClick={closeCartDrawer}>
-                  <X className="w-5 h-5 md:w-6 md:h-6" />
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={closeCartDrawer}
+                  className="rounded-full hover:bg-gray-100 p-2 animate-in fade-in duration-200"
+                >
+                  <X className="w-5 h-5 md:w-6 md:h-6 text-gray-500 hover:text-black transition-colors" />
                 </Button>
               </div>
 
               {/* Cart Items */}
-              <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50">
+              <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-[#FAF9F6]">
                 {lines.length > 0 && (
-                  <div className="mb-4">
+                  <div className="mb-4 animate-in fade-in duration-300">
                     <ShippingProgressBar />
                   </div>
                 )}
                 {discountError && (
-                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600 flex justify-between items-center animate-in fade-in slide-in-from-top-1">
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 flex justify-between items-center animate-in fade-in slide-in-from-top-1">
                     <span>{discountError}</span>
                     <button onClick={clearDiscountError} className="p-1 hover:bg-red-100 rounded-full transition-colors">
                       <X className="w-4 h-4" />
@@ -112,6 +127,9 @@ export default function CartDrawer() {
 
                 {isLoading && lines.length === 0 ? (
                    <div className="text-center text-gray-500 py-16">
+                     <div className="animate-spin inline-block w-6 h-6 border-[3px] border-current border-t-transparent text-[var(--islamic-green)] rounded-full mb-2" role="status">
+                       <span className="sr-only">Loading...</span>
+                     </div>
                      <p>Loading cart...</p>
                    </div>
                 ) : lines.length === 0 ? (
@@ -126,32 +144,36 @@ export default function CartDrawer() {
                       return (
                       <div 
                         key={line.id} 
-                        className={`flex gap-3 md:gap-4 items-start bg-white rounded-lg shadow-sm p-3 md:p-4 border transition-colors ${
-                          isUnavailable ? 'border-red-200 bg-red-50/30' : 'border-gray-200'
+                        className={`flex gap-3 md:gap-4 items-start bg-white rounded-xl shadow-sm p-3.5 border transition-all duration-200 hover:border-gray-300 group ${
+                          isUnavailable ? 'border-red-200 bg-red-50/20' : 'border-gray-150'
                         }`}
                       >
-                        <div className="relative flex-shrink-0">
+                        <div className="relative flex-shrink-0 w-16 h-16 md:w-20 md:h-20">
                           <Image 
                             src={line.merchandise.product.featuredImage?.url || "/Images/p1.jpg"} 
                             alt={line.merchandise.product.title} 
-                            width={60} 
-                            height={60} 
-                            className="rounded-md object-cover border" 
+                            width={80}
+                            height={80}
+                            className="w-full h-full rounded-lg object-cover border border-gray-100 shadow-sm" 
                           />
                           {isUnavailable && (
-                            <div className="absolute inset-0 bg-white/60 flex items-center justify-center rounded-md">
-                              <span className="text-[10px] font-bold text-red-600 uppercase">OOS</span>
+                            <div className="absolute inset-0 bg-white/60 flex items-center justify-center rounded-lg">
+                              <span className="text-[10px] font-bold text-red-600 uppercase tracking-wider">OOS</span>
                             </div>
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-sm md:text-base mb-1 line-clamp-2">
-                            <Link href={`/products/${line.merchandise.product.handle}`} className="hover:text-[var(--primary)]" onClick={closeCartDrawer}>
+                          <div className="font-semibold text-sm md:text-base mb-1 line-clamp-2 leading-snug">
+                            <Link 
+                              href={`/products/${line.merchandise.product.handle}`} 
+                              className="hover:text-[var(--islamic-green)] transition-colors" 
+                              onClick={closeCartDrawer}
+                            >
                               {line.merchandise.product.title}
                             </Link>
                           </div>
                           {line.merchandise.title !== 'Default Title' && (
-                            <div className="text-xs text-gray-500 mb-1">
+                            <div className="text-xs text-gray-500 mb-1 font-medium">
                               {line.merchandise.title}
                             </div>
                           )}
@@ -160,43 +182,42 @@ export default function CartDrawer() {
                               Currently Unavailable
                             </div>
                           ) : (
-                            <div className="text-[var(--islamic-green)] font-bold mb-2 text-sm md:text-base">
+                            <div className="text-[var(--islamic-green)] font-bold mb-2.5 text-sm md:text-base">
                               {formatPrice(line.cost.totalAmount.amount)}
                             </div>
                           )}
-                          <div className="flex items-center gap-2">
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
+                          
+                          {/* unified elegant capsule quantity picker */}
+                          <div className="flex items-center bg-gray-50 rounded-lg border border-gray-205 p-0.5 w-fit">
+                            <button 
                               onClick={() => updateItem(line.id, line.merchandise.id, line.quantity - 1)} 
                               disabled={line.quantity <= 1 || isLoading}
-                              className="w-8 h-8 p-0"
+                              className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white hover:shadow-sm text-gray-500 hover:text-black transition-all disabled:opacity-30 disabled:hover:bg-transparent"
+                              aria-label="Decrease quantity"
                             >
                               <Minus className="w-3 h-3" />
-                            </Button>
-                            <span className="px-2 font-medium text-sm md:text-base min-w-[2rem] text-center">
+                            </button>
+                            <span className="px-2 font-semibold text-xs md:text-sm min-w-[1.75rem] text-center text-gray-800">
                               {line.quantity}
                             </span>
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
+                            <button 
                               onClick={() => updateItem(line.id, line.merchandise.id, line.quantity + 1)} 
                               disabled={isLoading}
-                              className="w-8 h-8 p-0"
+                              className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white hover:shadow-sm text-gray-500 hover:text-black transition-all disabled:opacity-30 disabled:hover:bg-transparent"
+                              aria-label="Increase quantity"
                             >
                               <Plus className="w-3 h-3" />
-                            </Button>
+                            </button>
                           </div>
                         </div>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <button 
                           onClick={() => removeItem(line.id)}
                           disabled={isLoading}
-                          className="flex-shrink-0"
+                          className="flex-shrink-0 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all self-start -mr-2"
+                          aria-label="Remove item"
                         >
-                          <Trash2 className="w-4 h-4 text-red-500" />
-                        </Button>
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     )})}
                   </div>
@@ -204,56 +225,55 @@ export default function CartDrawer() {
               </div>
 
               {/* Footer */}
-              <div className="p-4 md:p-6 border-t bg-white">
-                <div className="mb-6">
+              <div className="p-5 md:p-6 border-t border-gray-100 bg-white">
+                <div className="mb-4">
                   <DiscountCodeInput />
                 </div>
 
-                <div className="rounded-lg border bg-gray-50 p-3 md:p-4 mb-4">
-                  <div className="flex items-center justify-between text-sm md:text-base font-semibold mb-2">
+                <div className="rounded-xl border border-gray-100 bg-[#FAFAFA] p-4 mb-5 shadow-sm">
+                  <div className="flex items-center justify-between text-sm md:text-base font-semibold mb-2 text-gray-700">
                     <span>Subtotal</span>
                     <span>{formatPrice(totalAmount)}</span>
                   </div>
                   {cart?.discountCodes?.some(d => d.applicable) && (
-                    <div className="flex items-center justify-between text-sm text-[var(--islamic-green)] font-medium mb-2">
+                    <div className="flex items-center justify-between text-sm text-[var(--islamic-green)] font-semibold mb-2">
                       <span>Discount applied</span>
                       <span>- {formatPrice(
                         Number(cart.cost.subtotalAmount.amount) - Number(totalAmount)
                       )}</span>
                     </div>
                   )}
-                  <div className="flex items-center justify-between text-xs md:text-sm text-gray-500">
+                  <div className="flex items-center justify-between text-xs md:text-sm text-gray-500 border-b border-dashed pb-3 mb-3">
                     <span>Shipping</span>
                     <span>Calculated at checkout</span>
                   </div>
-                  <div className="flex items-center justify-between text-base md:text-lg font-bold mt-3 md:mt-4">
+                  <div className="flex items-center justify-between text-base md:text-lg font-bold text-[var(--islamic-green-dark)]">
                     <span>Total</span>
                     <span>{formatPrice(totalAmount)}</span>
                   </div>
                 </div>
                 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {unavailableItems.length > 0 && (
-                    <p className="text-xs text-red-600 text-center mb-2 font-medium">
+                    <p className="text-xs text-red-600 text-center mb-2 font-semibold animate-pulse">
                       Please remove out-of-stock items to proceed
                     </p>
                   )}
                   <Button 
                     onClick={handleCheckout}
                     disabled={isCheckoutDisabled} 
-                    className="w-full bg-[var(--islamic-green)] hover:bg-[var(--islamic-green)]/90 text-white text-sm md:text-base font-semibold py-3 rounded-md shadow-md transition-all duration-300 hover:shadow-lg"
+                    className="w-full bg-[var(--islamic-green)] hover:bg-[var(--islamic-green)]/90 text-white text-sm md:text-base font-bold py-3.5 rounded-xl shadow-md transition-all duration-200 hover:shadow-lg active:scale-[0.98]"
                   >
                     {isLoading ? "Validating..." : "Checkout on Shopify"}
                   </Button>
                   {lines.length > 0 && (
-                    <Button 
-                      variant="outline" 
+                    <button 
                       onClick={clearCart} 
                       disabled={isLoading}
-                      className="w-full text-sm md:text-base"
+                      className="w-full text-sm md:text-base font-semibold text-gray-500 hover:text-red-500 border border-gray-200 hover:bg-red-50/30 py-2.5 rounded-xl transition-all duration-200 active:scale-[0.98]"
                     >
                       Clear Cart
-                    </Button>
+                    </button>
                   )}
                 </div>
               </div>
@@ -263,5 +283,5 @@ export default function CartDrawer() {
       </Drawer.Portal>
     </Drawer.Root>
   )
-} 
+}
  

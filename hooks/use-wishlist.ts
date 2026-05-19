@@ -2,59 +2,50 @@
 
 import { useEffect, useState } from 'react';
 import { useWishlistStore } from '@/store/wishlist-store';
-import { useAuth } from '@/components/providers/session-provider';
-
 
 export function useWishlist() {
-  const { user, isAuthenticated } = useAuth();
   const { items, toggleItem, setItems, isInWishlist } = useWishlistStore();
   const [isSyncing, setIsSyncing] = useState(false);
 
-  // Sync with server on mount or when user changes
+  // Sync with server on mount
   useEffect(() => {
-    if (isAuthenticated && user?.wishlist?.value) {
+    async function syncWishlist() {
       try {
-        const serverItems = JSON.parse(user.wishlist.value);
-        if (Array.isArray(serverItems)) {
-          // Merge local and server items, prioritizing server items for logged in users
-          setItems(serverItems);
+        const res = await fetch('/api/wishlist');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.items && Array.isArray(data.items)) {
+            setItems(data.items);
+          }
         }
       } catch (e) {
         console.error('Failed to parse wishlist from server:', e);
       }
     }
-  }, [isAuthenticated, user, setItems]);
+    syncWishlist();
+  }, [setItems]);
 
   const toggleWishlist = async (productId: string) => {
     // Optimistically update local state
     toggleItem(productId);
 
-    if (isAuthenticated && user?.id) {
-      setIsSyncing(true);
-      try {
-        // Calculate the new items array for the server
-        
-        // If toggleItem already ran, it's already in sync locally.
-        // Let's just send the current state of the store.
-        const res = await fetch('/api/wishlist', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            customerId: user.id, 
-            variantIds: useWishlistStore.getState().items 
-          })
-        });
+    setIsSyncing(true);
+    try {
+      const res = await fetch('/api/wishlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          variantIds: useWishlistStore.getState().items 
+        })
+      });
 
-        if (!res.ok) {
-          throw new Error('Failed to sync wishlist with server');
-        }
-      } catch (error) {
-        console.error('Wishlist sync error:', error);
-      } finally {
-        setIsSyncing(false);
+      if (!res.ok) {
+        throw new Error('Failed to sync wishlist with server');
       }
-    } else if (!isAuthenticated) {
-      // Saved locally in Zustand store
+    } catch (error) {
+      console.error('Wishlist sync error:', error);
+    } finally {
+      setIsSyncing(false);
     }
   };
 
