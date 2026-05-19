@@ -32,7 +32,7 @@ export async function GET() {
   authorizationUrl.searchParams.append('client_id', clientId);
   authorizationUrl.searchParams.append('response_type', 'code');
   authorizationUrl.searchParams.append('redirect_uri', redirectUri);
-  authorizationUrl.searchParams.append('scope', 'openid email https://api.shopify.com/auth/shop.storefront.id');
+  authorizationUrl.searchParams.append('scope', 'openid email customer-account-api:full');
   authorizationUrl.searchParams.append('state', state);
   authorizationUrl.searchParams.append('nonce', nonce);
 

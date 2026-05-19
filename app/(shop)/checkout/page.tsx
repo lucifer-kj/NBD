@@ -73,7 +73,7 @@ export default function CheckoutPage() {
           <div className="flex flex-col gap-3">
             <div className="flex gap-4 justify-center">
               <Button asChild variant="outline" className="rounded-xl">
-                <Link href="/cart">Return to Cart</Link>
+                <Link href="#" onClick={(e) => { e.preventDefault(); useCartStore.getState().openCartDrawer(); }}>Return to Cart</Link>
               </Button>
               <Button 
                 onClick={() => {

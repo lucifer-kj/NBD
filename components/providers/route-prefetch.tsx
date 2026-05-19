@@ -8,7 +8,7 @@ const IMPORTANT_ROUTES = [
   '/products',
   '/books',
   '/atar',
-  '/cart',
+
   '/account',
   '/wishlist',
   '/blog',
