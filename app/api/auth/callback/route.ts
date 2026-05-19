@@ -95,13 +95,15 @@ export async function GET(request: Request) {
       const parts = id_token.split('.');
       if (parts.length === 3) {
         const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf-8'));
-        email = payload.email || null;
-        customerId = payload.sub || '';
+        email = typeof payload.email === 'string' ? payload.email : null;
         
-        if (customerId && customerId.startsWith('urn:shopify:customer:')) {
+        // Coerce customerId explicitly to a string to prevent TypeError: startsWith is not a function
+        customerId = typeof payload.sub === 'string' ? payload.sub : (payload.sub ? String(payload.sub) : '');
+        
+        if (customerId && typeof customerId === 'string' && customerId.startsWith('urn:shopify:customer:')) {
           const numericId = customerId.split(':').pop();
           customerId = `gid://shopify/Customer/${numericId}`;
-        } else if (customerId && !customerId.startsWith('gid://')) {
+        } else if (customerId && typeof customerId === 'string' && !customerId.startsWith('gid://')) {
           customerId = `gid://shopify/Customer/${customerId}`;
         }
       }
