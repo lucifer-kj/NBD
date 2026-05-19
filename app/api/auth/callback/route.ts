@@ -18,8 +18,22 @@ export async function GET(request: Request) {
   const clientSecret = process.env.SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_SECRET;
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const redirectUri = `${baseUrl}/api/auth/callback`;
-  const accountUrl = process.env.NEXT_PUBLIC_SHOPIFY_ACCOUNT_URL || 'https://shopify.com/3xbr00-f7';
-  const tokenUrl = process.env.SHOPIFY_CUSTOMER_ACCOUNT_API_URL || `${accountUrl}/auth/oauth/token`;
+  let accountUrl = process.env.NEXT_PUBLIC_SHOPIFY_ACCOUNT_URL || 'https://shopify.com/70963200109';
+  if (accountUrl.includes('shopify.com/3xbr00-f7')) {
+    accountUrl = accountUrl.replace('shopify.com/3xbr00-f7', 'shopify.com/70963200109');
+  }
+
+  let tokenUrl = process.env.SHOPIFY_CUSTOMER_ACCOUNT_API_URL;
+  if (tokenUrl && tokenUrl.includes('shopify.com/3xbr00-f7')) {
+    tokenUrl = tokenUrl.replace('shopify.com/3xbr00-f7', 'shopify.com/70963200109');
+  }
+
+  if (!tokenUrl) {
+    const isCustomDomain = !accountUrl.includes('shopify.com');
+    tokenUrl = isCustomDomain 
+      ? `${accountUrl}/authentication/oauth/token` 
+      : `${accountUrl}/auth/oauth/token`;
+  }
   if (!clientId || !clientSecret) {
     return NextResponse.json({ error: 'Missing credentials' }, { status: 500 });
   }

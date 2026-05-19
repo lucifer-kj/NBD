@@ -31,13 +31,15 @@ export async function middleware(request: NextRequest) {
   // Security: Content Security Policy & Security Headers
   const cspHeader = `
     default-src 'self';
-    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.shopify.com https://vitals.vercel-insights.com;
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.shopify.com https://vitals.vercel-insights.com https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-    img-src 'self' blob: data: https://cdn.shopify.com https://v.fastly.net;
+    img-src 'self' blob: data: https://cdn.shopify.com https://*.shopifycdn.com https://v.fastly.net https://www.google-analytics.com https://www.googletagmanager.com https://google-analytics.com;
     font-src 'self' https://fonts.gstatic.com;
+    connect-src 'self' https://*.shopify.com https://*.google-analytics.com https://vitals.vercel-insights.com https://account.naazbook.in https://3xbr00-f7.myshopify.com;
+    frame-src 'self' https://www.googletagmanager.com https://*.shopify.com;
     object-src 'none';
     base-uri 'self';
-    form-action 'self' https://*.shopify.com;
+    form-action 'self' https://*.shopify.com https://account.naazbook.in;
     frame-ancestors 'none';
     block-all-mixed-content;
     upgrade-insecure-requests;

@@ -18,8 +18,17 @@ export async function GET() {
   cookieStore.set('oauth_state', state, { httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/', maxAge: 3600 });
   cookieStore.set('oauth_nonce', nonce, { httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/', maxAge: 3600 });
 
-  const accountUrl = process.env.NEXT_PUBLIC_SHOPIFY_ACCOUNT_URL || 'https://shopify.com/3xbr00-f7';
-  const authorizationUrl = new URL(`${accountUrl}/auth/oauth/authorize`);
+  let accountUrl = process.env.NEXT_PUBLIC_SHOPIFY_ACCOUNT_URL || 'https://shopify.com/70963200109';
+  if (accountUrl.includes('shopify.com/3xbr00-f7')) {
+    accountUrl = accountUrl.replace('shopify.com/3xbr00-f7', 'shopify.com/70963200109');
+  }
+
+  const isCustomDomain = !accountUrl.includes('shopify.com');
+  const authorizationUrl = new URL(
+    isCustomDomain 
+      ? `${accountUrl}/authentication/oauth/authorize` 
+      : `${accountUrl}/auth/oauth/authorize`
+  );
   authorizationUrl.searchParams.append('client_id', clientId);
   authorizationUrl.searchParams.append('response_type', 'code');
   authorizationUrl.searchParams.append('redirect_uri', redirectUri);
