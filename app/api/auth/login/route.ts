@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getRedisClient } from '@/lib/redis';
+import { getCookieDomain } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
@@ -102,6 +103,9 @@ export async function GET(request: Request) {
   response.headers.set('Expires', '0');
   response.headers.set('x-middleware-cache', 'no-cache');
 
+  const hostHeader = request.headers.get('host');
+  const domain = getCookieDomain(hostHeader);
+
   // Cookie options — shared for all OAuth cookies
   const cookieOptions = {
     httpOnly: true,                  // JS cannot read this (XSS protection)
@@ -109,6 +113,7 @@ export async function GET(request: Request) {
     path: '/',                       // Available to all routes
     maxAge: 600,                     // 10 minutes — matches Redis TTL
     sameSite: 'lax' as const,        // Required: allows cross-site redirect delivery
+    ...(domain ? { domain } : {}),
   };
 
   // ALWAYS set oauth_state cookie — this is the lookup key for Redis

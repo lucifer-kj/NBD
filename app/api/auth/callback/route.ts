@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSession } from '@/lib/session';
+import { createSession, getCookieDomain } from '@/lib/session';
 import { getRedisClient } from '@/lib/redis';
 
 export const dynamic = 'force-dynamic';
@@ -11,6 +11,7 @@ export const dynamic = 'force-dynamic';
 // safe approach in a route handler — it reads from the actual incoming HTTP headers.
 
 export async function GET(request: NextRequest) {
+  const hostHeader = request.headers.get('host');
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
   const state = searchParams.get('state'); // This is what Shopify sends back in the URL
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
     console.error('OAuth callback validation failed:', JSON.stringify(errorDetails));
 
     const res = NextResponse.json(errorDetails, { status: 400 });
-    clearOAuthCookies(res);
+    clearOAuthCookies(res, hostHeader);
     return res;
   }
 
@@ -93,7 +94,7 @@ export async function GET(request: NextRequest) {
       hasRedisCient: !!redis,
     }));
     const res = NextResponse.json({ error: 'Missing code verifier — Redis may be down and cookie fallback also failed' }, { status: 400 });
-    clearOAuthCookies(res);
+    clearOAuthCookies(res, hostHeader);
     return res;
   }
 
@@ -180,7 +181,7 @@ export async function GET(request: NextRequest) {
         tokenUrl,
       }));
       const errRes = NextResponse.json({ error: 'Shopify returned non-JSON response' }, { status: 502 });
-      clearOAuthCookies(errRes);
+      clearOAuthCookies(errRes, hostHeader);
       return errRes;
     }
 
@@ -199,7 +200,7 @@ export async function GET(request: NextRequest) {
         xForwardedProto: request.headers.get('x-forwarded-proto'),
       }));
       const errRes = NextResponse.json({ error: 'Token exchange failed', details: data }, { status: res.status });
-      clearOAuthCookies(errRes);
+      clearOAuthCookies(errRes, hostHeader);
       return errRes;
     }
 
@@ -255,7 +256,7 @@ export async function GET(request: NextRequest) {
 
     // Redirect to account page on success, and clear the OAuth cookies
     const successRes = NextResponse.redirect(new URL('/account', baseUrl));
-    clearOAuthCookies(successRes);
+    clearOAuthCookies(successRes, hostHeader);
     return successRes;
 
   } catch (error) {
@@ -267,7 +268,7 @@ export async function GET(request: NextRequest) {
       error: 'Internal server error during token exchange',
       details: error instanceof Error ? error.message : String(error),
     }, { status: 500 });
-    clearOAuthCookies(errRes);
+    clearOAuthCookies(errRes, hostHeader);
     return errRes;
   }
 }
@@ -277,9 +278,20 @@ export async function GET(request: NextRequest) {
  * Call this on EVERY response path — success, failure, and exceptions.
  * Leaving stale OAuth cookies causes state confusion on retry attempts.
  */
-function clearOAuthCookies(response: NextResponse): void {
-  const clearOptions = { path: '/', maxAge: 0, httpOnly: true, secure: true };
-  response.cookies.set('oauth_state', '', clearOptions);
-  response.cookies.set('oauth_nonce', '', clearOptions);
-  response.cookies.set('oauth_code_verifier', '', clearOptions);
+function clearOAuthCookies(response: NextResponse, host: string | null): void {
+  const domain = getCookieDomain(host);
+  
+  // 1. Clear on exact host (host-only clear)
+  const hostClearOptions = { path: '/', maxAge: 0, httpOnly: true, secure: true };
+  response.cookies.set('oauth_state', '', hostClearOptions);
+  response.cookies.set('oauth_nonce', '', hostClearOptions);
+  response.cookies.set('oauth_code_verifier', '', hostClearOptions);
+  
+  // 2. Clear on wildcard domain (if applicable)
+  if (domain) {
+    const wildcardClearOptions = { ...hostClearOptions, domain };
+    response.cookies.set('oauth_state', '', wildcardClearOptions);
+    response.cookies.set('oauth_nonce', '', wildcardClearOptions);
+    response.cookies.set('oauth_code_verifier', '', wildcardClearOptions);
+  }
 }
