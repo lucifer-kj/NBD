@@ -19,7 +19,6 @@ const protectedRoutes = [
   { path: '/api/auth/register', method: 'POST' },
   { path: '/api/auth/login', method: 'POST' },
   { path: '/api/auth/reset', method: 'POST' },
-  { path: '/api/auth/google/one-tap', method: 'POST' },
 ];
 
 const geistSans = Geist({

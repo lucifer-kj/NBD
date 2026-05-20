@@ -65,6 +65,17 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  if (pathname === '/wishlist') {
+    if (!isAuthenticated) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/login';
+      const redirectResponse = NextResponse.redirect(url);
+      redirectResponse.headers.set('Content-Security-Policy', cspHeader);
+      redirectResponse.headers.set('X-Frame-Options', 'SAMEORIGIN');
+      return redirectResponse;
+    }
+  }
+
   return response;
 }
 

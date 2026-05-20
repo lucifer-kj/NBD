@@ -1,9 +1,10 @@
 import { Metadata } from 'next';
-import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { getCustomerDetails, getProductsByIds } from '@/lib/shopify';
 import { Heart, ChevronLeft } from 'lucide-react';
 import WishlistItems from '@/components/wishlist/wishlist-items';
+import { getSession } from '@/lib/session';
 
 export const metadata: Metadata = {
   title: 'My Wishlist | Naaz Book Depot',
@@ -11,8 +12,12 @@ export const metadata: Metadata = {
 };
 
 export default async function WishlistPage() {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get('customerAccessToken')?.value;
+  const session = await getSession();
+  const accessToken = session?.accessToken;
+
+  if (!accessToken) {
+    redirect('/api/auth/login');
+  }
 
   const customer = accessToken ? await getCustomerDetails(accessToken) : null;
   const wishlistIds = customer?.wishlist ? JSON.parse(customer.wishlist.value) : [];

@@ -1,6 +1,5 @@
 "use client";
 import { useEffect } from "react";
-import { ToastProvider } from "@/components/ui/toast";
 import { useCartStore } from "@/store/cart-store";
 import { initCartSync, onCartSync } from "@/lib/cart-sync";
 import { BotIdClient } from 'botid/client';
@@ -35,9 +34,9 @@ export default function ClientRoot({ children, protectedRoutes }: { children: Re
   }, [initCart]);
 
   return (
-    <ToastProvider>
+    <>
       <BotIdClient protect={protectedRoutes ?? []} />
       {children}
-    </ToastProvider>
+    </>
   );
 }

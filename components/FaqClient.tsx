@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from 'react';
-import { Search, ChevronDown, BookOpen, Truck, Landmark, ShieldCheck, Mail, ArrowRight } from 'lucide-react';
+import { Search, ChevronDown, BookOpen, Truck, Landmark, ShieldCheck, Mail, ArrowRight, CreditCard } from 'lucide-react';
 
 interface FaqItem {
   id: string;
@@ -72,7 +72,7 @@ const CATEGORIES = [
   { id: 'general', label: 'Shipping & Orders', icon: Truck },
   { id: 'authenticity', label: 'Authenticity & Proofs', icon: ShieldCheck },
   { id: 'wholesale', label: 'Bulk Orders & Madrasas', icon: Landmark },
-  { id: 'returns', label: 'Payments & Returns', icon: Landmark }
+  { id: 'returns', label: 'Payments & Returns', icon: CreditCard }
 ];
 
 export default function FaqClient() {
