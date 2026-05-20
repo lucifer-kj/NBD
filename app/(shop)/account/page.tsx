@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { getCustomerDetails } from '@/lib/shopify';
 import { getCustomerDetailsById } from '@/lib/shopify/admin';
 import { getSession } from '@/lib/session';
 import { Order } from '@/types/shopify';
@@ -20,13 +21,18 @@ export default async function AccountPage() {
     redirect('/api/auth/login');
   }
 
-  const { customerId } = session as { customerId: string };
+  const { customerId, accessToken } = session as { customerId: string; accessToken?: string | null };
 
   let customer = null;
   try {
-    if (customerId) {
+    if (accessToken) {
+      customer = await getCustomerDetails(accessToken);
+    }
+
+    if (!customer && customerId) {
       customer = await getCustomerDetailsById(customerId);
     }
+
     if (!customer) {
       console.error('Customer details returned null from Shopify');
       redirect('/api/auth/login?error=customer_not_found');

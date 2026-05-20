@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { loginCustomer, getCustomerDetails } from '@/lib/shopify';
 import { createSession } from '@/lib/session';
+import { createAuthDebugContext } from '@/lib/auth-debug';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,54 +25,77 @@ export async function GET(request: Request) {
 
 // POST: Storefront password authentication endpoint
 export async function POST(request: Request) {
+  const debug = createAuthDebugContext(request);
+  debug.step('route_entered', 'POST /api/auth/login entered');
+
   try {
     const body = await request.json();
+    debug.step('request_parsed', 'Request body parsed', {
+      body: { ...body, password: body?.password ? '***' : undefined },
+    });
+
     const { email, password } = body;
 
     if (!email || !password) {
-      return NextResponse.json(
+      debug.step('validation_failed', 'Email or password missing', { emailPresent: !!email, passwordPresent: !!password });
+      return debug.json(
         { error: 'Email and password are required.' },
-        { status: 400 }
+        400
       );
     }
 
-    // 1. Call Shopify customerAccessTokenCreate mutation
+    debug.step('shopify_login_start', 'Calling Shopify customerAccessTokenCreate');
     const authResult = await loginCustomer({ email, password });
+    debug.step('shopify_login_complete', 'Shopify login mutation completed', {
+      hasErrors: 'errors' in authResult,
+      errorCount: 'errors' in authResult ? authResult.errors.length : 0,
+      hasAccessToken: !!('accessToken' in authResult && authResult.accessToken),
+    });
 
     if ('errors' in authResult) {
       const errorMessage = authResult.errors.join(', ');
-      return NextResponse.json(
+      debug.step('shopify_user_errors', 'Shopify returned user errors', authResult.errors);
+      return debug.json(
         { error: errorMessage || 'Invalid email or password.' },
-        { status: 401 }
+        401
       );
     }
 
     const accessToken = authResult.accessToken;
     if (!accessToken) {
-      return NextResponse.json(
+      debug.step('access_token_missing', 'Shopify returned no access token');
+      return debug.json(
         { error: 'Failed to retrieve access token.' },
-        { status: 500 }
+        500
       );
     }
 
-    // 2. Fetch customer details to get the unique Customer ID
+    debug.step('customer_fetch_start', 'Fetching customer details with storefront access token');
     const customer = await getCustomerDetails(accessToken);
+    debug.step('customer_fetch_complete', 'Customer fetch completed', {
+      customerFound: !!customer,
+      customerId: customer?.id ?? null,
+    });
+
     if (!customer || !customer.id) {
-      return NextResponse.json(
+      debug.step('customer_missing', 'Customer details were not returned or missing id');
+      return debug.json(
         { error: 'Could not load your profile details. Please try again.' },
-        { status: 401 }
+        401
       );
     }
 
-    // 3. Create the first-party secure session cookie shared across subdomains
+    debug.step('session_creation_start', 'Creating session cookie');
     await createSession(customer.id, accessToken, customer.email || email);
+    debug.step('session_creation_complete', 'Session cookie created successfully');
 
-    return NextResponse.json({ success: true });
+    return debug.json({ success: true });
   } catch (err: unknown) {
+    debug.error('handler_error', err);
     console.error('Authentication handler error:', err);
-    return NextResponse.json(
+    return debug.json(
       { error: 'An unexpected authentication error occurred.' },
-      { status: 500 }
+      500
     );
   }
 }

@@ -53,9 +53,10 @@ function LoginFormContent() {
     setLoading(true);
     
     try {
+      const debugHeaders: Record<string, string> = process.env.NEXT_PUBLIC_AUTH_DEBUG === 'true' ? { 'X-Auth-Debug': '1' } : {};
       const res = await fetch('/api/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...debugHeaders },
         body: JSON.stringify({ email, password }),
       });
       
