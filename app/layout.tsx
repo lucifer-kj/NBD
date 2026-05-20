@@ -13,7 +13,6 @@ import { ToastProvider } from "@/components/ui/toast"
 import WhatsAppButton from "@/components/ui/whatsapp-button";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/react";
-import { BotIdClient } from 'botid/client';
 
 const protectedRoutes = [
   { path: '/api/checkout', method: 'POST' },
@@ -261,7 +260,6 @@ export default function RootLayout({
             />
           </>
         )}
-        <BotIdClient protect={protectedRoutes} />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -278,7 +276,7 @@ export default function RootLayout({
           </noscript>
         )}
         <ToastProvider>
-          <ClientRoot>
+          <ClientRoot protectedRoutes={protectedRoutes}>
             <div className="min-h-screen flex flex-col">
               <Navbar />
               <main className="flex-1">

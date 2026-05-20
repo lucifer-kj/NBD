@@ -3,8 +3,14 @@ import { useEffect } from "react";
 import { ToastProvider } from "@/components/ui/toast";
 import { useCartStore } from "@/store/cart-store";
 import { initCartSync, onCartSync } from "@/lib/cart-sync";
+import { BotIdClient } from 'botid/client';
 
-export default function ClientRoot({ children }: { children: React.ReactNode }) {
+type ProtectedRoute = {
+  path: string;
+  method: string;
+};
+
+export default function ClientRoot({ children, protectedRoutes }: { children: React.ReactNode; protectedRoutes?: ProtectedRoute[] }) {
   const { initCart } = useCartStore();
 
   useEffect(() => {
@@ -28,5 +34,10 @@ export default function ClientRoot({ children }: { children: React.ReactNode }) 
     };
   }, [initCart]);
 
-  return <ToastProvider>{children}</ToastProvider>;
+  return (
+    <ToastProvider>
+      <BotIdClient protect={protectedRoutes ?? []} />
+      {children}
+    </ToastProvider>
+  );
 }
