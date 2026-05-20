@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     console.error('OAuth callback validation failed:', JSON.stringify(errorDetails));
 
     const res = NextResponse.json(errorDetails, { status: 400 });
-    clearOAuthCookies(res, request);
+    clearOAuthCookies(res);
     return res;
   }
 
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
       hasRedisCient: !!redis,
     }));
     const res = NextResponse.json({ error: 'Missing code verifier — Redis may be down and cookie fallback also failed' }, { status: 400 });
-    clearOAuthCookies(res, request);
+    clearOAuthCookies(res);
     return res;
   }
 
@@ -180,7 +180,7 @@ export async function GET(request: NextRequest) {
         tokenUrl,
       }));
       const errRes = NextResponse.json({ error: 'Shopify returned non-JSON response' }, { status: 502 });
-      clearOAuthCookies(errRes, request);
+      clearOAuthCookies(errRes);
       return errRes;
     }
 
@@ -199,7 +199,7 @@ export async function GET(request: NextRequest) {
         xForwardedProto: request.headers.get('x-forwarded-proto'),
       }));
       const errRes = NextResponse.json({ error: 'Token exchange failed', details: data }, { status: res.status });
-      clearOAuthCookies(errRes, request);
+      clearOAuthCookies(errRes);
       return errRes;
     }
 
@@ -255,7 +255,7 @@ export async function GET(request: NextRequest) {
 
     // Redirect to account page on success, and clear the OAuth cookies
     const successRes = NextResponse.redirect(new URL('/account', baseUrl));
-    clearOAuthCookies(successRes, request);
+    clearOAuthCookies(successRes);
     return successRes;
 
   } catch (error) {
@@ -267,7 +267,7 @@ export async function GET(request: NextRequest) {
       error: 'Internal server error during token exchange',
       details: error instanceof Error ? error.message : String(error),
     }, { status: 500 });
-    clearOAuthCookies(errRes, request);
+    clearOAuthCookies(errRes);
     return errRes;
   }
 }
@@ -277,45 +277,9 @@ export async function GET(request: NextRequest) {
  * Call this on EVERY response path — success, failure, and exceptions.
  * Leaving stale OAuth cookies causes state confusion on retry attempts.
  */
-function clearOAuthCookies(response: NextResponse, request: NextRequest): void {
-  const host = request.headers.get('host') || 'www.naazbook.in';
-  const domain = getOAuthCookieDomain(host);
-
-  const clearOptionsHost = { path: '/', maxAge: 0, httpOnly: true, secure: true };
-  response.cookies.set('oauth_state', '', clearOptionsHost);
-  response.cookies.set('oauth_nonce', '', clearOptionsHost);
-  response.cookies.set('oauth_code_verifier', '', clearOptionsHost);
-
-  if (domain) {
-    const clearOptionsWildcard = { path: '/', maxAge: 0, httpOnly: true, secure: true, domain };
-    response.cookies.set('oauth_state', '', clearOptionsWildcard);
-    response.cookies.set('oauth_nonce', '', clearOptionsWildcard);
-    response.cookies.set('oauth_code_verifier', '', clearOptionsWildcard);
-  }
-}
-
-// Helper to determine the cookie domain for OAuth cookies dynamically.
-// Avoids setting domain prefix on localhost and public suffixes like vercel.app.
-function getOAuthCookieDomain(host: string): string | undefined {
-  const domainOnly = host.split(':')[0].toLowerCase();
-
-  if (
-    domainOnly.includes('localhost') ||
-    domainOnly.includes('127.0.0.1') ||
-    domainOnly.endsWith('.vercel.app') ||
-    !domainOnly.includes('.')
-  ) {
-    return undefined;
-  }
-
-  if (domainOnly.endsWith('naazbook.in')) {
-    return '.naazbook.in';
-  }
-
-  const parts = domainOnly.split('.');
-  if (parts.length >= 2) {
-    return `.${parts.slice(-2).join('.')}`;
-  }
-
-  return undefined;
+function clearOAuthCookies(response: NextResponse): void {
+  const clearOptions = { path: '/', maxAge: 0, httpOnly: true, secure: true };
+  response.cookies.set('oauth_state', '', clearOptions);
+  response.cookies.set('oauth_nonce', '', clearOptions);
+  response.cookies.set('oauth_code_verifier', '', clearOptions);
 }

@@ -102,10 +102,6 @@ export async function GET(request: Request) {
   response.headers.set('Expires', '0');
   response.headers.set('x-middleware-cache', 'no-cache');
 
-  // Determine cookie domain dynamically to support wildcard domain cookie sharing in production
-  const host = request.headers.get('host') || 'www.naazbook.in';
-  const domain = getOAuthCookieDomain(host);
-
   // Cookie options — shared for all OAuth cookies
   const cookieOptions = {
     httpOnly: true,                  // JS cannot read this (XSS protection)
@@ -113,7 +109,6 @@ export async function GET(request: Request) {
     path: '/',                       // Available to all routes
     maxAge: 600,                     // 10 minutes — matches Redis TTL
     sameSite: 'lax' as const,        // Required: allows cross-site redirect delivery
-    domain,                          // Wildcard domain sharing to support www and non-www
   };
 
   // ALWAYS set oauth_state cookie — this is the lookup key for Redis
@@ -128,31 +123,5 @@ export async function GET(request: Request) {
   }
 
   return response;
-}
-
-// Helper to determine the cookie domain for OAuth cookies dynamically.
-// Avoids setting domain prefix on localhost and public suffixes like vercel.app.
-function getOAuthCookieDomain(host: string): string | undefined {
-  const domainOnly = host.split(':')[0].toLowerCase();
-
-  if (
-    domainOnly.includes('localhost') ||
-    domainOnly.includes('127.0.0.1') ||
-    domainOnly.endsWith('.vercel.app') ||
-    !domainOnly.includes('.')
-  ) {
-    return undefined;
-  }
-
-  if (domainOnly.endsWith('naazbook.in')) {
-    return '.naazbook.in';
-  }
-
-  const parts = domainOnly.split('.');
-  if (parts.length >= 2) {
-    return `.${parts.slice(-2).join('.')}`;
-  }
-
-  return undefined;
 }
 
