@@ -141,6 +141,12 @@ export async function shopifyFetch<T>({
   /** Number of retries for transient failures. Use 3 for mutations, 0 for cached queries. */
   retries?: number;
 }): Promise<{ status: number; body: T } | never> {
+  if (!endpoint) {
+    throw new Error(
+      'Shopify Storefront API endpoint is not configured. Ensure SHOPIFY_STORE_DOMAIN is set in your environment variables.'
+    );
+  }
+
   try {
     const fetchOptions: RequestInit = {
       method: 'POST',

@@ -14,13 +14,6 @@ import WhatsAppButton from "@/components/ui/whatsapp-button";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/react";
 
-const protectedRoutes = [
-  { path: '/api/checkout', method: 'POST' },
-  { path: '/api/auth/register', method: 'POST' },
-  { path: '/api/auth/login', method: 'POST' },
-  { path: '/api/auth/reset', method: 'POST' },
-];
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -275,7 +268,7 @@ export default function RootLayout({
           </noscript>
         )}
         <ToastProvider>
-          <ClientRoot protectedRoutes={protectedRoutes}>
+          <ClientRoot>
             <div className="min-h-screen flex flex-col">
               <Navbar />
               <main className="flex-1">

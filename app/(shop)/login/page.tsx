@@ -62,15 +62,17 @@ function LoginFormContent() {
       const data = await res.json();
       
       if (res.ok && data.success) {
-        // Successful login! Redirect directly to account overview
-        router.push('/account');
-        router.refresh();
+        // Successful login: force a full refresh to ensure session cookie is read cleanly
+        window.location.href = '/account';
       } else {
         setError(data.error || 'Invalid email or password. Please try again.');
       }
     } catch (err: unknown) {
       console.error(err);
-      setError('An unexpected connection error occurred. Please check your internet and try again.');
+      setError(
+        'Unable to reach the authentication server. Please check your internet connection and try again. ' +
+        'If the issue persists, refresh the page and try again.'
+      );
     } finally {
       setLoading(false);
     }

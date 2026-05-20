@@ -238,7 +238,7 @@ export const getCollectionQuery = `
       }
     }
   }
-  \${productFragment}
+  ${productFragment}
 `;
 
 

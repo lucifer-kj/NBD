@@ -2,14 +2,8 @@
 import { useEffect } from "react";
 import { useCartStore } from "@/store/cart-store";
 import { initCartSync, onCartSync } from "@/lib/cart-sync";
-import { BotIdClient } from 'botid/client';
 
-type ProtectedRoute = {
-  path: string;
-  method: string;
-};
-
-export default function ClientRoot({ children, protectedRoutes }: { children: React.ReactNode; protectedRoutes?: ProtectedRoute[] }) {
+export default function ClientRoot({ children }: { children: React.ReactNode }) {
   const { initCart } = useCartStore();
 
   useEffect(() => {
@@ -35,7 +29,6 @@ export default function ClientRoot({ children, protectedRoutes }: { children: Re
 
   return (
     <>
-      <BotIdClient protect={protectedRoutes ?? []} />
       {children}
     </>
   );
