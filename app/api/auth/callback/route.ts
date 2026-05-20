@@ -9,9 +9,14 @@ export async function GET(request: Request) {
 
   const cookieStore = await cookies();
   const storedState = cookieStore.get('oauth_state')?.value;
+  const codeVerifier = cookieStore.get('oauth_code_verifier')?.value;
 
   if (!code || !state || state !== storedState) {
     return NextResponse.json({ error: 'Invalid state or missing code' }, { status: 400 });
+  }
+
+  if (!codeVerifier) {
+    return NextResponse.json({ error: 'Missing code verifier' }, { status: 400 });
   }
 
   const clientId = process.env.SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID;
@@ -19,7 +24,11 @@ export async function GET(request: Request) {
   
   // Resolve host dynamically to match the exact domain used to initiate OAuth
   const host = request.headers.get('host') || 'www.naazbook.in';
-  const protocol = request.headers.get('x-forwarded-proto') || 'https';
+  
+  // Enforce HTTPS protocol in production to prevent redirect URI mismatches behind reverse proxies.
+  // We only use HTTP on localhost.
+  const isLocal = host.includes('localhost') || host.includes('127.0.0.1');
+  const protocol = isLocal ? 'http' : 'https';
   const baseUrl = `${protocol}://${host}`;
   const redirectUri = `${baseUrl}/api/auth/callback`;
   
@@ -51,6 +60,7 @@ export async function GET(request: Request) {
     client_id: clientId,
     redirect_uri: redirectUri,
     code,
+    code_verifier: codeVerifier,
   });
 
   // Base64 encode client credentials for HTTP Basic auth scheme
@@ -80,6 +90,11 @@ export async function GET(request: Request) {
         details: responseText.slice(0, 500) 
       }, { status: res.status === 200 ? 502 : res.status });
     }
+
+    // Clean up temporary OAuth cookies on response (both success and error)
+    cookieStore.delete('oauth_state');
+    cookieStore.delete('oauth_nonce');
+    cookieStore.delete('oauth_code_verifier');
 
     if (!res.ok) {
       console.error('Shopify Token exchange error:', data);
@@ -113,6 +128,11 @@ export async function GET(request: Request) {
     
     return NextResponse.redirect(new URL('/account', request.url));
   } catch (error) {
+    // Clean up temporary OAuth cookies on catastrophic errors
+    cookieStore.delete('oauth_state');
+    cookieStore.delete('oauth_nonce');
+    cookieStore.delete('oauth_code_verifier');
+
     console.error('Auth callback server-side error:', error);
     return NextResponse.json({ 
       error: 'Internal Server Error during token exchange',
