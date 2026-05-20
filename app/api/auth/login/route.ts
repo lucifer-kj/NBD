@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import crypto from 'crypto';
+import { getRedisClient } from '@/lib/redis';
+import { getCookieDomain } from '@/lib/session';
 
 export async function GET(request: Request) {
   const clientId = process.env.SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID;
@@ -12,8 +14,11 @@ export async function GET(request: Request) {
   // We only use HTTP on localhost.
   const isLocal = host.includes('localhost') || host.includes('127.0.0.1');
   const protocol = isLocal ? 'http' : 'https';
-  const baseUrl = `${protocol}://${host}`;
-  const redirectUri = `${baseUrl}/api/auth/callback`;
+  
+  // Priority 2: Deterministic Redirect URI via Environment Variable if set
+  const redirectUri = process.env.NEXT_PUBLIC_AUTH_BASE_URL
+    ? `${process.env.NEXT_PUBLIC_AUTH_BASE_URL}/api/auth/callback`
+    : `${protocol}://${host}/api/auth/callback`;
 
   if (!clientId) {
     return NextResponse.json({ error: 'Missing Client ID' }, { status: 500 });
@@ -34,28 +39,51 @@ export async function GET(request: Request) {
 
   const cookieStore = await cookies();
   const isProduction = process.env.NODE_ENV === 'production';
+  const domain = await getCookieDomain();
   
+  // Priority 1: Store OAuth State/Verifier/Nonce in Redis if available
+  const redis = getRedisClient();
+  let storedInRedis = false;
+  
+  if (redis) {
+    try {
+      // Key format: oauth:state, expires in 10 minutes (600s)
+      await redis.set(`oauth:${state}`, JSON.stringify({ codeVerifier, nonce }), { ex: 600 });
+      storedInRedis = true;
+    } catch (redisError) {
+      console.error('Redis OAuth save failure, falling back to cookies:', redisError);
+    }
+  }
+
+  // Always set oauth_state in cookie so callback can look up state (dynamic domain)
   cookieStore.set('oauth_state', state, { 
     httpOnly: true, 
     secure: isProduction, 
     path: '/', 
     maxAge: 3600,
-    sameSite: 'lax'
+    sameSite: 'lax',
+    domain
   });
-  cookieStore.set('oauth_nonce', nonce, { 
-    httpOnly: true, 
-    secure: isProduction, 
-    path: '/', 
-    maxAge: 3600,
-    sameSite: 'lax'
-  });
-  cookieStore.set('oauth_code_verifier', codeVerifier, {
-    httpOnly: true,
-    secure: isProduction,
-    path: '/',
-    maxAge: 3600,
-    sameSite: 'lax'
-  });
+
+  // If we couldn't store it in Redis, fallback to traditional secure cookie storage
+  if (!storedInRedis) {
+    cookieStore.set('oauth_nonce', nonce, { 
+      httpOnly: true, 
+      secure: isProduction, 
+      path: '/', 
+      maxAge: 3600,
+      sameSite: 'lax',
+      domain
+    });
+    cookieStore.set('oauth_code_verifier', codeVerifier, {
+      httpOnly: true,
+      secure: isProduction,
+      path: '/',
+      maxAge: 3600,
+      sameSite: 'lax',
+      domain
+    });
+  }
 
   let accountUrl = process.env.NEXT_PUBLIC_SHOPIFY_ACCOUNT_URL || 'https://shopify.com/70963200109';
   if (accountUrl.includes('shopify.com/3xbr00-f7')) {
