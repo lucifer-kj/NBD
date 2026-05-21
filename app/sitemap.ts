@@ -3,11 +3,10 @@ import { getProducts, getCollections, getPolicies } from '@/lib/shopify';
 import { getBlogPosts } from '@/lib/blog';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Use the environment variable if available, otherwise fallback to production URL
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL 
-    ? process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '') 
-    : 'https://www.naazbook.in';
-
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (!baseUrl) {
+    throw new Error('NEXT_PUBLIC_APP_URL is required to generate the sitemap');
+  }
   // 1. Static and Core Routes
   const staticRoutes = [
     '',

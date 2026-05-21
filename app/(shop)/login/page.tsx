@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { signIn, SignInResponse } from 'next-auth/react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, BookOpen, CheckCircle2, AlertTriangle, Sparkles } from 'lucide-react';
@@ -9,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 function LoginFormContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   
   // State variables
@@ -40,43 +40,48 @@ function LoginFormContent() {
     }
   }, [searchParams]);
 
-  // Main login submit handler
+  // Main login submit handler — uses NextAuth credentials provider
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
-    if (!email || !password) {
-      setError('Please fill in all fields.');
-      return;
-    }
-    
+
+    if (!email || !password) return setError('Please fill in all fields.');
+
     setLoading(true);
-    
     try {
-      const debugHeaders: Record<string, string> = process.env.NEXT_PUBLIC_AUTH_DEBUG === 'true' ? { 'X-Auth-Debug': '1' } : {};
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...debugHeaders },
-        body: JSON.stringify({ email, password }),
-      });
-      
-      const data = await res.json();
-      
-      if (res.ok && data.success) {
-        // Successful login: force a full refresh to ensure session cookie is read cleanly
-        window.location.href = '/account';
-      } else {
-        setError(data.error || 'Invalid email or password. Please try again.');
+      const res = (await signIn<'credentials'>('credentials', {
+        redirect: false,
+        email,
+        password,
+        callbackUrl: '/account'
+      })) as SignInResponse | undefined;
+
+      if (!res) {
+        setError('Unable to complete sign-in. Please try again.');
+        return;
       }
+
+      if (res.error) {
+        setError(res.error || 'Invalid email or password. Please try again.');
+        return;
+      }
+
+      if (res.url) {
+        window.location.href = res.url;
+        return;
+      }
+
+      setError('Unexpected sign-in response.');
     } catch (err: unknown) {
       console.error(err);
-      setError(
-        'Unable to reach the authentication server. Please check your internet connection and try again. ' +
-        'If the issue persists, refresh the page and try again.'
-      );
+      setError('Unable to reach the authentication server. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleSignIn = async () => {
+    await signIn('google', { callbackUrl: '/account' });
   };
 
   // Recovery form submit handler
@@ -215,6 +220,16 @@ function LoginFormContent() {
                 )}
               </Button>
             </form>
+
+            <div className="flex items-center gap-3 justify-center mt-4">
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-sm"
+              >
+                Sign in with Google
+              </button>
+            </div>
 
             <div className="text-center mt-8 pt-6 border-t border-gray-100">
               <p className="text-sm text-gray-500">

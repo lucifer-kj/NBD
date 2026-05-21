@@ -6,12 +6,17 @@ export default async function BookDetailPage({ params }: { params: Promise<{ slu
   const { slug } = await params;
   // Try fetching actual data
   let book = null;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/books/${slug}/`, { cache: 'no-store' });
+    if (!apiUrl) {
+      throw new Error('NEXT_PUBLIC_API_URL is required to fetch books data');
+    }
+    const res = await fetch(`${apiUrl}/api/books/${slug}/`, { cache: 'no-store' });
     if (res.ok) {
       book = await res.json();
     }
-  } catch {
+  } catch (error) {
+    console.warn('Backend API not reachable. Using fallback dummy data.', error);
     console.warn("Backend API not reachable. Using fallback dummy data.");
   }
 

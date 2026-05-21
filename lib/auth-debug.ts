@@ -80,3 +80,20 @@ export class AuthDebugContext {
 export function createAuthDebugContext(request: Request) {
   return new AuthDebugContext(request);
 }
+
+// Lightweight debug context usable outside of an HTTP Request (e.g., NextAuth callbacks)
+export function createDebug(name?: string) {
+  const enabled = process.env.AUTH_DEBUG === 'true';
+  const id = `${name ?? 'auth'}-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+  function step(stepName: string, message: string, details?: unknown) {
+    if (!enabled) return;
+    const payload = { id, timestamp: new Date().toISOString(), step: stepName, message, details };
+    console.info('[AUTH DEBUG]', payload);
+  }
+  function error(stepName: string, err: unknown) {
+    if (!enabled) return;
+    const payload = { id, timestamp: new Date().toISOString(), step: stepName, error: err instanceof Error ? { name: err.name, message: err.message, stack: err.stack } : err };
+    console.error('[AUTH DEBUG]', payload);
+  }
+  return { id, step, error };
+}

@@ -62,8 +62,18 @@ export async function updateCartBuyerIdentityAction(cartId: string, email?: stri
   const { getSession } = await import('@/lib/session')
   const { updateCartBuyerIdentity } = await import('./index')
   const session = await getSession()
+  // Try NextAuth server session as a fallback
+  let nextAuthEmail: string | undefined;
+  try {
+    const { getServerSession } = await import('next-auth');
+    const authOptions = (await import('@/lib/nextauth-config')).authOptions as any;
+    const nextAuthSession = (await getServerSession(authOptions as any)) as any;
+    if (nextAuthSession?.user?.email) nextAuthEmail = nextAuthSession.user.email as string;
+  } catch {
+    // ignore — best-effort
+  }
   
-  const buyerEmail = email || session?.email || undefined
+  const buyerEmail = email || session?.email || nextAuthEmail || undefined
   
   if (!buyerEmail) return { error: 'No email available to identify buyer' }
   

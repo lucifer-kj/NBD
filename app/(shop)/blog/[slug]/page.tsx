@@ -30,7 +30,10 @@ export async function generateMetadata({ params }: BlogPostPageProps) {
   
   if (!post) return { title: 'Post Not Found' };
 
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in';
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (!siteUrl) {
+    throw new Error('NEXT_PUBLIC_APP_URL is required to generate blog metadata');
+  }
 
   return {
     metadataBase: new URL(siteUrl),
@@ -98,44 +101,49 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     [key: string]: unknown;
   }
 
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (!siteUrl) {
+    throw new Error('NEXT_PUBLIC_APP_URL is required for blog schema generation');
+  }
+
   // Graph Schema.org implementation (combining Breadcrumb + Article for search crawler optimization)
   const graphSchema = {
     "@context": "https://schema.org",
     "@graph": [
       {
         "@type": "BreadcrumbList",
-        "@id": `https://www.naazbook.in/blog/${post.slug}#breadcrumb`,
+        "@id": `${siteUrl}/blog/${post.slug}#breadcrumb`,
         "itemListElement": [
           {
             "@type": "ListItem",
             "position": 1,
             "name": "Home",
-            "item": "https://www.naazbook.in"
+            "item": siteUrl
           },
           {
             "@type": "ListItem",
             "position": 2,
             "name": "Blog",
-            "item": "https://www.naazbook.in/blog"
+            "item": `${siteUrl}/blog`
           },
           {
             "@type": "ListItem",
             "position": 3,
             "name": post.title,
-            "item": `https://www.naazbook.in/blog/${post.slug}`
+            "item": `${siteUrl}/blog/${post.slug}`
           }
         ]
       },
       {
         "@type": "BlogPosting",
-        "@id": `https://www.naazbook.in/blog/${post.slug}#article`,
+        "@id": `${siteUrl}/blog/${post.slug}#article`,
         "isPartOf": {
           "@type": "WebPage",
-          "@id": `https://www.naazbook.in/blog/${post.slug}`
+          "@id": `${siteUrl}/blog/${post.slug}`
         },
         "headline": post.title,
         "description": post.excerpt,
-        "image": post.image ? `https://www.naazbook.in${post.image}` : "https://www.naazbook.in/Images/Books.jpeg",
+        "image": post.image ? `${siteUrl}${post.image}` : `${siteUrl}/Images/Books.jpeg`,
         "datePublished": post.publishedAt,
         "dateModified": post.lastModified,
         "author": {
@@ -145,13 +153,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         "publisher": {
           "@type": "Organization",
           "name": "Naaz Book Depot",
-          "url": "https://www.naazbook.in",
+          "url": siteUrl,
           "logo": {
             "@type": "ImageObject",
-            "url": "https://www.naazbook.in/Images/Logo.png"
+            "url": `${siteUrl}/Images/Logo.png`
           }
         },
-        "mainEntityOfPage": `https://www.naazbook.in/blog/${post.slug}`,
+        "mainEntityOfPage": `${siteUrl}/blog/${post.slug}`,
         "wordCount": wordCount,
         "timeRequired": `PT${readingTime}M`
       }
@@ -168,8 +176,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       articleEntity.about = recommendedProductsList.map((prod) => ({
         "@type": "Product",
         "name": prod.title,
-        "url": `https://www.naazbook.in/products/${prod.handle}`,
-        "image": prod.images?.[0]?.url || "https://www.naazbook.in/Images/Books.jpeg",
+        "url": `${siteUrl}/products/${prod.handle}`,
+        "image": prod.images?.[0]?.url || `${siteUrl}/Images/Books.jpeg`,
         "description": prod.description
       }));
     }
@@ -179,7 +187,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   if (post.faqs && post.faqs.length > 0) {
     graphSchema["@graph"].push({
       "@type": "FAQPage",
-      "@id": `https://www.naazbook.in/blog/${post.slug}#faq`,
+      "@id": `${siteUrl}/blog/${post.slug}#faq`,
       "mainEntity": post.faqs.map((faq) => ({
         "@type": "Question",
         "name": faq.question,

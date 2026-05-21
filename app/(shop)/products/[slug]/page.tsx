@@ -19,7 +19,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in';
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (!siteUrl) {
+    throw new Error('NEXT_PUBLIC_APP_URL is required to generate product metadata');
+  }
   const url = `${siteUrl}/products/${product.handle}`;
 
   return {

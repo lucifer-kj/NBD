@@ -5,6 +5,7 @@ import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/footer";
 import ClientRoot from "@/components/providers/client-root";
+import { AuthProvider } from "@/components/providers/auth-provider";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import AnimatedLayoutClient from "@/components/providers/animated-layout-client";
 import RoutePrefetcher from "@/components/providers/route-prefetch";
@@ -26,8 +27,13 @@ const geistMono = Geist_Mono({
   display: "swap", // Optimize font loading
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL;
+if (!SITE_URL) {
+  throw new Error('NEXT_PUBLIC_APP_URL is required and must be set in environment variables.');
+}
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.naazbook.in"),
+  metadataBase: new URL(SITE_URL),
   title: "Naaz Book Depot | Authentic Islamic Books, Quran & Attar — Since 1967",
   description: "Buy authentic Islamic books, Quran editions in Arabic, Urdu & English, premium Attar and Qur'an stands. India's trusted Islamic publisher since 1967. Based in Kolkata.",
   // Improve SEO and sharing
@@ -36,7 +42,7 @@ export const metadata: Metadata = {
     title: "Naaz Book Depot | Authentic Islamic Books & Quran — Since 1967",
     description: "India's trusted Islamic publisher since 1967. Buy authentic Quran editions, Islamic books, and premium Attar. Based in Kolkata, serving Muslims worldwide.",
     siteName: "Naaz Book Depot",
-    url: "https://www.naazbook.in",
+    url: SITE_URL,
     locale: "en_IN",
     images: [
       {
@@ -85,8 +91,8 @@ export default function RootLayout({
               "@type": "Organization",
               "name": "Naaz Book Depot",
               "alternateName": "Naaz Group",
-              "url": "https://www.naazbook.in",
-              "logo": "https://www.naazbook.in/logo.png",
+              "url": SITE_URL,
+              "logo": `${SITE_URL}/logo.png`,
               "description": "India's trusted Islamic book publisher and retailer since 1967. Specialising in authentic Quran editions, Islamic literature, and premium Attar.",
               "foundingDate": "1967",
               "founder": {
@@ -123,8 +129,8 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": ["BookStore", "LocalBusiness"],
               "name": "Naaz Book Depot",
-              "image": "https://www.naazbook.in/Images/About.jpg",
-              "url": "https://www.naazbook.in",
+              "image": `${SITE_URL}/Images/About.jpg`,
+              "url": SITE_URL,
               "telephone": "+91-033-2235-0051",
               "address": {
                 "@type": "PostalAddress",
@@ -268,19 +274,21 @@ export default function RootLayout({
           </noscript>
         )}
         <ToastProvider>
-          <ClientRoot>
-            <div className="min-h-screen flex flex-col">
-              <Navbar />
-              <main className="flex-1">
-                <ErrorBoundary>
-                  <AnimatedLayoutClient>{children}</AnimatedLayoutClient>
-                </ErrorBoundary>
-              </main>
-              <Footer />
-              <WhatsAppButton />
-              <RoutePrefetcher />
-            </div>
-          </ClientRoot>
+          <AuthProvider>
+            <ClientRoot>
+              <div className="min-h-screen flex flex-col">
+                <Navbar />
+                <main className="flex-1">
+                  <ErrorBoundary>
+                    <AnimatedLayoutClient>{children}</AnimatedLayoutClient>
+                  </ErrorBoundary>
+                </main>
+                <Footer />
+                <WhatsAppButton />
+                <RoutePrefetcher />
+              </div>
+            </ClientRoot>
+          </AuthProvider>
         </ToastProvider>
         <Analytics />
       </body>

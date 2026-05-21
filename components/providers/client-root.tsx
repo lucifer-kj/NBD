@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import { useCartStore } from "@/store/cart-store";
 import { initCartSync, onCartSync } from "@/lib/cart-sync";
+import { useCartSync } from '@/hooks/useCartSync';
 
 export default function ClientRoot({ children }: { children: React.ReactNode }) {
   const { initCart } = useCartStore();
@@ -26,6 +27,9 @@ export default function ClientRoot({ children }: { children: React.ReactNode }) 
       unsubscribe();
     };
   }, [initCart]);
+
+  // Sync cart with Shopify when session changes
+  useCartSync();
 
   return (
     <>
