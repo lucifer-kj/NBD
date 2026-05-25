@@ -17,7 +17,8 @@ import {
   customerDefaultAddressUpdateMutation,
   customerRecoverMutation,
   customerResetByUrlMutation,
-  setMetafieldsMutation
+  setMetafieldsMutation,
+  checkoutCustomerAssociateV2Mutation
 } from './mutations';
 import {
   Product,
@@ -816,4 +817,52 @@ export async function getCollectionByHandle(handle: string): Promise<CollectionW
   }
 }
 
+export async function associateCustomerWithCheckout(
+  checkoutId: string,
+  customerAccessToken: string
+): Promise<{ success: boolean; webUrl?: string; errors?: string[] }> {
+  try {
+    const res = await shopifyFetch<{
+      data: {
+        checkoutCustomerAssociateV2: {
+          checkout: {
+            id: string;
+            webUrl: string;
+          };
+          checkoutUserErrors: Array<{
+            code: string;
+            field: string[];
+            message: string;
+          }>;
+        };
+      };
+    }>({
+      query: checkoutCustomerAssociateV2Mutation,
+      variables: { checkoutId, customerAccessToken },
+      cache: 'no-store',
+      retries: 3
+    });
+
+    const payload = res.body?.data?.checkoutCustomerAssociateV2;
+    if (!payload) {
+      return { success: false, errors: ['No response from checkout association'] };
+    }
+
+    const errors = payload.checkoutUserErrors || [];
+    if (errors.length > 0) {
+      return { success: false, errors: errors.map((e) => e.message) };
+    }
+
+    return {
+      success: true,
+      webUrl: payload.checkout?.webUrl
+    };
+  } catch (error) {
+    console.error('Error associating customer with checkout:', error);
+    return {
+      success: false,
+      errors: [error instanceof Error ? error.message : 'Failed to associate checkout with customer']
+    };
+  }
+}
 

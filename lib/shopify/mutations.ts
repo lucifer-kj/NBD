@@ -247,3 +247,25 @@ export const customerResetByUrlMutation = `
     }
   }
 `;
+
+export const checkoutCustomerAssociateV2Mutation = `
+  mutation checkoutCustomerAssociateV2(
+    $checkoutId: ID!
+    $customerAccessToken: String!
+  ) {
+    checkoutCustomerAssociateV2(
+      checkoutId: $checkoutId
+      customerAccessToken: $customerAccessToken
+    ) {
+      checkout {
+        id
+        webUrl
+      }
+      checkoutUserErrors {
+        code
+        field
+        message
+      }
+    }
+  }
+`;
