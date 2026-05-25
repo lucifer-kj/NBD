@@ -75,11 +75,15 @@ export async function updateCartBuyerIdentityAction(cartId: string, email?: stri
   }
   
   const buyerEmail = email || session?.email || nextAuthEmail || undefined
+  const customerAccessToken = session?.accessToken || undefined
   
-  if (!buyerEmail) return { error: 'No email available to identify buyer' }
+  if (!buyerEmail && !customerAccessToken) return { error: 'No email or token available to identify buyer' }
   
   try {
-    const cart = await updateCartBuyerIdentity(cartId, { email: buyerEmail })
+    const cart = await updateCartBuyerIdentity(cartId, { 
+      email: buyerEmail,
+      ...(customerAccessToken ? { customerAccessToken } : {})
+    })
     revalidateTag('cart')
     return { cart }
   } catch (error) {
