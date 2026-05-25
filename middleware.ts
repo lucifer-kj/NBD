@@ -1,13 +1,15 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { decryptSession } from '@/lib/session';
+import { jwtVerify } from 'jose';
+import { decryptSession } from '@/lib/session-edge';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const sessionCookie = request.cookies.get('session')?.value;
-  const legacyToken = request.cookies.get('customerAccessToken')?.value;
-  
+  const nextAuthToken = request.cookies.get('next-auth.session-token')?.value ||
+                        request.cookies.get('__Secure-next-auth.session-token')?.value;
+
   // Check authentication status
   let isAuthenticated = false;
   if (sessionCookie) {
@@ -15,14 +17,17 @@ export async function middleware(request: NextRequest) {
     if (payload) {
       isAuthenticated = true;
     }
-  } else if (legacyToken) {
-    isAuthenticated = true;
-  }
-
-  // Security: Basic Bot Protection
-  const userAgent = request.headers.get('user-agent') || '';
-  if (/bot|spider|crawler|curl|wget/i.test(userAgent) && !/google|bing|yandex|duckduckgo|whatsapp/i.test(userAgent)) {
-     // Optional: track aggressive custom bots
+  } else if (nextAuthToken) {
+    try {
+      const secret = process.env.NEXTAUTH_SECRET || process.env.SESSION_SECRET;
+      if (secret) {
+        const encodedSecret = new TextEncoder().encode(secret);
+        await jwtVerify(nextAuthToken, encodedSecret, { algorithms: ['HS256'] });
+        isAuthenticated = true;
+      }
+    } catch {
+      // Invalid token is not authenticated.
+    }
   }
 
   // Prepare standard response
@@ -31,7 +36,7 @@ export async function middleware(request: NextRequest) {
   // Security: Content Security Policy & Security Headers
   const cspHeader = `
     default-src 'self';
-    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.shopify.com https://vitals.vercel-insights.com https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com;
+    script-src 'self' 'unsafe-inline' https://cdn.shopify.com https://vitals.vercel-insights.com https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
     img-src 'self' blob: data: https://cdn.shopify.com https://*.shopifycdn.com https://v.fastly.net https://www.google-analytics.com https://www.googletagmanager.com https://google-analytics.com;
     font-src 'self' https://fonts.gstatic.com;
@@ -40,8 +45,7 @@ export async function middleware(request: NextRequest) {
     object-src 'none';
     base-uri 'self';
     form-action 'self' https://*.shopify.com https://account.naazbook.in;
-    frame-ancestors 'none';
-    block-all-mixed-content;
+    frame-ancestors 'self';
     upgrade-insecure-requests;
   `.replace(/\s{2,}/g, ' ').trim();
 
@@ -52,28 +56,16 @@ export async function middleware(request: NextRequest) {
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'origin-when-cross-origin');
 
-  // Handle Protected Routes (/account)
-  if (pathname.startsWith('/account')) {
-    if (!isAuthenticated) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/login';
-      const redirectResponse = NextResponse.redirect(url);
-      // Re-apply security headers to redirect response
-      redirectResponse.headers.set('Content-Security-Policy', cspHeader);
-      redirectResponse.headers.set('X-Frame-Options', 'SAMEORIGIN');
-      return redirectResponse;
-    }
-  }
+  const protectedRoutes = ['/account', '/wishlist'];
+  const requiresAuth = protectedRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 
-  if (pathname === '/wishlist') {
-    if (!isAuthenticated) {
-      const url = request.nextUrl.clone();
-      url.pathname = '/login';
-      const redirectResponse = NextResponse.redirect(url);
-      redirectResponse.headers.set('Content-Security-Policy', cspHeader);
-      redirectResponse.headers.set('X-Frame-Options', 'SAMEORIGIN');
-      return redirectResponse;
-    }
+  if (requiresAuth && !isAuthenticated) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/login';
+    const redirectResponse = NextResponse.redirect(url);
+    redirectResponse.headers.set('Content-Security-Policy', cspHeader);
+    redirectResponse.headers.set('X-Frame-Options', 'SAMEORIGIN');
+    return redirectResponse;
   }
 
   return response;

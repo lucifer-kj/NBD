@@ -67,6 +67,11 @@ function LoginFormContent() {
       }
 
       if (res.url) {
+        try {
+          window.sessionStorage.setItem('naazbook-auth-toast', JSON.stringify({ message: 'Welcome back! You are signed in.', type: 'success' }));
+        } catch {
+          // ignore session storage failures
+        }
         window.location.href = res.url;
         return;
       }
@@ -81,6 +86,11 @@ function LoginFormContent() {
   };
 
   const handleGoogleSignIn = async () => {
+    try {
+      window.sessionStorage.setItem('naazbook-auth-toast', JSON.stringify({ message: 'Welcome back! You are signed in.', type: 'success' }));
+    } catch {
+      // ignore session storage failures
+    }
     await signIn('google', { callbackUrl: '/account' });
   };
 

@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useCartStore } from '@/store/cart-store';
-import { updateCartBuyerIdentity } from '@/lib/shopify';
+import { updateCartBuyerIdentityAction } from '@/lib/shopify/actions';
 
 export function useCartSync() {
   const sessionContext = useSession();
@@ -11,15 +11,10 @@ export function useCartSync() {
 
   useEffect(() => {
     if (!cartId) return;
-    const token = (session as any)?.shopifyToken ?? null;
-    // If authenticated, update the cart buyer identity in Shopify
+    
+    // Call the server action to update the cart buyer identity safely on the server side
     try {
-      if (token) {
-        updateCartBuyerIdentity(cartId, { customerAccessToken: token });
-      } else {
-        // Disassociate buyer email/token by setting empty buyer identity
-        updateCartBuyerIdentity(cartId, {});
-      }
+      updateCartBuyerIdentityAction(cartId);
     } catch (e) {
       // Keep silent — cart sync is best-effort
       console.error('useCartSync update error:', e);

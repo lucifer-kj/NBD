@@ -1,5 +1,6 @@
 import { SignJWT, jwtVerify, JWTPayload } from 'jose';
 import { cookies, headers } from 'next/headers';
+import type { Session } from 'next-auth';
 
 export interface SessionPayload extends JWTPayload {
   customerId: string;
@@ -114,7 +115,43 @@ export async function deleteSession() {
 export async function getSession(): Promise<SessionPayload | null> {
   const cookieStore = await cookies();
   const session = cookieStore.get('session')?.value;
-  if (!session) return null;
-  return await decryptSession(session);
+  if (session) {
+    const payload = await decryptSession(session);
+    if (payload) return payload;
+  }
+
+  // Fallback to NextAuth session
+  try {
+    const { getServerSession } = await import('next-auth/next');
+    const { authOptions } = await import('./nextauth-config');
+    const nextAuthSession = (await getServerSession(authOptions)) as (Session & {
+      shopifyToken?: string | null;
+      customerId?: string | null;
+    }) | null;
+    const nextAuthToken = nextAuthSession?.shopifyToken ?? undefined;
+    let nextAuthCustomerId = nextAuthSession?.customerId ?? undefined;
+    let email = nextAuthSession?.user?.email || null;
+
+    if (nextAuthToken && !nextAuthCustomerId) {
+      const { getCustomerDetails } = await import('@/lib/shopify');
+      const customer = await getCustomerDetails(nextAuthToken);
+      nextAuthCustomerId = customer?.id || nextAuthCustomerId;
+      if (!email && customer?.email) {
+        email = customer.email;
+      }
+    }
+
+    if (nextAuthSession && nextAuthToken && nextAuthCustomerId) {
+      return {
+        customerId: nextAuthCustomerId,
+        accessToken: nextAuthToken,
+        email,
+        expiresAt: new Date(nextAuthSession.expires || Date.now() + 7 * 24 * 60 * 60 * 1000)
+      } as SessionPayload;
+    }
+  } catch (e) {
+    console.error('Error fetching NextAuth session in getSession:', e);
+  }
+  return null;
 }
 

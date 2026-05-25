@@ -1,5 +1,6 @@
 "use server"
 
+import type { NextAuthOptions, Session } from 'next-auth';
 import { revalidateTag } from 'next/cache'
 import { createCart, addToCart, removeFromCart, updateCart, shopifyFetch, reshapeCart } from './index'
 import { cartFragment } from './fragments'
@@ -66,9 +67,9 @@ export async function updateCartBuyerIdentityAction(cartId: string, email?: stri
   let nextAuthEmail: string | undefined;
   try {
     const { getServerSession } = await import('next-auth');
-    const authOptions = (await import('@/lib/nextauth-config')).authOptions as any;
-    const nextAuthSession = (await getServerSession(authOptions as any)) as any;
-    if (nextAuthSession?.user?.email) nextAuthEmail = nextAuthSession.user.email as string;
+    const authOptions = (await import('@/lib/nextauth-config')).authOptions as NextAuthOptions;
+    const nextAuthSession = (await getServerSession(authOptions)) as Session | null;
+    if (nextAuthSession?.user?.email) nextAuthEmail = nextAuthSession.user.email;
   } catch {
     // ignore — best-effort
   }

@@ -1,11 +1,13 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import { ChevronDown, Search, User, Menu, X } from 'lucide-react';
 import CartDrawer from '@/components/cart-drawer';
 import PredictiveSearch from '@/components/search/predictive-search';
 import { useMounted } from '@/hooks/use-mounted';
+import { useToast } from '@/components/ui/toast';
 
 type ProductCategory = { name: string; path: string; available: boolean };
 
@@ -119,12 +121,55 @@ export function SearchBox() {
 
 // User Actions Client Component
 export function UserActions() {
+  const { data: session, status } = useSession();
+  const { showToast } = useToast();
+
+  useEffect(() => {
+    try {
+      const toastPayload = window.sessionStorage.getItem('naazbook-auth-toast');
+      if (!toastPayload) return;
+      const parsed = JSON.parse(toastPayload) as { message?: string; type?: 'success' | 'error' | 'info' };
+      if (parsed?.message) {
+        showToast(parsed.message, parsed.type);
+      }
+      window.sessionStorage.removeItem('naazbook-auth-toast');
+    } catch {
+      window.sessionStorage.removeItem('naazbook-auth-toast');
+    }
+  }, [showToast]);
+
+  const isAuthenticated = status === 'authenticated' && !!session?.user;
+  const displayName = session?.user?.name || session?.user?.email || '';
+
+  const initials = useMemo(() => {
+    if (!displayName) return 'U';
+    const parts = displayName.split(' ').filter(Boolean);
+    if (parts.length >= 2) {
+      return `${parts[0].charAt(0)}${parts[1].charAt(0)}`.toUpperCase();
+    }
+    if (parts[0].includes('@')) {
+      return parts[0].charAt(0).toUpperCase();
+    }
+    return parts[0].slice(0, 2).toUpperCase();
+  }, [displayName]);
+
   return (
     <Link
       href="/account"
-      className="text-white/90 hover:text-[var(--islamic-gold)] transition-colors flex items-center p-2"
+      className="flex items-center gap-2 p-2 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--islamic-gold)]"
     >
-      <User size={24} />
+      {isAuthenticated ? (
+        <>
+          <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white font-semibold uppercase tracking-[0.02em] border border-white/20">
+            {initials}
+          </span>
+          <span className="hidden md:inline text-white/90 text-sm font-medium truncate max-w-[120px]">
+            {displayName.split(' ')[0]}
+          </span>
+        </>
+      ) : (
+        <User size={24} className="text-white/90 hover:text-[var(--islamic-gold)]" />
+      )}
     </Link>
   );
 }

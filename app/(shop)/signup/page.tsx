@@ -60,9 +60,19 @@ export default function SignupPage() {
       if (res.ok && data.success) {
         if (data.autoLoginFailed) {
           // Registration succeeded, but autologin failed. Redirect to login.
+          try {
+            window.sessionStorage.setItem('naazbook-auth-toast', JSON.stringify({ message: 'Your account has been created. Please sign in to continue.', type: 'success' }));
+          } catch {
+            // ignore session storage failures
+          }
           router.push(`/login?registered=true&email=${encodeURIComponent(email)}`);
         } else {
           // Successfully registered and auto-logged in! Redirect directly to account overview
+          try {
+            window.sessionStorage.setItem('naazbook-auth-toast', JSON.stringify({ message: 'Welcome to Naaz Book Depot! You are now logged in.', type: 'success' }));
+          } catch {
+            // ignore session storage failures
+          }
           router.push('/account');
           router.refresh();
         }

@@ -11,7 +11,7 @@ export async function loginShopifyCustomer(email: string, password: string): Pro
       debug.step('user_errors', 'Shopify returned user errors', res.errors);
       return null;
     }
-    const token = (res as any).accessToken ?? null;
+    const token = 'accessToken' in res ? res.accessToken : null;
     debug.step('done', 'loginShopifyCustomer completed', { hasToken: !!token });
     return token;
   } catch (e) {
