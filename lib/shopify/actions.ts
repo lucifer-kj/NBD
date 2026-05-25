@@ -166,3 +166,14 @@ export async function getOrderAction(orderId: string) {
     return null;
   }
 }
+
+export async function getSessionAction() {
+  try {
+    const { getSession } = await import('@/lib/session');
+    return await getSession();
+  } catch (error) {
+    console.error('Error in getSessionAction:', error);
+    return null;
+  }
+}
+

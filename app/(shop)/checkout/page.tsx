@@ -2,9 +2,8 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useCartStore } from "@/store/cart-store";
-import { updateCartBuyerIdentityAction } from "@/lib/shopify/actions";
+import { updateCartBuyerIdentityAction, getSessionAction } from "@/lib/shopify/actions";
 import { associateCustomerWithCheckout } from "@/lib/shopify";
-import { getSession } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { AlertCircle, Loader2 } from "lucide-react";
@@ -48,7 +47,7 @@ export default function CheckoutPage() {
         // Associate the checkout with the authenticated customer (if logged in)
         // This pre-fills customer details and removes the "Sign In" prompt on Shopify checkout
         try {
-          const session = await getSession();
+          const session = await getSessionAction();
           if (session?.accessToken) {
             // Extract checkout ID from the checkoutUrl or use cart ID as fallback
             const checkoutId = cart.id;
