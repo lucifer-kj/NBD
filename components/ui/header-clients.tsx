@@ -139,7 +139,7 @@ export function UserActions() {
   }, [showToast]);
 
   const isAuthenticated = status === 'authenticated' && !!session?.user;
-  const displayName = session?.user?.name || session?.user?.email || '';
+  const displayName = session?.user?.name || (session?.user?.email ? session.user.email.split('@')[0] : '');
 
   const initials = useMemo(() => {
     if (!displayName) return 'U';
@@ -147,15 +147,26 @@ export function UserActions() {
     if (parts.length >= 2) {
       return `${parts[0].charAt(0)}${parts[1].charAt(0)}`.toUpperCase();
     }
-    if (parts[0].includes('@')) {
-      return parts[0].charAt(0).toUpperCase();
+    if (parts[0].includes('.')) {
+      const dotParts = parts[0].split('.');
+      return `${dotParts[0].charAt(0)}${dotParts[1]?.charAt(0) || ''}`.toUpperCase();
     }
     return parts[0].slice(0, 2).toUpperCase();
   }, [displayName]);
 
+  const firstName = useMemo(() => {
+    if (!displayName) return '';
+    const part = displayName.split(' ')[0];
+    if (part.includes('.')) {
+      const subPart = part.split('.')[0];
+      return subPart.charAt(0).toUpperCase() + subPart.slice(1);
+    }
+    return part.charAt(0).toUpperCase() + part.slice(1);
+  }, [displayName]);
+
   return (
     <Link
-      href="/account"
+      href={isAuthenticated ? "/account" : "/login"}
       className="flex items-center gap-2 p-2 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--islamic-gold)]"
     >
       {isAuthenticated ? (
@@ -164,7 +175,7 @@ export function UserActions() {
             {initials}
           </span>
           <span className="hidden md:inline text-white/90 text-sm font-medium truncate max-w-[120px]">
-            {displayName.split(' ')[0]}
+            {firstName}
           </span>
         </>
       ) : (

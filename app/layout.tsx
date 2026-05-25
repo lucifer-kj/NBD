@@ -12,8 +12,8 @@ import RoutePrefetcher from "@/components/providers/route-prefetch";
 
 import { ToastProvider } from "@/components/ui/toast"
 import WhatsAppButton from "@/components/ui/whatsapp-button";
-import Script from "next/script";
-import { Analytics } from "@vercel/analytics/react";
+import GDPRScriptProvider from "@/components/providers/gdpr-script-provider";
+import CookieConsent from "@/components/layout/cookie-consent";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -219,78 +219,30 @@ export default function RootLayout({
             })
           }}
         />
-        {/* Google Tag Manager */}
-        {process.env.NEXT_PUBLIC_GTM_ID && (
-          <Script
-            id="google-tag-manager"
-            strategy="afterInteractive"
-            dangerouslySetInnerHTML={{
-              __html: `
-                (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-                new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-                j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-                'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-                })(window,document,'script','dataLayer','${process.env.NEXT_PUBLIC_GTM_ID}');
-              `,
-            }}
-          />
-        )}
-        {/* GA4 - Google Analytics */}
-        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
-          <>
-            <Script
-              strategy="afterInteractive"
-              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
-            />
-            <Script
-              id="google-analytics"
-              strategy="afterInteractive"
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                  gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', {
-                    page_path: window.location.pathname,
-                  });
-                `,
-              }}
-            />
-          </>
-        )}
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* Google Tag Manager (noscript) */}
-        {process.env.NEXT_PUBLIC_GTM_ID && (
-          <noscript>
-            <iframe
-              src={`https://www.googletagmanager.com/ns.html?id=${process.env.NEXT_PUBLIC_GTM_ID}`}
-              height="0"
-              width="0"
-              style={{ display: "none", visibility: "hidden" }}
-            />
-          </noscript>
-        )}
         <ToastProvider>
           <AuthProvider>
             <ClientRoot>
-              <div className="min-h-screen flex flex-col">
-                <Navbar />
-                <main className="flex-1">
-                  <ErrorBoundary>
-                    <AnimatedLayoutClient>{children}</AnimatedLayoutClient>
-                  </ErrorBoundary>
-                </main>
-                <Footer />
-                <WhatsAppButton />
-                <RoutePrefetcher />
-              </div>
+              <GDPRScriptProvider>
+                <div className="min-h-screen flex flex-col">
+                  <Navbar />
+                  <main className="flex-1">
+                    <ErrorBoundary>
+                      <AnimatedLayoutClient>{children}</AnimatedLayoutClient>
+                    </ErrorBoundary>
+                  </main>
+                  <Footer />
+                  <WhatsAppButton />
+                  <RoutePrefetcher />
+                  <CookieConsent />
+                </div>
+              </GDPRScriptProvider>
             </ClientRoot>
           </AuthProvider>
         </ToastProvider>
-        <Analytics />
       </body>
     </html>
   );

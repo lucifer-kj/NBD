@@ -1,14 +1,12 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { jwtVerify } from 'jose';
+import { getToken } from 'next-auth/jwt';
 import { decryptSession } from '@/lib/session-edge';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const sessionCookie = request.cookies.get('session')?.value;
-  const nextAuthToken = request.cookies.get('next-auth.session-token')?.value ||
-                        request.cookies.get('__Secure-next-auth.session-token')?.value;
 
   // Check authentication status
   let isAuthenticated = false;
@@ -17,12 +15,14 @@ export async function middleware(request: NextRequest) {
     if (payload) {
       isAuthenticated = true;
     }
-  } else if (nextAuthToken) {
+  } else {
     try {
-      const secret = process.env.NEXTAUTH_SECRET || process.env.SESSION_SECRET;
-      if (secret) {
-        const encodedSecret = new TextEncoder().encode(secret);
-        await jwtVerify(nextAuthToken, encodedSecret, { algorithms: ['HS256'] });
+      const token = await getToken({
+        req: request,
+        secret: process.env.NEXTAUTH_SECRET || process.env.SESSION_SECRET,
+        secureCookie: process.env.NODE_ENV === 'production',
+      });
+      if (token) {
         isAuthenticated = true;
       }
     } catch {

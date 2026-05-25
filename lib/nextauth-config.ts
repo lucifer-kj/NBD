@@ -57,7 +57,13 @@ export const authOptions: NextAuthOptions = {
           const customerId = customer?.id || null;
 
           debug.step('credentials_authorize_success', 'Shopify login succeeded', { customerId });
-          return { id: email, email, shopifyToken: token, customerId };
+          return { 
+            id: email, 
+            email, 
+            shopifyToken: token, 
+            customerId,
+            name: customer?.firstName || null
+          };
         } catch (e) {
           debug.error('credentials_authorize_error', e);
           return null;

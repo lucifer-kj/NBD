@@ -45,6 +45,11 @@ export async function getCookieDomain(): Promise<string | undefined> {
       return undefined;
     }
 
+    // Explicitly exclude Vercel and Netlify public suffix preview/deployment domains
+    if (domainOnly.endsWith('.vercel.app') || domainOnly.endsWith('.netlify.app')) {
+      return undefined;
+    }
+
     const parts = domainOnly.split('.');
     if (parts.length >= 2) {
       // Return base domain prefixed with dot (e.g. '.naazbook.in')
