@@ -1,33 +1,23 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { decryptSession } from '@/lib/session-edge';
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const sessionCookie = request.cookies.get('session')?.value;
-
-  // Check authentication status
+  // Check authentication status using NextAuth JWE token directly
   let isAuthenticated = false;
-  if (sessionCookie) {
-    const payload = await decryptSession(sessionCookie);
-    if (payload) {
+  try {
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET || process.env.SESSION_SECRET,
+      secureCookie: process.env.NODE_ENV === 'production',
+    });
+    if (token) {
       isAuthenticated = true;
     }
-  } else {
-    try {
-      const token = await getToken({
-        req: request,
-        secret: process.env.NEXTAUTH_SECRET || process.env.SESSION_SECRET,
-        secureCookie: process.env.NODE_ENV === 'production',
-      });
-      if (token) {
-        isAuthenticated = true;
-      }
-    } catch {
-      // Invalid token is not authenticated.
-    }
+  } catch {
+    // Invalid token is not authenticated.
   }
 
   // Prepare standard response

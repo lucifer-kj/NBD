@@ -4,7 +4,6 @@ import type { NextAuthOptions, User, Session, Account } from 'next-auth';
 import type { JWT } from 'next-auth/jwt';
 import { loginShopifyCustomer, getOrCreateShopifyCustomer } from '@/lib/shopify/customer';
 import { createDebug } from './auth-debug';
-import { createSession } from './session';
 
 type AppAuthUser = User & {
   shopifyToken?: string | null;
@@ -93,14 +92,6 @@ export const authOptions: NextAuthOptions = {
                 const { getCustomerDetails } = await import('@/lib/shopify');
                 const customer = await getCustomerDetails(shopifyToken);
                 token.customerId = customer?.id || null;
-
-                if (customer?.id) {
-                  debug.step('jwt_google_create_session', 'Creating custom session cookie for Google sign-in', {
-                    customerId: customer.id,
-                    hasToken: !!shopifyToken,
-                  });
-                  await createSession(customer.id, shopifyToken, email);
-                }
               }
             }
           }
@@ -108,13 +99,6 @@ export const authOptions: NextAuthOptions = {
           if (account.provider === 'credentials') {
             token.shopifyToken = authUser.shopifyToken ?? null;
             token.customerId = authUser.customerId ?? null;
-
-            if (token.shopifyToken && token.customerId) {
-              debug.step('jwt_credentials_create_session', 'Creating custom session cookie for credentials sign-in', {
-                customerId: token.customerId,
-              });
-              await createSession(token.customerId, token.shopifyToken, authUser.email ?? undefined);
-            }
           }
         }
       } catch (e) {

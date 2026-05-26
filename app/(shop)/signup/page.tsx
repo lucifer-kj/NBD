@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 import { Mail, Lock, User, Eye, EyeOff, ArrowRight, BookOpen, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -58,23 +59,29 @@ export default function SignupPage() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        if (data.autoLoginFailed) {
-          // Registration succeeded, but autologin failed. Redirect to login.
-          try {
-            window.sessionStorage.setItem('naazbook-auth-toast', JSON.stringify({ message: 'Your account has been created. Please sign in to continue.', type: 'success' }));
-          } catch {
-            // ignore session storage failures
+        // Unification auto-login: Sign in the user client-side via NextAuth!
+        try {
+          const loginRes = await signIn('credentials', {
+            redirect: false,
+            email,
+            password,
+            callbackUrl: '/account'
+          });
+
+          if (loginRes?.error) {
+            router.push(`/login?registered=true&email=${encodeURIComponent(email)}`);
+          } else {
+            try {
+              window.sessionStorage.setItem('naazbook-auth-toast', JSON.stringify({ message: 'Welcome to Naaz Book Depot! You are now logged in.', type: 'success' }));
+            } catch {
+              // ignore session storage failures
+            }
+            router.push('/account');
+            router.refresh();
           }
+        } catch (loginErr) {
+          console.error('Auto-login failed after registration:', loginErr);
           router.push(`/login?registered=true&email=${encodeURIComponent(email)}`);
-        } else {
-          // Successfully registered and auto-logged in! Redirect directly to account overview
-          try {
-            window.sessionStorage.setItem('naazbook-auth-toast', JSON.stringify({ message: 'Welcome to Naaz Book Depot! You are now logged in.', type: 'success' }));
-          } catch {
-            // ignore session storage failures
-          }
-          router.push('/account');
-          router.refresh();
         }
       } else {
         setError(data.error || 'Failed to create your account. Please try again.');

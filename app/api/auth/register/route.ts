@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { createCustomer, loginCustomer, getCustomerDetails } from '@/lib/shopify';
-import { createSession } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,10 +70,8 @@ export async function POST(request: Request) {
       });
     }
 
-    // 4. Set the session cookie
-    await createSession(customer.id, accessToken, customer.email || email);
-
-    return NextResponse.json({ success: true });
+    // Return email and success status so the client page can login via NextAuth automatically
+    return NextResponse.json({ success: true, email: customer.email || email });
   } catch (err: unknown) {
     console.error('Registration handler error:', err);
     return NextResponse.json(

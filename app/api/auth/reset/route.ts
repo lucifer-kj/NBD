@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { resetCustomerPassword } from '@/lib/shopify';
-import { createSession } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,17 +33,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // If reset succeeded, Shopify returns the customer and their new access token
-    const { customer, customerAccessToken } = result;
+    // If reset succeeded, Shopify returns the customer
+    const { customer } = result;
 
-    if (customer && customer.id && customerAccessToken?.accessToken) {
-      // Auto-login the user since the reset was successful!
-      await createSession(
-        customer.id, 
-        customerAccessToken.accessToken, 
-        customer.email || ''
-      );
-      return NextResponse.json({ success: true });
+    if (customer && customer.id && customer.email) {
+      return NextResponse.json({ success: true, email: customer.email });
     }
 
     return NextResponse.json({ 

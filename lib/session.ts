@@ -61,47 +61,17 @@ export async function getCookieDomain(): Promise<string | undefined> {
   return undefined;
 }
 
-export async function createSession(customerId: string, accessToken?: string, email?: string, idToken?: string) {
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  const session = await encryptSession({ customerId, accessToken: accessToken || null, idToken: idToken || null, email: email || null, expiresAt } as SessionPayload);
-  
-  const cookieStore = await cookies();
-  const domain = await getCookieDomain();
-
-  cookieStore.set('session', session, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    expires: expiresAt,
-    sameSite: 'lax',
-    path: '/',
-    domain,
-  });
+export async function createSession(_customerId: string, _accessToken?: string, _email?: string, _idToken?: string) {
+  // Unification: No-op. Session is managed entirely via NextAuth JWE cookies.
+  void _customerId;
+  void _accessToken;
+  void _email;
+  void _idToken;
 }
 
 export async function updateSession(): Promise<SessionPayload | null> {
-  const cookieStore = await cookies();
-  const session = cookieStore.get('session')?.value;
-  const payload = await decryptSession(session);
-
-  if (!session || !payload) {
-    return null;
-  }
-
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  
-  const newSession = await encryptSession({ ...payload, expiresAt });
-  const domain = await getCookieDomain();
-
-  cookieStore.set('session', newSession, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    expires: expiresAt,
-    sameSite: 'lax',
-    path: '/',
-    domain,
-  });
-  
-  return payload;
+  // Unification: No-op. Session is managed entirely via NextAuth JWE cookies.
+  return null;
 }
 
 export async function deleteSession() {
@@ -118,33 +88,19 @@ export async function deleteSession() {
 }
 
 export async function getSession(): Promise<SessionPayload | null> {
-  const cookieStore = await cookies();
-  const session = cookieStore.get('session')?.value;
-  if (session) {
-    const payload = await decryptSession(session);
-    if (payload) return payload;
-  }
-
-  // Fallback to NextAuth session
+  // Unification: NextAuth is the single source of truth.
   try {
     const { getServerSession } = await import('next-auth/next');
     const { authOptions } = await import('./nextauth-config');
+    
     const nextAuthSession = (await getServerSession(authOptions)) as (Session & {
       shopifyToken?: string | null;
       customerId?: string | null;
     }) | null;
-    const nextAuthToken = nextAuthSession?.shopifyToken ?? undefined;
-    let nextAuthCustomerId = nextAuthSession?.customerId ?? undefined;
-    let email = nextAuthSession?.user?.email || null;
 
-    if (nextAuthToken && !nextAuthCustomerId) {
-      const { getCustomerDetails } = await import('@/lib/shopify');
-      const customer = await getCustomerDetails(nextAuthToken);
-      nextAuthCustomerId = customer?.id || nextAuthCustomerId;
-      if (!email && customer?.email) {
-        email = customer.email;
-      }
-    }
+    const nextAuthToken = nextAuthSession?.shopifyToken ?? undefined;
+    const nextAuthCustomerId = nextAuthSession?.customerId ?? undefined;
+    const email = nextAuthSession?.user?.email || null;
 
     if (nextAuthSession && nextAuthToken && nextAuthCustomerId) {
       return {

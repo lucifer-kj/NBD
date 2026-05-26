@@ -1,6 +1,5 @@
 "use server"
 
-import type { NextAuthOptions, Session } from 'next-auth';
 import { revalidateTag } from 'next/cache'
 import { createCart, addToCart, removeFromCart, updateCart, shopifyFetch, reshapeCart } from './index'
 import { cartFragment } from './fragments'
@@ -63,18 +62,8 @@ export async function updateCartBuyerIdentityAction(cartId: string, email?: stri
   const { getSession } = await import('@/lib/session')
   const { updateCartBuyerIdentity } = await import('./index')
   const session = await getSession()
-  // Try NextAuth server session as a fallback
-  let nextAuthEmail: string | undefined;
-  try {
-    const { getServerSession } = await import('next-auth');
-    const authOptions = (await import('@/lib/nextauth-config')).authOptions as NextAuthOptions;
-    const nextAuthSession = (await getServerSession(authOptions)) as Session | null;
-    if (nextAuthSession?.user?.email) nextAuthEmail = nextAuthSession.user.email;
-  } catch {
-    // ignore — best-effort
-  }
   
-  const buyerEmail = email || session?.email || nextAuthEmail || undefined
+  const buyerEmail = email || session?.email || undefined
   const customerAccessToken = session?.accessToken || undefined
   
   if (!buyerEmail && !customerAccessToken) return { error: 'No email or token available to identify buyer' }

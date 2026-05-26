@@ -2,6 +2,7 @@
 
 import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 
 function ResetForm() {
@@ -43,6 +44,18 @@ function ResetForm() {
       const data = await res.json();
 
       if (res.ok && data.success) {
+        if (data.email) {
+          try {
+            await signIn('credentials', {
+              redirect: false,
+              email: data.email,
+              password,
+              callbackUrl: '/account'
+            });
+          } catch (loginErr) {
+            console.error('Auto-login failed after password reset:', loginErr);
+          }
+        }
         setSuccess(true);
         setTimeout(() => {
           router.push('/account');
