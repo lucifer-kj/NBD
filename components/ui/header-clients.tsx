@@ -123,6 +123,7 @@ export function SearchBox() {
 export function UserActions() {
   const { data: session, status } = useSession();
   const { showToast } = useToast();
+  const mounted = useMounted();
 
   useEffect(() => {
     try {
@@ -163,6 +164,18 @@ export function UserActions() {
     }
     return part.charAt(0).toUpperCase() + part.slice(1);
   }, [displayName]);
+
+  // Hydration Shield: Always render static placeholder user icon during SSR and initial client hydration
+  if (!mounted) {
+    return (
+      <Link
+        href="/login"
+        className="flex items-center gap-2 p-2 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--islamic-gold)]"
+      >
+        <User size={24} className="text-white/90 hover:text-[var(--islamic-gold)]" />
+      </Link>
+    );
+  }
 
   return (
     <Link
