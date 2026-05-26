@@ -1,6 +1,5 @@
 import { SignJWT, jwtVerify, JWTPayload } from 'jose';
 import { cookies, headers } from 'next/headers';
-import type { Session } from 'next-auth';
 
 export interface SessionPayload extends JWTPayload {
   customerId: string;
@@ -88,30 +87,34 @@ export async function deleteSession() {
 }
 
 export async function getSession(): Promise<SessionPayload | null> {
-  // Unification: NextAuth is the single source of truth.
+  // Unification: Decrypt secure NextAuth JWE session cookie directly.
+  // This completely bypasses getServerSession protocol-sniffing proxy issues.
   try {
-    const { getServerSession } = await import('next-auth/next');
-    const { authOptions } = await import('./nextauth-config');
-    
-    const nextAuthSession = (await getServerSession(authOptions)) as (Session & {
-      shopifyToken?: string | null;
-      customerId?: string | null;
-    }) | null;
+    const { decode } = await import('next-auth/jwt');
+    const cookieStore = await cookies();
+    const isProd = process.env.NODE_ENV === 'production';
+    const cookieName = isProd ? '__Secure-next-auth.session-token' : 'next-auth.session-token';
+    const tokenCookie = cookieStore.get(cookieName)?.value;
 
-    const nextAuthToken = nextAuthSession?.shopifyToken ?? undefined;
-    const nextAuthCustomerId = nextAuthSession?.customerId ?? undefined;
-    const email = nextAuthSession?.user?.email || null;
+    if (!tokenCookie) {
+      return null;
+    }
 
-    if (nextAuthSession && nextAuthToken && nextAuthCustomerId) {
+    const decrypted = await decode({
+      token: tokenCookie,
+      secret: process.env.NEXTAUTH_SECRET || process.env.SESSION_SECRET || '',
+    });
+
+    if (decrypted && decrypted.shopifyToken && decrypted.customerId) {
       return {
-        customerId: nextAuthCustomerId,
-        accessToken: nextAuthToken,
-        email,
-        expiresAt: new Date(nextAuthSession.expires || Date.now() + 7 * 24 * 60 * 60 * 1000)
+        customerId: decrypted.customerId as string,
+        accessToken: decrypted.shopifyToken as string,
+        email: (decrypted.email as string) || null,
+        expiresAt: new Date(typeof decrypted.exp === 'number' ? decrypted.exp * 1000 : Date.now() + 7 * 24 * 60 * 60 * 1000)
       } as SessionPayload;
     }
   } catch (e) {
-    console.error('Error fetching NextAuth session in getSession:', e);
+    console.error('Error decrypting next-auth session cookie:', e);
   }
   return null;
 }
