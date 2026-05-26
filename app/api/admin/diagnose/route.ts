@@ -41,6 +41,35 @@ export async function POST(req: NextRequest) {
       try {
         const decrypted = await decryptSession(cookie);
         if (decrypted) {
+          const tests = {
+            storefrontFetch: { status: 'SKIPPED', data: null as any, error: null as any },
+            adminFetch: { status: 'SKIPPED', data: null as any, error: null as any }
+          };
+
+          if (decrypted.accessToken) {
+            try {
+              const { getCustomerDetails } = await import('@/lib/shopify');
+              const sfCust = await getCustomerDetails(decrypted.accessToken);
+              tests.storefrontFetch.status = sfCust ? 'SUCCESS' : 'EMPTY_RESULT';
+              tests.storefrontFetch.data = sfCust;
+            } catch (sfErr) {
+              tests.storefrontFetch.status = 'ERROR';
+              tests.storefrontFetch.error = sfErr instanceof Error ? sfErr.message : String(sfErr);
+            }
+          }
+
+          if (decrypted.customerId) {
+            try {
+              const { getCustomerDetailsById } = await import('@/lib/shopify/admin');
+              const admCust = await getCustomerDetailsById(decrypted.customerId);
+              tests.adminFetch.status = admCust ? 'SUCCESS' : 'EMPTY_RESULT';
+              tests.adminFetch.data = admCust;
+            } catch (admErr) {
+              tests.adminFetch.status = 'ERROR';
+              tests.adminFetch.error = admErr instanceof Error ? admErr.message : String(admErr);
+            }
+          }
+
           return NextResponse.json({
             success: true,
             method: 'jose.jwtVerify (HS256)',
@@ -48,7 +77,8 @@ export async function POST(req: NextRequest) {
               ...decrypted,
               expiresAtReadable: decrypted.expiresAt ? new Date(decrypted.expiresAt).toLocaleString() : 'N/A',
               isExpired: decrypted.expiresAt ? new Date(decrypted.expiresAt).getTime() < Date.now() : false,
-            }
+            },
+            liveTest: tests
           });
         } else {
           return NextResponse.json({
@@ -88,6 +118,38 @@ export async function POST(req: NextRequest) {
 
         if (token) {
           const exp = typeof token.exp === 'number' ? token.exp : undefined;
+          const customerId = (token.customerId as string) || null;
+          const shopifyToken = (token.shopifyToken as string) || null;
+
+          const tests = {
+            storefrontFetch: { status: 'SKIPPED', data: null as any, error: null as any },
+            adminFetch: { status: 'SKIPPED', data: null as any, error: null as any }
+          };
+
+          if (shopifyToken) {
+            try {
+              const { getCustomerDetails } = await import('@/lib/shopify');
+              const sfCust = await getCustomerDetails(shopifyToken);
+              tests.storefrontFetch.status = sfCust ? 'SUCCESS' : 'EMPTY_RESULT';
+              tests.storefrontFetch.data = sfCust;
+            } catch (sfErr) {
+              tests.storefrontFetch.status = 'ERROR';
+              tests.storefrontFetch.error = sfErr instanceof Error ? sfErr.message : String(sfErr);
+            }
+          }
+
+          if (customerId) {
+            try {
+              const { getCustomerDetailsById } = await import('@/lib/shopify/admin');
+              const admCust = await getCustomerDetailsById(customerId);
+              tests.adminFetch.status = admCust ? 'SUCCESS' : 'EMPTY_RESULT';
+              tests.adminFetch.data = admCust;
+            } catch (admErr) {
+              tests.adminFetch.status = 'ERROR';
+              tests.adminFetch.error = admErr instanceof Error ? admErr.message : String(admErr);
+            }
+          }
+
           return NextResponse.json({
             success: true,
             method: 'next-auth/jwt.getToken (JWE Decryption)',
@@ -95,7 +157,8 @@ export async function POST(req: NextRequest) {
               ...token,
               expReadable: exp ? new Date(exp * 1000).toLocaleString() : 'N/A',
               isExpired: exp ? exp * 1000 < Date.now() : false,
-            }
+            },
+            liveTest: tests
           });
         } else {
           return NextResponse.json({
@@ -367,6 +430,7 @@ export async function GET(req: NextRequest) {
     shopName: 'N/A',
     myshopifyDomain: 'N/A',
     planName: 'N/A',
+    scopesCheck: 'N/A',
     error: undefined as unknown
   };
 
@@ -444,6 +508,54 @@ export async function GET(req: NextRequest) {
             adminResults.planName = body.data?.shop?.plan?.displayName || 'N/A';
             adminResults.status = 'PASS';
             log(`Admin connection successful! Shop: "${adminResults.shopName}", plan: ${adminResults.planName}`);
+
+            // Perform dynamic Scopes verification
+            log('Testing Admin API Access Scopes (read_customers)...');
+            try {
+              const scopeResponse = await fetch(adminEndpoint, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-Shopify-Access-Token': tokenToTest
+                },
+                body: JSON.stringify({
+                  query: `
+                    query {
+                      customers(first: 1) {
+                        edges {
+                          node {
+                            id
+                          }
+                        }
+                      }
+                    }
+                  `
+                }),
+                cache: 'no-store'
+              });
+
+              if (scopeResponse.ok) {
+                const scopeBody = await scopeResponse.json();
+                if (scopeBody.errors) {
+                  const err = scopeBody.errors[0];
+                  if (err.message?.includes('Access denied') || err.message?.includes('scope')) {
+                    adminResults.scopesCheck = `FAIL: Missing read_customers scope. (${err.message})`;
+                  } else {
+                    adminResults.scopesCheck = `FAIL: GraphQL error: ${err.message}`;
+                  }
+                  log(`Scopes check failed: ${err.message}`);
+                } else {
+                  adminResults.scopesCheck = 'PASS: read_customers scope is active.';
+                  log('Scopes check passed: read_customers scope is active.');
+                }
+              } else {
+                adminResults.scopesCheck = `FAIL: HTTP ${scopeResponse.status}`;
+                log(`Scopes check returned HTTP error status ${scopeResponse.status}`);
+              }
+            } catch (scopeErr) {
+              adminResults.scopesCheck = `FAIL: Exception occurred.`;
+              log(`Scopes check failed with exception: ${scopeErr instanceof Error ? scopeErr.message : String(scopeErr)}`);
+            }
           }
         }
       } catch (e) {
@@ -1171,9 +1283,13 @@ function getDashboardHtml(data: any, secretKey: string, isEnvHealthy: boolean): 
                 <span class="prop-name">Resolved Domain</span>
                 <span class="prop-value">${data.admin.myshopifyDomain}</span>
               </div>
-              <div class="prop-item">
+               <div class="prop-item">
                 <span class="prop-name">Shopify Tier Plan</span>
                 <span class="prop-value">${data.admin.planName}</span>
+              </div>
+              <div class="prop-item">
+                <span class="prop-name">Admin API Scopes</span>
+                <span class="prop-value ${data.admin.scopesCheck.startsWith('PASS') ? 'ok' : 'bad'}" style="font-weight: 700;">${data.admin.scopesCheck}</span>
               </div>
             </div>
             ${adminError ? `<div class="error-block">${adminError}</div>` : ''}

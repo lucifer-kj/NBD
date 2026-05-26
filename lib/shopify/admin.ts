@@ -370,12 +370,12 @@ export async function getCustomerDetailsById(id: string): Promise<ReshapedAdminC
   // Reshape to match Storefront API structure as much as possible for compatibility
   return {
     ...customer,
-    wishlist: (customer.metafields?.edges || []).find((e) => e.node.namespace === 'wishlist' && e.node.key === 'items')?.node,
-    cart_id: (customer.metafields?.edges || []).find((e) => e.node.namespace === 'custom' && e.node.key === 'cart_id')?.node,
+    wishlist: (customer.metafields?.edges || []).filter(Boolean).find((e) => e.node?.namespace === 'wishlist' && e.node?.key === 'items')?.node,
+    cart_id: (customer.metafields?.edges || []).filter(Boolean).find((e) => e.node?.namespace === 'custom' && e.node?.key === 'cart_id')?.node,
     addresses: customer.addresses || { edges: [] },
     defaultAddress: customer.defaultAddress || undefined,
     orders: {
-      edges: (customer.orders?.edges || []).map((edge: { node: AdminOrder }) => ({
+      edges: (customer.orders?.edges || []).filter(Boolean).map((edge: { node: AdminOrder }) => ({
         node: {
           ...edge.node,
           fulfillmentStatus: edge.node.displayFulfillmentStatus || 'UNFULFILLED',
@@ -386,7 +386,7 @@ export async function getCustomerDetailsById(id: string): Promise<ReshapedAdminC
           subtotalPrice: edge.node.subtotalPriceSet?.shopMoney || { amount: '0', currencyCode: 'INR' },
           shippingAddress: edge.node.shippingAddress || undefined,
           lineItems: {
-            edges: (edge.node.lineItems?.edges || []).map((lineEdge) => ({
+            edges: (edge.node.lineItems?.edges || []).filter(Boolean).map((lineEdge) => ({
               node: {
                 ...lineEdge.node,
                 variant: lineEdge.node.variant ? {
@@ -496,7 +496,7 @@ export async function getOrderById(orderId: string): Promise<ReshapedAdminOrder 
     subtotalPrice: order.subtotalPriceSet?.shopMoney || { amount: '0', currencyCode: 'INR' },
     shippingAddress: order.shippingAddress || undefined,
     lineItems: {
-      edges: (order.lineItems?.edges || []).map((edge: { node: AdminLineItem }) => ({
+      edges: (order.lineItems?.edges || []).filter(Boolean).map((edge: { node: AdminLineItem }) => ({
         node: {
           ...edge.node,
           variant: edge.node.variant ? {
