@@ -23,14 +23,18 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
   const {} = session as { accessToken?: string };
 
   let order = null;
+  let loadError = null;
   try {
     order = await getOrderById(id);
   } catch (error) {
     console.error('Failed to load order details:', error);
-    redirect('/api/auth/login?error=api_connection_failed');
+    loadError = error;
   }
 
   if (!order) {
+    if (loadError) {
+      redirect('/api/auth/login?error=api_connection_failed');
+    }
     return (
       <div className="max-w-4xl mx-auto px-4 py-20 text-center">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">Order not found</h1>
@@ -93,7 +97,7 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
                   <div key={idx} className="py-6 flex gap-6 group">
                     <div className="relative w-20 h-24 rounded-xl overflow-hidden bg-gray-50 border border-gray-100 flex-shrink-0">
                       <Image 
-                        src={item.variant?.image?.url || '/Images/p1.jpg'} 
+                        src={item.variant?.image?.url || '/Images/logo.png'} 
                         alt={item.variant?.image?.altText || item.title}
                         fill
                         className="object-cover group-hover:scale-110 transition-transform"

@@ -500,17 +500,22 @@ export async function createCustomer(input: Record<string, unknown>): Promise<Cu
 }
 
 export async function getCustomerDetails(customerAccessToken: string): Promise<Customer | null> {
-  const res = await shopifyFetch<{
-    data: {
-      customer: Customer;
-    };
-  }>({
-    query: getCustomerQuery,
-    variables: { customerAccessToken },
-    cache: 'no-store'
-  });
+  try {
+    const res = await shopifyFetch<{
+      data: {
+        customer: Customer;
+      };
+    }>({
+      query: getCustomerQuery,
+      variables: { customerAccessToken },
+      cache: 'no-store'
+    });
 
-  return res.body.data.customer || null;
+    return res.body.data.customer || null;
+  } catch (error) {
+    console.error('Error fetching customer details via Storefront API:', error);
+    return null;
+  }
 }
 
 export async function updateCartBuyerIdentity(cartId: string, buyerIdentity: { email?: string; customerAccessToken?: string }): Promise<ReshapedCart> {

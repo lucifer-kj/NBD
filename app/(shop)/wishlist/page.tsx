@@ -14,12 +14,30 @@ export const metadata: Metadata = {
 export default async function WishlistPage() {
   const session = await getSession();
   const accessToken = session?.accessToken;
+  const customerId = session?.customerId;
 
-  if (!accessToken) {
+  if (!session) {
     redirect('/api/auth/login');
   }
 
-  const customer = accessToken ? await getCustomerDetails(accessToken) : null;
+  let customer = null;
+  if (accessToken) {
+    try {
+      customer = await getCustomerDetails(accessToken);
+    } catch (e) {
+      console.error('Storefront wishlist customer load failed:', e);
+    }
+  }
+
+  if (!customer && customerId) {
+    try {
+      const { getCustomerDetailsById } = await import('@/lib/shopify/admin');
+      customer = await getCustomerDetailsById(customerId);
+    } catch (e) {
+      console.error('Admin wishlist customer load failed:', e);
+    }
+  }
+
   const wishlistIds = customer?.wishlist ? JSON.parse(customer.wishlist.value) : [];
   const products = wishlistIds.length > 0 ? await getProductsByIds(wishlistIds) : [];
 

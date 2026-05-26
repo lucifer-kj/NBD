@@ -24,22 +24,34 @@ export default async function AccountPage() {
   const { customerId, accessToken } = session as { customerId: string; accessToken?: string | null };
 
   let customer = null;
-  try {
-    if (accessToken) {
+  let loadError = null;
+
+  if (accessToken) {
+    try {
       customer = await getCustomerDetails(accessToken);
+    } catch (error) {
+      console.error('Storefront getCustomerDetails failed, trying fallback...', error);
+      loadError = error;
     }
+  }
 
-    if (!customer && customerId) {
+  if (!customer && customerId) {
+    try {
       customer = await getCustomerDetailsById(customerId);
+    } catch (error) {
+      console.error('Admin getCustomerDetailsById failed:', error);
+      loadError = error;
     }
+  }
 
-    if (!customer) {
+  if (!customer) {
+    if (loadError) {
+      console.error('Customer load failed due to API connection error:', loadError);
+      redirect('/api/auth/login?error=api_connection_failed');
+    } else {
       console.error('Customer details returned null from Shopify');
       redirect('/api/auth/login?error=customer_not_found');
     }
-  } catch (error) {
-    console.error('Failed to load customer profile details:', error);
-    redirect('/api/auth/login?error=api_connection_failed');
   }
 
   const formatPrice = (amount: string, currency: string) => {

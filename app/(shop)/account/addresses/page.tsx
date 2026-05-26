@@ -22,16 +22,23 @@ export default async function AddressesPage() {
   const { customerId } = session as { customerId: string };
 
   let customer = null;
-  try {
-    if (customerId) {
+  let loadError = null;
+  
+  if (customerId) {
+    try {
       customer = await getCustomerDetailsById(customerId);
+    } catch (error) {
+      console.error('Failed to load customer addresses details:', error);
+      loadError = error;
     }
-    if (!customer) {
+  }
+
+  if (!customer) {
+    if (loadError) {
+      redirect('/api/auth/login?error=api_connection_failed');
+    } else {
       redirect('/');
     }
-  } catch (error) {
-    console.error('Failed to load customer addresses details:', error);
-    redirect('/api/auth/login?error=api_connection_failed');
   }
 
   const addresses = (customer.addresses?.edges || []).map((edge: { node: MailingAddress }) => edge.node);

@@ -41,9 +41,12 @@ export async function POST(req: NextRequest) {
       try {
         const decrypted = await decryptSession(cookie);
         if (decrypted) {
-          const tests = {
-            storefrontFetch: { status: 'SKIPPED', data: null as any, error: null as any },
-            adminFetch: { status: 'SKIPPED', data: null as any, error: null as any }
+          const tests: {
+            storefrontFetch: { status: string; data: unknown; error: string | null };
+            adminFetch: { status: string; data: unknown; error: string | null };
+          } = {
+            storefrontFetch: { status: 'SKIPPED', data: null, error: null },
+            adminFetch: { status: 'SKIPPED', data: null, error: null }
           };
 
           if (decrypted.accessToken) {
@@ -121,9 +124,12 @@ export async function POST(req: NextRequest) {
           const customerId = (token.customerId as string) || null;
           const shopifyToken = (token.shopifyToken as string) || null;
 
-          const tests = {
-            storefrontFetch: { status: 'SKIPPED', data: null as any, error: null as any },
-            adminFetch: { status: 'SKIPPED', data: null as any, error: null as any }
+          const tests: {
+            storefrontFetch: { status: string; data: unknown; error: string | null };
+            adminFetch: { status: string; data: unknown; error: string | null };
+          } = {
+            storefrontFetch: { status: 'SKIPPED', data: null, error: null },
+            adminFetch: { status: 'SKIPPED', data: null, error: null }
           };
 
           if (shopifyToken) {
