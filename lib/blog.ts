@@ -18,19 +18,34 @@ export interface BlogPost {
 
 const postsDirectory = path.join(process.cwd(), 'content/blog');
 
+function getAllFilesRecursive(dirPath: string, originalDirPath: string = dirPath): { filePath: string; relativeSlug: string }[] {
+  if (!fs.existsSync(dirPath)) return [];
+  const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+  let files: { filePath: string; relativeSlug: string }[] = [];
+
+  for (const entry of entries) {
+    const fullPath = path.join(dirPath, entry.name);
+    if (entry.isDirectory()) {
+      files = [...files, ...getAllFilesRecursive(fullPath, originalDirPath)];
+    } else if (entry.isFile() && (entry.name.endsWith('.md') || entry.name.endsWith('.mdx'))) {
+      const relativePath = path.relative(originalDirPath, fullPath);
+      const relativeSlug = relativePath.replace(/\.mdx?$/, '').replace(/\\/g, '/');
+      files.push({ filePath: fullPath, relativeSlug });
+    }
+  }
+
+  return files;
+}
+
 export function getBlogPosts(): BlogPost[] {
   if (!fs.existsSync(postsDirectory)) {
     return [];
   }
 
-  const fileNames = fs.readdirSync(postsDirectory);
-  const allPostsData = fileNames
-    .filter((fileName) => fileName.endsWith('.md') || fileName.endsWith('.mdx'))
-    .map((fileName) => {
-      const slug = fileName.replace(/\.mdx?$/, '');
-      const fullPath = path.join(postsDirectory, fileName);
-      return getBlogPostData(fullPath, slug);
-    });
+  const files = getAllFilesRecursive(postsDirectory);
+  const allPostsData = files.map(({ filePath, relativeSlug }) => {
+    return getBlogPostData(filePath, relativeSlug);
+  });
 
   // Sort posts by date descending
   return allPostsData.sort((a, b) => (a.publishedAt < b.publishedAt ? 1 : -1));
@@ -38,19 +53,21 @@ export function getBlogPosts(): BlogPost[] {
 
 export function getBlogPostBySlug(slug: string): BlogPost | null {
   try {
-    const fullPath = path.join(postsDirectory, `${slug}.md`);
+    const normalizedSlug = slug.replace(/\\/g, '/');
+    const fullPath = path.join(postsDirectory, `${normalizedSlug}.md`);
     if (fs.existsSync(fullPath)) {
-      return getBlogPostData(fullPath, slug);
+      return getBlogPostData(fullPath, normalizedSlug);
     }
-    const fullPathMdx = path.join(postsDirectory, `${slug}.mdx`);
+    const fullPathMdx = path.join(postsDirectory, `${normalizedSlug}.mdx`);
     if (fs.existsSync(fullPathMdx)) {
-      return getBlogPostData(fullPathMdx, slug);
+      return getBlogPostData(fullPathMdx, normalizedSlug);
     }
     return null;
   } catch {
     return null;
   }
 }
+
 
 function getBlogPostData(fullPath: string, slug: string): BlogPost {
   const fileContents = fs.readFileSync(fullPath, 'utf8');

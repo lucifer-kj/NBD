@@ -4,7 +4,7 @@ excerpt: "Welcome to our new digital storefront! Discover Islamic literature, sp
 publishedAt: "2026-05-19T00:00:00.000Z"
 author: "Naaz Editorial"
 image: "/Images/Books.jpeg"
-tags: ["news", "spirituality", "books"]
+tags: ["insights"]
 tldr: "Naaz Book Depot has officially launched its new headless storefront, making classic Islamic publications and spiritual wisdom accessible globally with state-of-the-art web performance."
 faqs: '[{"question":"What is Naaz Book Depot Online?","answer":"Naaz Book Depot Online is our brand new headless e-commerce storefront designed to offer high-speed, secure, and user-friendly access to authentic Islamic literature."},{"question":"Where is Naaz Book Depot based?","answer":"We were established in Kolkata in 1967, and we have served local and global readers with high-quality spiritual texts for nearly six decades."}]'
 ---

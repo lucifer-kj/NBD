@@ -7,6 +7,7 @@ import { getSession } from '@/lib/session';
 import { OrderLineItem } from '@/types/shopify';
 import { ChevronLeft, Package, MapPin, CreditCard, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import RetryButton from '../../retry-button';
 
 export const metadata: Metadata = {
   title: 'Order Details | Naaz Book Depot',
@@ -32,15 +33,24 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
   }
 
   if (!order) {
-    if (loadError) {
-      redirect('/api/auth/login?error=api_connection_failed');
-    }
     return (
-      <div className="max-w-4xl mx-auto px-4 py-20 text-center">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Order not found</h1>
-        <Button asChild>
-          <Link href="/account">Back to Account</Link>
-        </Button>
+      <div className="max-w-4xl mx-auto px-4 py-20 text-center space-y-6">
+        <h1 className="text-3xl font-headings font-bold text-[var(--islamic-green)]">Ahlan, Customer</h1>
+        <div className="p-8 md:p-12 rounded-3xl border border-amber-100 bg-amber-50/20 backdrop-blur-sm shadow-sm space-y-6 max-w-2xl mx-auto">
+          <div className="space-y-2 text-left">
+            <h2 className="text-2xl font-headings font-bold text-amber-800">Unable to retrieve order details</h2>
+            <p className="text-gray-600 leading-relaxed">
+              We encountered a connection issue while communicating with our server. 
+              Your session is still active, but we couldn&apos;t load the details for this specific order.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-4 items-center justify-start">
+            <RetryButton />
+            <Button asChild variant="outline" className="rounded-xl border-gray-200">
+              <Link href="/account">Back to Dashboard</Link>
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -91,8 +101,10 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
               <Package size={20} className="text-[var(--islamic-gold)]" /> Items Ordered
             </h2>
             <div className="divide-y divide-gray-100">
-              {order.lineItems.edges.map((edge: { node: OrderLineItem }, idx: number) => {
+              {(order.lineItems?.edges || []).map((edge: { node: OrderLineItem }, idx: number) => {
                 const item = edge.node;
+                const handle = item.variant?.product?.handle;
+                const productHref = handle ? `/products/${handle}` : '#';
                 return (
                   <div key={idx} className="py-6 flex gap-6 group">
                     <div className="relative w-20 h-24 rounded-xl overflow-hidden bg-gray-50 border border-gray-100 flex-shrink-0">
@@ -104,9 +116,15 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <Link href={`/products/${item.variant?.product?.handle}`} className="font-bold text-gray-900 hover:text-[var(--islamic-green)] transition-colors line-clamp-2">
-                        {item.title}
-                      </Link>
+                      {handle ? (
+                        <Link href={productHref} className="font-bold text-gray-900 hover:text-[var(--islamic-green)] transition-colors line-clamp-2">
+                          {item.title}
+                        </Link>
+                      ) : (
+                        <span className="font-bold text-gray-900 line-clamp-2">
+                          {item.title}
+                        </span>
+                      )}
                       <p className="text-sm text-gray-500 mt-1">Quantity: {item.quantity}</p>
                     </div>
                     <div className="text-right">

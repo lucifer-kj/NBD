@@ -6,6 +6,7 @@ import { getSession } from '@/lib/session';
 import { MailingAddress } from '@/types/shopify';
 import { ChevronLeft } from 'lucide-react';
 import AddressBook from '@/components/account/address-book';
+import RetryButton from '../retry-button';
 
 export const metadata: Metadata = {
   title: 'Address Book | Naaz Book Depot',
@@ -33,16 +34,8 @@ export default async function AddressesPage() {
     }
   }
 
-  if (!customer) {
-    if (loadError) {
-      redirect('/api/auth/login?error=api_connection_failed');
-    } else {
-      redirect('/');
-    }
-  }
-
-  const addresses = (customer.addresses?.edges || []).map((edge: { node: MailingAddress }) => edge.node);
-  const defaultAddressId = customer.defaultAddress?.id;
+  const addresses = customer ? (customer.addresses?.edges || []).map((edge: { node: MailingAddress }) => edge.node) : [];
+  const defaultAddressId = customer?.defaultAddress?.id;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12 md:py-20">
@@ -64,10 +57,26 @@ export default async function AddressesPage() {
 
         {/* Main Content */}
         <main className="flex-1">
-          <AddressBook 
-            addresses={addresses} 
-            defaultAddressId={defaultAddressId} 
-          />
+          {!customer ? (
+            <div className="p-8 md:p-12 rounded-3xl border border-amber-100 bg-amber-50/20 backdrop-blur-sm shadow-sm space-y-6">
+              <div className="space-y-2">
+                <h2 className="text-2xl font-headings font-bold text-amber-800">Connection is temporarily offline</h2>
+                <p className="text-gray-600 leading-relaxed max-w-2xl">
+                  We are having difficulty connecting to our database server to retrieve your shipping and billing addresses. 
+                  Your account is securely logged in, and this is likely a transient network issue.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-4 items-center">
+                <RetryButton />
+                <span className="text-sm text-gray-400">or try refreshing the page.</span>
+              </div>
+            </div>
+          ) : (
+            <AddressBook 
+              addresses={addresses} 
+              defaultAddressId={defaultAddressId} 
+            />
+          )}
         </main>
       </div>
     </div>

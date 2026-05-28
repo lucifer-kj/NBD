@@ -1,7 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Share2, Link2, List, X } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Share2, Link2, List, X, ShoppingCart, Star, BookOpen, Info, ShieldCheck } from 'lucide-react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { useCartStore } from '@/store/cart-store';
+import { motion, AnimatePresence } from 'framer-motion';
+import { formatPrice } from '@/lib/utils';
+import { ReshapedProduct } from '@/types/shopify';
 
 interface HeadingItem {
   id: string;
@@ -254,14 +260,32 @@ export function NewsletterBox() {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
     setStatus('loading');
-    setTimeout(() => {
-      setStatus('success');
-      setEmail('');
-    }, 1200);
+
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setStatus('success');
+        setEmail('');
+      } else {
+        setStatus('error');
+      }
+    } catch (err) {
+      console.error('[Newsletter client error]:', err);
+      setStatus('error');
+    }
   };
 
   return (
@@ -282,6 +306,11 @@ export function NewsletterBox() {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-3">
+          {status === 'error' && (
+            <p className="text-red-600 text-xs font-semibold animate-pulse">
+              Subscription failed. Please check your email and try again.
+            </p>
+          )}
           <input
             type="email"
             value={email}
@@ -304,3 +333,259 @@ export function NewsletterBox() {
   );
 }
 
+export function InlineProductCard({ product }: { product: ReshapedProduct }) {
+  const addItem = useCartStore((s) => s.addItem);
+  const openCartDrawer = useCartStore((s) => s.openCartDrawer);
+  const [loading, setLoading] = useState(false);
+  const [added, setAdded] = useState(false);
+
+  const price = product.priceRange?.minVariantPrice;
+  const imageUrl = product.images?.[0]?.url || '/Images/Books.jpeg';
+  const inStock = product.availableForSale;
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!inStock || loading) return;
+
+    setLoading(true);
+    const variantId = product.variants?.[0]?.id;
+    if (variantId) {
+      await addItem(variantId, 1);
+      setAdded(true);
+      setTimeout(() => {
+        setAdded(false);
+        openCartDrawer();
+      }, 1000);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="my-8 p-6 md:p-8 bg-gradient-to-br from-amber-50/20 to-orange-50/10 border border-amber-100/50 rounded-3xl shadow-sm hover:border-[var(--islamic-gold)]/40 transition-all duration-300 relative overflow-hidden group">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--islamic-gold)]/5 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
+      
+      <div className="flex flex-col sm:flex-row gap-6 items-start">
+        {/* Cover Image */}
+        <Link 
+          href={`/products/${product.handle}`}
+          className="relative w-28 h-40 rounded-2xl overflow-hidden shadow-md border border-gray-100/80 flex-shrink-0 bg-white group-hover:shadow-lg transition-shadow duration-300 block"
+        >
+          <Image 
+            src={imageUrl} 
+            alt={product.title} 
+            fill 
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        </Link>
+
+        {/* Details */}
+        <div className="flex-1 flex flex-col justify-between h-full space-y-4">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="bg-amber-100/70 text-[var(--islamic-green)] text-[10px] px-2.5 py-0.5 rounded-full font-sans uppercase font-bold tracking-wider flex items-center gap-1 border border-amber-200/40">
+                <ShieldCheck size={12} className="text-[var(--islamic-gold)]" />
+                Verified Scholarly Edition
+              </span>
+              {!inStock && (
+                <span className="bg-rose-50 text-rose-700 text-[10px] px-2.5 py-0.5 rounded-full font-sans uppercase font-bold tracking-wider">
+                  Out of Stock
+                </span>
+              )}
+            </div>
+
+            <h4 className="font-headings font-bold text-lg md:text-xl text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors line-clamp-2 leading-snug">
+              <Link href={`/products/${product.handle}`}>
+                {product.title}
+              </Link>
+            </h4>
+            
+            <p className="text-xs uppercase font-semibold text-[var(--islamic-gold)] tracking-wider mt-1.5 font-sans">
+              {product.vendor || 'Naaz Editions'}
+            </p>
+
+            {product.description && (
+              <p className="text-gray-500 text-xs md:text-sm mt-3 line-clamp-2 leading-relaxed font-sans">
+                {product.description}
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-amber-100/30">
+            <div className="flex flex-col">
+              <span className="text-[10px] text-gray-400 uppercase tracking-wider font-sans">Price</span>
+              <span className="font-sans font-extrabold text-lg text-gray-900">
+                {price ? formatPrice(price.amount, price.currencyCode) : 'Price unavailable'}
+              </span>
+            </div>
+
+            <button
+              onClick={handleAddToCart}
+              disabled={!inStock || loading}
+              className={`px-5 py-2.5 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 border border-transparent shadow-sm ${
+                added 
+                  ? 'bg-emerald-600 text-white hover:bg-emerald-700' 
+                  : inStock 
+                    ? 'bg-[var(--islamic-green)] text-white hover:bg-[var(--islamic-gold)] hover:text-[var(--islamic-green)]' 
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              {loading ? (
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : added ? (
+                'Added to Cart! ✓'
+              ) : (
+                <>
+                  <ShoppingCart size={14} />
+                  Add to Cart
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function InlineProductBadge({ product }: { product: ReshapedProduct }) {
+  const [showPopover, setShowPopover] = useState(false);
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLSpanElement>(null);
+  const addItem = useCartStore((s) => s.addItem);
+  const openCartDrawer = useCartStore((s) => s.openCartDrawer);
+  const [loading, setLoading] = useState(false);
+  const [added, setAdded] = useState(false);
+
+  const price = product.priceRange?.minVariantPrice;
+  const imageUrl = product.images?.[0]?.url || '/Images/Books.jpeg';
+  const inStock = product.availableForSale;
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        popoverRef.current && 
+        !popoverRef.current.contains(event.target as Node) &&
+        triggerRef.current &&
+        !triggerRef.current.contains(event.target as Node)
+      ) {
+        setShowPopover(false);
+      }
+    };
+
+    if (showPopover) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showPopover]);
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!inStock || loading) return;
+
+    setLoading(true);
+    const variantId = product.variants?.[0]?.id;
+    if (variantId) {
+      await addItem(variantId, 1);
+      setAdded(true);
+      setTimeout(() => {
+        setAdded(false);
+        setShowPopover(false);
+        openCartDrawer();
+      }, 800);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <span className="relative inline-block align-middle mx-1">
+      <span
+        ref={triggerRef}
+        onClick={() => setShowPopover(!showPopover)}
+        onMouseEnter={() => setShowPopover(true)}
+        className="inline-flex items-center gap-1.5 bg-amber-50/60 hover:bg-amber-100/80 text-[var(--islamic-green)] border border-[var(--islamic-gold)]/40 hover:border-[var(--islamic-gold)] px-2.5 py-0.5 rounded-xl text-xs font-bold cursor-pointer select-none transition-all shadow-sm font-sans"
+      >
+        <BookOpen size={11} className="text-[var(--islamic-gold)]" />
+        <span>{product.title}</span>
+        <span className="text-[9px] font-sans font-semibold text-gray-500">
+          ({price ? formatPrice(price.amount, price.currencyCode) : ''})
+        </span>
+      </span>
+
+      <AnimatePresence>
+        {showPopover && (
+          <motion.div
+            ref={popoverRef}
+            initial={{ opacity: 0, y: 8, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            onMouseLeave={() => setShowPopover(false)}
+            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 w-72 bg-white rounded-2xl border border-gray-100 shadow-xl p-4 flex gap-3 animate-in fade-in slide-in-from-bottom-2 duration-150"
+            style={{ filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.05))' }}
+          >
+            {/* Popover Arrow */}
+            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-white border-r border-b border-gray-100 rotate-45 pointer-events-none" />
+
+            <div className="relative w-16 h-24 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100 bg-gray-50">
+              <Image 
+                src={imageUrl} 
+                alt={product.title} 
+                fill 
+                className="object-cover"
+              />
+            </div>
+            
+            <div className="flex-1 flex flex-col justify-between min-w-0">
+              <div>
+                <h5 className="font-headings font-bold text-xs text-[var(--islamic-green)] line-clamp-2 leading-snug">
+                  {product.title}
+                </h5>
+                <span className="text-[9px] uppercase font-bold text-[var(--islamic-gold)] tracking-wider mt-0.5 block font-sans">
+                  {product.vendor || 'Naaz Editions'}
+                </span>
+                <span className="font-sans font-bold text-xs text-gray-900 mt-1 block">
+                  {price ? formatPrice(price.amount, price.currencyCode) : ''}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 mt-2">
+                <Link
+                  href={`/products/${product.handle}`}
+                  className="px-2 py-1.5 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors text-[9px] font-bold uppercase tracking-wider rounded-xl font-sans"
+                >
+                  View
+                </Link>
+                <button
+                  onClick={handleAddToCart}
+                  disabled={!inStock || loading}
+                  className={`flex-1 py-1.5 rounded-xl text-[9px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1 border border-transparent ${
+                    added
+                      ? 'bg-emerald-600 text-white'
+                      : inStock
+                        ? 'bg-[var(--islamic-green)] text-white hover:bg-[var(--islamic-gold)] hover:text-[var(--islamic-green)]'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  {loading ? (
+                    <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : added ? (
+                    'Added!'
+                  ) : (
+                    <>
+                      <ShoppingCart size={10} />
+                      Add to Cart
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </span>
+  );
+}

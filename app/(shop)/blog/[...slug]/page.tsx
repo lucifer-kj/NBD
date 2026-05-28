@@ -4,14 +4,14 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getBlogPostBySlug, getBlogPosts } from '@/lib/blog';
 import { Calendar, ArrowLeft, Clock, BookOpen } from 'lucide-react';
-import { ScrollProgressBar, TableOfContents, ShareButton, NewsletterBox } from '@/components/ui/blog-client';
+import { ScrollProgressBar, TableOfContents, ShareButton, NewsletterBox, InlineProductCard, InlineProductBadge } from '@/components/ui/blog-client';
 import { getProduct } from '@/lib/shopify';
 import { formatPrice } from '@/lib/utils';
 import { ReshapedProduct } from '@/types/shopify';
 
 interface BlogPostPageProps {
   params: Promise<{
-    slug: string;
+    slug: string[];
   }>;
 }
 
@@ -20,13 +20,14 @@ export const revalidate = 3600;
 export async function generateStaticParams() {
   const posts = getBlogPosts();
   return posts.map((post) => ({
-    slug: post.slug,
+    slug: post.slug.split('/'),
   }));
 }
 
 export async function generateMetadata({ params }: BlogPostPageProps) {
   const { slug } = await params;
-  const post = getBlogPostBySlug(slug);
+  const slugPath = slug.join('/');
+  const post = getBlogPostBySlug(slugPath);
   
   if (!post) return { title: 'Post Not Found' };
 
@@ -54,7 +55,8 @@ export async function generateMetadata({ params }: BlogPostPageProps) {
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params;
-  const post = getBlogPostBySlug(slug);
+  const slugPath = slug.join('/');
+  const post = getBlogPostBySlug(slugPath);
 
   if (!post) {
     notFound();
@@ -62,20 +64,45 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   // Fetch all posts for the "Recent Articles" widget
   const allPosts = getBlogPosts();
-  const recentPosts = allPosts.filter((p) => p.slug !== slug).slice(0, 3);
+  const recentPosts = allPosts.filter((p) => p.slug !== slugPath).slice(0, 3);
 
-  // Fetch recommended products from Shopify storefront
-  let recommendedProductsList: ReshapedProduct[] = [];
-  if (post.recommendedProducts && post.recommendedProducts.length > 0) {
+  // Extract all unique product handles embedded via shortcodes in the article content
+  const shortcodeRegex = /\[\[product:([a-zA-Z0-9-_]+):(card|inline)\]\]/g;
+  const inlineHandles: string[] = [];
+  let match;
+  while ((match = shortcodeRegex.exec(post.content)) !== null) {
+    inlineHandles.push(match[1]);
+  }
+
+  // Combine recommended and inline handles, then deduplicate
+  const allHandles = Array.from(new Set([
+    ...(post.recommendedProducts || []),
+    ...inlineHandles
+  ]));
+
+  // Fetch all products in parallel
+  let fetchedProducts: ReshapedProduct[] = [];
+  if (allHandles.length > 0) {
     try {
       const fetched = await Promise.all(
-        post.recommendedProducts.map(handle => getProduct(handle))
+        allHandles.map(handle => getProduct(handle))
       );
-      recommendedProductsList = fetched.filter(Boolean) as ReshapedProduct[];
+      fetchedProducts = fetched.filter(Boolean) as ReshapedProduct[];
     } catch (err) {
-      console.error('Error loading blog post products:', err);
+      console.error('Error loading products for blog post:', err);
     }
   }
+
+  // Build productMap lookup for instant rendering lookups
+  const productMap = new Map<string, ReshapedProduct>();
+  fetchedProducts.forEach(prod => {
+    productMap.set(prod.handle, prod);
+  });
+
+  // Extract list of recommended products to show in the bottom section
+  const recommendedProductsList = (post.recommendedProducts || [])
+    .map(handle => productMap.get(handle))
+    .filter(Boolean) as ReshapedProduct[];
 
   // Calculate article stats
   const wordCount = post.content.split(/\s+/).filter(Boolean).length;
@@ -294,7 +321,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
               {/* Parsed Blog Markdown Content */}
               <div className="prose prose-lg prose-stone max-w-none prose-headings:font-headings prose-headings:text-[var(--islamic-green)]">
-                <MarkdownRenderer content={post.content} />
+                <MarkdownRenderer content={post.content} productMap={productMap} />
               </div>
 
               {/* Dynamic FAQ / Q&A Section for GEO & Crawlability */}
@@ -447,6 +474,30 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 </div>
               )}
 
+              {/* Kolkata Heritage since 1967 E-E-A-T Seal */}
+              <div className="bg-gradient-to-br from-amber-50/30 to-orange-50/15 border border-[var(--islamic-gold)]/40 rounded-3xl p-6 shadow-sm relative overflow-hidden group hover:shadow-md transition-all duration-300">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-[var(--islamic-gold)]/5 rounded-full blur-xl pointer-events-none" />
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-[var(--islamic-gold)]/10 flex items-center justify-center text-[var(--islamic-gold)] font-bold text-lg border border-[var(--islamic-gold)]/30">
+                    📜
+                  </div>
+                  <div>
+                    <h3 className="font-headings font-bold text-sm text-[var(--islamic-green)]">Kolkata Heritage since 1967</h3>
+                    <span className="text-[9px] uppercase font-bold text-gray-400 font-sans tracking-wider block">Verified Bookstore & Publisher</span>
+                  </div>
+                </div>
+                <p className="text-gray-600 text-xs leading-relaxed font-sans mb-3">
+                  Established by Mohammad Irfan in 1967 at Ismail Madani Lane, Kolkata, Naaz Book Depot has served scholars, madrasas, and families across India with verified, authentic Islamic literature for over 57 years.
+                </p>
+                <div className="flex items-center gap-2 text-[10px] text-[var(--islamic-green)] font-bold font-sans">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--islamic-gold)]" />
+                  <span>Direct Sourcing</span>
+                  <span className="text-gray-300">•</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--islamic-gold)]" />
+                  <span>Unaltered Classical Prints</span>
+                </div>
+              </div>
+
               {/* Newsletter Box */}
               <NewsletterBox />
 
@@ -461,7 +512,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   );
 }
 
-function MarkdownRenderer({ content }: { content: string }) {
+function MarkdownRenderer({ content, productMap }: { content: string; productMap: Map<string, ReshapedProduct> }) {
   const blocks = content.split(/\r?\n\r?\n/);
 
   return (
@@ -469,6 +520,18 @@ function MarkdownRenderer({ content }: { content: string }) {
       {blocks.map((block, index) => {
         const trimmed = block.trim();
         if (!trimmed) return null;
+
+        // Custom Product Bento Card shortcode block
+        if (trimmed.startsWith('[[product:') && trimmed.endsWith(']]')) {
+          const shortcodeMatch = trimmed.match(/^\[\[product:([a-zA-Z0-9-_]+):card\]\]$/);
+          if (shortcodeMatch) {
+            const handle = shortcodeMatch[1];
+            const product = productMap.get(handle);
+            if (product) {
+              return <InlineProductCard key={index} product={product} />;
+            }
+          }
+        }
 
         // Helper to compute a stable element ID for TOC anchoring
         const makeHeadingId = (text: string) => {
@@ -487,7 +550,7 @@ function MarkdownRenderer({ content }: { content: string }) {
               key={index} 
               className="text-3xl md:text-4xl font-headings font-bold text-[var(--islamic-green)] mt-8 mb-4 scroll-mt-24"
             >
-              {parseInline(headingText)}
+              {parseInline(headingText, productMap)}
             </h1>
           );
         }
@@ -501,7 +564,7 @@ function MarkdownRenderer({ content }: { content: string }) {
               key={index} 
               className="text-2xl md:text-3xl font-headings font-bold text-[var(--islamic-green)] mt-8 mb-4 border-b border-gray-100 pb-2 scroll-mt-24"
             >
-              {parseInline(headingText)}
+              {parseInline(headingText, productMap)}
             </h2>
           );
         }
@@ -515,7 +578,7 @@ function MarkdownRenderer({ content }: { content: string }) {
               key={index} 
               className="text-xl md:text-2xl font-headings font-bold text-[var(--islamic-green)] mt-6 mb-3 scroll-mt-24"
             >
-              {parseInline(headingText)}
+              {parseInline(headingText, productMap)}
             </h3>
           );
         }
@@ -572,7 +635,7 @@ function MarkdownRenderer({ content }: { content: string }) {
                   <span>{title}</span>
                 </div>
                 <div className="text-sm md:text-base leading-relaxed text-gray-700 font-sans">
-                  {parseInline(contentText)}
+                  {parseInline(contentText, productMap)}
                 </div>
               </div>
             );
@@ -581,7 +644,7 @@ function MarkdownRenderer({ content }: { content: string }) {
           // Fallback to standard styled blockquote
           return (
             <blockquote key={index} className="border-l-4 border-[var(--islamic-gold)] bg-amber-50/10 px-6 py-4 my-6 rounded-r-2xl italic text-gray-600 shadow-sm border-t border-b border-r border-amber-100/30">
-              {parseInline(lines.join(' '))}
+              {parseInline(lines.join(' '), productMap)}
             </blockquote>
           );
         }
@@ -612,7 +675,7 @@ function MarkdownRenderer({ content }: { content: string }) {
                       <tr className="bg-amber-50/50 border-b border-gray-100">
                         {headers.map((header, hIdx) => (
                           <th key={hIdx} className="px-6 py-4 font-bold text-[var(--islamic-green)] font-headings">
-                            {parseInline(header)}
+                            {parseInline(header, productMap)}
                           </th>
                         ))}
                       </tr>
@@ -622,7 +685,7 @@ function MarkdownRenderer({ content }: { content: string }) {
                         <tr key={rIdx} className="hover:bg-gray-50/50 transition-colors">
                           {row.map((cell, cIdx) => (
                             <td key={cIdx} className="px-6 py-4 text-gray-600 leading-relaxed">
-                              {parseInline(cell)}
+                              {parseInline(cell, productMap)}
                             </td>
                           ))}
                         </tr>
@@ -668,7 +731,7 @@ function MarkdownRenderer({ content }: { content: string }) {
           return (
             <ul key={index} className="list-disc pl-6 space-y-2 my-4">
               {items.map((item, itemIdx) => (
-                <li key={itemIdx}>{parseInline(item)}</li>
+                <li key={itemIdx}>{parseInline(item, productMap)}</li>
               ))}
             </ul>
           );
@@ -680,7 +743,7 @@ function MarkdownRenderer({ content }: { content: string }) {
           return (
             <ol key={index} className="list-decimal pl-6 space-y-2 my-4">
               {items.map((item, itemIdx) => (
-                <li key={itemIdx}>{parseInline(item)}</li>
+                <li key={itemIdx}>{parseInline(item, productMap)}</li>
               ))}
             </ol>
           );
@@ -689,7 +752,7 @@ function MarkdownRenderer({ content }: { content: string }) {
         // 9. Regular paragraph
         return (
           <p key={index} className="text-base md:text-lg">
-            {parseInline(trimmed)}
+            {parseInline(trimmed, productMap)}
           </p>
         );
       })}
@@ -697,7 +760,7 @@ function MarkdownRenderer({ content }: { content: string }) {
   );
 }
 
-function parseInline(text: string): React.ReactNode[] {
+function parseInline(text: string, productMap: Map<string, ReshapedProduct>): React.ReactNode[] {
   const tokens: React.ReactNode[] = [];
   let remaining = text;
   let keyIdx = 0;
@@ -706,9 +769,10 @@ function parseInline(text: string): React.ReactNode[] {
     const imgMatch = remaining.match(/^([\s\S]*?)!\[([\s\S]*?)\]\(([\s\S]+?)\)([\s\S]*)$/);
     const boldMatch = remaining.match(/^([\s\S]*?)\*\*([\s\S]+?)\*\*([\s\S]*)$/);
     const linkMatch = remaining.match(/^([\s\S]*?)\[([\s\S]+?)\]\(([\s\S]+?)\)([\s\S]*)$/);
+    const productMatch = remaining.match(/^([\s\S]*?)\[\[product:([a-zA-Z0-9-_]+):inline\]\]([\s\S]*)$/);
 
     // Find the match that occurs earliest in the string
-    let firstMatch: 'img' | 'bold' | 'link' | null = null;
+    let firstMatch: 'img' | 'bold' | 'link' | 'product' | null = null;
     let firstIdx = remaining.length;
 
     if (imgMatch && imgMatch[1].length < firstIdx) {
@@ -722,6 +786,10 @@ function parseInline(text: string): React.ReactNode[] {
     if (linkMatch && linkMatch[1].length < firstIdx) {
       firstIdx = linkMatch[1].length;
       firstMatch = 'link';
+    }
+    if (productMatch && productMatch[1].length < firstIdx) {
+      firstIdx = productMatch[1].length;
+      firstMatch = 'product';
     }
 
     if (firstMatch === 'img' && imgMatch) {
@@ -755,6 +823,20 @@ function parseInline(text: string): React.ReactNode[] {
         </a>
       );
       remaining = linkMatch[4];
+    } else if (firstMatch === 'product' && productMatch) {
+      if (productMatch[1]) {
+        tokens.push(<span key={keyIdx++}>{productMatch[1]}</span>);
+      }
+      const handle = productMatch[2];
+      const product = productMap.get(handle);
+      if (product) {
+        tokens.push(
+          <InlineProductBadge key={keyIdx++} product={product} />
+        );
+      } else {
+        tokens.push(<span key={keyIdx++}>{`[[product:${handle}:inline]]`}</span>);
+      }
+      remaining = productMatch[3];
     } else {
       tokens.push(<span key={keyIdx++}>{remaining}</span>);
       break;
