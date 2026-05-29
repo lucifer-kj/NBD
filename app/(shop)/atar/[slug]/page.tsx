@@ -1,127 +1,129 @@
-import React from 'react';
-import Image from 'next/image';
-import { ShoppingCart, Droplets } from 'lucide-react';
+import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getProduct, getProducts } from "@/lib/shopify";
+import ProductDetailsClient from "@/components/product/ProductDetailsClient";
+import ProductReviews from "@/components/product/ProductReviews";
+import ProductCard from "@/components/product-card";
 
-type AtarVariantRow = { id: number; volume_ml: number; price: number; stock_quantity?: number };
+type PageProps = {
+  params: Promise<{ slug: string }>;
+};
 
-export default async function AtarDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  // Try fetching actual data
-  let atar = null;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  try {
-    if (!apiUrl) {
-      throw new Error('NEXT_PUBLIC_API_URL is required to fetch atar data');
-    }
-    const res = await fetch(`${apiUrl}/api/atar/${slug}/`, { cache: 'no-store' });
-    if (res.ok) {
-      atar = await res.json();
-    }
-  } catch (error) {
-    console.warn('Backend API not reachable. Using fallback dummy data.', error);
-    console.warn("Backend API not reachable. Using fallback dummy data.");
-  }
+  const product = await getProduct(slug);
 
-  if (!atar) {
-    // Dummy fallback for UI demo
-    atar = {
-      id: 1, 
-      name: 'Royal Oudh', 
-      slug: slug, 
-      top_notes: 'Agarwood, Rose, Amber', 
-      heart_notes: 'Sandalwood, Saffron',
-      base_notes: 'Patchouli, Musk',
-      description: 'A luxurious blend of the finest Assam agarwood, aged for deep richness, intertwined with Taif rose and warm amber. An exquisite non-alcoholic attar that leaves a lasting impression.',
-      variants: [
-        { id: 11, volume_ml: 12, price: 1200, stock_quantity: 15 },
-        { id: 12, volume_ml: 6, price: 650, stock_quantity: 4 }
-      ],
-      is_active: true
+  if (!product) {
+    return {
+      title: 'Attar Not Found | Naaz Book Depot',
     };
   }
 
-  // Active variant logic would typically be handled by a client component, 
-  // but for Server Component UI showcase, we'll just display the first one.
-  const activeVariant = atar.variants && atar.variants.length > 0 ? atar.variants[0] : null;
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (!siteUrl) {
+    throw new Error('NEXT_PUBLIC_APP_URL is required to generate atar metadata');
+  }
+  const url = `${siteUrl}/atar/${product.handle}`;
+
+  return {
+    metadataBase: new URL(siteUrl),
+    title: `${product.title} | Premium Alcohol-Free Attar | Naaz Book Depot`,
+    description: product.description.slice(0, 160),
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title: product.title,
+      description: product.description.slice(0, 160),
+      url,
+      siteName: 'Naaz Book Depot',
+      images: product.images.map((img) => ({
+        url: img.url,
+        width: 800,
+        height: 800,
+        alt: img.altText || product.title,
+      })),
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: product.title,
+      description: product.description.slice(0, 160),
+      images: [product.featuredImage?.url || ''],
+    },
+  };
+}
+
+export const revalidate = 3600; // Revalidate every hour
+
+export async function generateStaticParams() {
+  const products = await getProducts({ query: 'tag:Atar OR tag:Fragrance', first: 40 });
+  return products.map((product) => ({
+    slug: product.handle,
+  }));
+}
+
+export default async function AtarDetailPage({ params }: PageProps) {
+  const { slug } = await params;
+  const product = await getProduct(slug);
+
+  if (!product) {
+    notFound();
+  }
+
+  // Fetch related fragrances
+  const relatedAtars = await getProducts({
+    query: 'tag:Atar OR tag:Fragrance',
+    first: 5
+  }).then(products => products.filter(p => p.id !== product.id).slice(0, 4));
+
+  const atarJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.title,
+    description: product.description,
+    image: product.images[0]?.url,
+    offers: {
+      '@type': 'AggregateOffer',
+      availability: product.availableForSale
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+      priceCurrency: product.priceRange.minVariantPrice.currencyCode,
+      highPrice: product.priceRange.maxVariantPrice.amount,
+      lowPrice: product.priceRange.minVariantPrice.amount,
+    },
+  };
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-6xl">
-      <div className="flex flex-col md:flex-row gap-12">
-        {/* Left: Image */}
-        <div className="w-full md:w-1/2">
-          <div className="relative aspect-square bg-[#F8F6F3] rounded-3xl overflow-hidden shadow-lg border border-gray-100 p-8 flex items-center justify-center">
-            <Image src="/Images/ittars.jpeg" alt={atar.name} width={400} height={400} className="object-contain hover:scale-105 transition-transform duration-700" />
-            <div className="absolute top-6 right-6 flex items-center gap-1 bg-white/90 backdrop-blur-sm text-[var(--islamic-green)] text-sm font-bold px-4 py-2 rounded-full shadow-sm">
-              <Droplets size={16} className="text-[var(--islamic-gold)]" />
-              100% Non-Alcoholic
+    <div className="bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(atarJsonLd)
+        }}
+      />
+      <div className="container mx-auto px-4 py-12 md:py-16 max-w-6xl">
+        {/* Main Product Details Section */}
+        <ProductDetailsClient product={product} />
+
+        {/* Reviews Section */}
+        <ProductReviews productId={product.id} productTitle={product.title} />
+
+        {/* Related Fragrances */}
+        {relatedAtars.length > 0 && (
+          <div className="mt-24">
+            <div className="flex items-center justify-between mb-10">
+              <h2 className="text-2xl md:text-3xl font-headings font-bold text-[var(--islamic-green)]">Related Fragrances</h2>
+              <div className="h-1 flex-1 mx-8 bg-gray-50 rounded-full hidden md:block" />
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+              {relatedAtars.map((a) => (
+                <ProductCard key={a.id} product={a} showWishlist={false} />
+              ))}
             </div>
           </div>
-        </div>
-
-        {/* Right: Details */}
-        <div className="w-full md:w-1/2 flex flex-col">
-          <h1 className="text-3xl md:text-5xl font-headings font-bold text-[var(--islamic-green)] mb-4">{atar.name}</h1>
-          
-          {activeVariant ? (
-            <div className="text-4xl font-bold text-gray-900 mb-6 flex items-end gap-3">
-              ₹{activeVariant.price}
-              <span className="text-lg text-gray-500 font-normal mb-1">/ {activeVariant.volume_ml}ml</span>
-            </div>
-          ) : (
-            <div className="text-4xl font-bold text-gray-900 mb-6">Price Unavailable</div>
-          )}
-
-          <p className="text-gray-700 leading-relaxed mb-8 text-lg">
-            {atar.description}
-          </p>
-
-          {/* Fragrance Pyramid */}
-          <div className="bg-[#F8F6F3] rounded-2xl p-6 mb-8">
-            <h3 className="font-headings font-bold text-xl text-[var(--islamic-green)] mb-4 border-b border-gray-200 pb-2">Fragrance Notes</h3>
-            <div className="space-y-4">
-              <div>
-                <div className="text-xs text-[var(--islamic-gold)] font-bold uppercase tracking-wider mb-1">Top Notes</div>
-                <div className="text-gray-800">{atar.top_notes}</div>
-              </div>
-              {atar.heart_notes && (
-                <div>
-                  <div className="text-xs text-[var(--islamic-gold)] font-bold uppercase tracking-wider mb-1">Heart Notes</div>
-                  <div className="text-gray-800">{atar.heart_notes}</div>
-                </div>
-              )}
-              {atar.base_notes && (
-                <div>
-                  <div className="text-xs text-[var(--islamic-gold)] font-bold uppercase tracking-wider mb-1">Base Notes</div>
-                  <div className="text-gray-800">{atar.base_notes}</div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Variant Selector (Static for now) */}
-          {atar.variants && atar.variants.length > 1 && (
-            <div className="mb-8">
-              <div className="text-sm font-bold text-gray-700 mb-3">Select Size:</div>
-              <div className="flex gap-3">
-                {atar.variants.map((v: AtarVariantRow, index: number) => (
-                  <button key={v.id} className={`px-6 py-3 rounded-xl border-2 font-bold transition-colors ${index === 0 ? 'border-[var(--islamic-green)] text-[var(--islamic-green)] bg-[#2E5A44]/5' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}>
-                    {v.volume_ml}ml
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="flex gap-4 mt-auto">
-            <button className="flex-1 bg-[var(--islamic-gold)] text-[var(--islamic-green)] font-bold py-4 rounded-xl hover:bg-[#b89a2e] transition-colors shadow-md flex items-center justify-center gap-2">
-              <ShoppingCart size={20} />
-              Add to Cart
-            </button>
-            <button className="flex-1 border-2 border-[var(--islamic-green)] text-[var(--islamic-green)] font-bold py-4 rounded-xl hover:bg-[var(--islamic-green)] hover:text-white transition-colors">
-              Buy Now
-            </button>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

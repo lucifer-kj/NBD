@@ -18,18 +18,16 @@ export default async function OrderDetailsPage({ params }: { params: Promise<{ i
   const session = await getSession();
 
   if (!session) {
-    redirect('/');
+    redirect('/login');
   }
 
   const {} = session as { accessToken?: string };
 
   let order = null;
-  let loadError = null;
   try {
     order = await getOrderById(id);
   } catch (error) {
     console.error('Failed to load order details:', error);
-    loadError = error;
   }
 
   if (!order) {

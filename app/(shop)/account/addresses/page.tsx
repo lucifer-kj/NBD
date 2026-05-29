@@ -17,20 +17,18 @@ export default async function AddressesPage() {
   const session = await getSession();
 
   if (!session) {
-    redirect('/');
+    redirect('/login');
   }
 
   const { customerId } = session as { customerId: string };
 
   let customer = null;
-  let loadError = null;
   
   if (customerId) {
     try {
       customer = await getCustomerDetailsById(customerId);
     } catch (error) {
       console.error('Failed to load customer addresses details:', error);
-      loadError = error;
     }
   }
 

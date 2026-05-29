@@ -1,17 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { decryptSession } from '@/lib/session';
+import { getToken } from 'next-auth/jwt';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
-  const sessionCookie = request.cookies.get('session')?.value;
   let isAuthenticated = false;
 
-  if (sessionCookie) {
-    const payload = await decryptSession(sessionCookie);
-    if (payload) {
-      isAuthenticated = true;
-    }
+  try {
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET || process.env.SESSION_SECRET,
+      secureCookie: process.env.NODE_ENV === 'production',
+    });
+    isAuthenticated = !!token;
+  } catch {
+    // Leave unauthenticated
   }
 
   // Get the base URL dynamically

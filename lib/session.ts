@@ -105,15 +105,21 @@ export async function getSession(): Promise<SessionPayload | null> {
       secret: process.env.NEXTAUTH_SECRET || process.env.SESSION_SECRET || '',
     });
 
-    if (decrypted && decrypted.shopifyToken && decrypted.customerId) {
+    if (decrypted) {
       return {
-        customerId: decrypted.customerId as string,
-        accessToken: decrypted.shopifyToken as string,
+        customerId: (decrypted.customerId as string) || (decrypted.sub as string) || '',
+        accessToken: (decrypted.shopifyToken as string) || null,
         email: (decrypted.email as string) || null,
         expiresAt: new Date(typeof decrypted.exp === 'number' ? decrypted.exp * 1000 : Date.now() + 7 * 24 * 60 * 60 * 1000)
       } as SessionPayload;
     }
-  } catch (e) {
+  } catch (e: unknown) {
+    if (e instanceof Error) {
+      const digest = (e as { digest?: string }).digest;
+      if (e.message?.includes('Dynamic server usage') || digest === 'DYNAMIC_SERVER_USAGE') {
+        throw e;
+      }
+    }
     console.error('Error decrypting next-auth session cookie:', e);
   }
   return null;

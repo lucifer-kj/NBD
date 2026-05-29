@@ -2,10 +2,14 @@ import React from 'react';
 import ProductCard from '@/components/product-card';
 import { getProducts } from '@/lib/shopify';
 import { ReshapedProduct } from '@/types/shopify';
+import { Metadata } from 'next';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Pure Alcohol-Free Attar & Premium Itr | Naaz Book Depot Fragrances',
   description: 'Discover India\'s finest collection of natural, 100% alcohol-free Attar and premium Itr. Hand-curated blends for prayer and daily wear since 1967.',
+  alternates: {
+    canonical: `${process.env.NEXT_PUBLIC_APP_URL}/atar`,
+  },
 };
 
 export const revalidate = 3600;

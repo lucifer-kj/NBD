@@ -19,20 +19,18 @@ export default async function AccountPage() {
   const session = await getSession();
 
   if (!session) {
-    redirect('/api/auth/login');
+    redirect('/login');
   }
 
   const { customerId, accessToken, email } = session as { customerId: string; accessToken?: string | null; email?: string | null };
 
   let customer = null;
-  let loadError = null;
 
   if (accessToken) {
     try {
       customer = await getCustomerDetails(accessToken);
     } catch (error) {
       console.error('Storefront getCustomerDetails failed, trying fallback...', error);
-      loadError = error;
     }
   }
 
@@ -41,7 +39,6 @@ export default async function AccountPage() {
       customer = await getCustomerDetailsById(customerId);
     } catch (error) {
       console.error('Admin getCustomerDetailsById failed:', error);
-      loadError = error;
     }
   }
 

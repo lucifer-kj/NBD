@@ -206,6 +206,31 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     }
   }
 
+  // If the post has a type of "Book", push a Book entity to the graph
+  if (post.type === 'Book') {
+    graphSchema["@graph"].push({
+      "@type": "Book",
+      "@id": `${siteUrl}/blog/${post.slug}#book`,
+      "name": post.title,
+      "description": post.excerpt,
+      "image": post.image ? `${siteUrl}${post.image}` : `${siteUrl}/Images/Books.jpeg`,
+      "inLanguage": post.tags?.includes('urdu') ? 'ur' : (post.tags?.includes('bengali') ? 'bn' : 'en'),
+      "publisher": {
+        "@type": "Organization",
+        "name": "Naaz Book Depot",
+        "url": siteUrl,
+        "logo": {
+          "@type": "ImageObject",
+          "url": `${siteUrl}/Images/Logo.png`
+        }
+      },
+      "author": {
+        "@type": "Person",
+        "name": post.author
+      }
+    });
+  }
+
   // Pushing dynamic FAQ Page schema for advanced search listing snippets
   if (post.faqs && post.faqs.length > 0) {
     graphSchema["@graph"].push({

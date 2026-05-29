@@ -33,7 +33,7 @@ export function MarkdownRenderer({ content, productMap }: MarkdownRendererProps)
     if (line.startsWith('# ')) {
       const text = line.substring(2);
       renderedElements.push(
-        <h1 id={makeHeadingId(text)} key={i} className="text-3xl md:text-4xl font-headings font-bold text-[var(--islamic-green)] mt-10 mb-4 scroll-mt-24">
+        <h1 id={makeHeadingId(text)} key={i} className="font-headings text-3xl md:text-4xl font-black text-[#1B3A2D] leading-tight mt-12 mb-8 scroll-mt-24">
           {parseInline(text, productMap)}
         </h1>
       );
@@ -45,7 +45,7 @@ export function MarkdownRenderer({ content, productMap }: MarkdownRendererProps)
     if (line.startsWith('## ')) {
       const text = line.substring(3);
       renderedElements.push(
-        <h2 id={makeHeadingId(text)} key={i} className="text-2xl md:text-3xl font-headings font-bold text-[var(--islamic-green)] mt-10 mb-4 border-b border-gray-100 pb-2 scroll-mt-24">
+        <h2 id={makeHeadingId(text)} key={i} className="font-headings text-3xl md:text-[32px] font-black text-[#1B3A2D] leading-tight mt-12 mb-8 scroll-mt-24">
           {parseInline(text, productMap)}
         </h2>
       );
@@ -57,7 +57,7 @@ export function MarkdownRenderer({ content, productMap }: MarkdownRendererProps)
     if (line.startsWith('### ')) {
       const text = line.substring(4);
       renderedElements.push(
-        <h3 id={makeHeadingId(text)} key={i} className="text-xl md:text-2xl font-headings font-bold text-[var(--islamic-green)] mt-8 mb-3 scroll-mt-24">
+        <h3 id={makeHeadingId(text)} key={i} className="font-headings text-2xl font-black text-[#1B3A2D] mt-10 mb-6 scroll-mt-24">
           {parseInline(text, productMap)}
         </h3>
       );
@@ -131,14 +131,14 @@ export function MarkdownRenderer({ content, productMap }: MarkdownRendererProps)
               <span>{emoji}</span>
               <span>{title}</span>
             </div>
-            <div className="text-sm md:text-base leading-relaxed text-gray-700 font-sans">
+            <div className="text-sm md:text-base leading-relaxed text-[#1B3A2D]/80 font-sans">
               {parseInline(contentText, productMap)}
             </div>
           </div>
         );
       } else {
         renderedElements.push(
-          <blockquote key={i} className="border-l-4 border-[var(--islamic-gold)] bg-amber-50/10 px-6 py-4 my-6 rounded-r-2xl italic text-gray-600 shadow-sm border-t border-b border-r border-amber-100/30">
+          <blockquote key={i} className="border-l-4 border-[#C9972A] bg-[#FAF6EE]/40 px-6 py-4 my-6 rounded-r-2xl italic text-[#1B3A2D]/70 shadow-sm border-t border-b border-r border-[#C9972A]/10">
             {parseInline(quoteLines.join(' '), productMap)}
           </blockquote>
         );
@@ -169,22 +169,22 @@ export function MarkdownRenderer({ content, productMap }: MarkdownRendererProps)
           });
 
           renderedElements.push(
-            <div key={i} className="my-8 overflow-x-auto rounded-2xl border border-gray-100 shadow-sm">
+            <div key={i} className="my-8 overflow-x-auto rounded-sm border border-[#C9972A]/20 shadow-sm">
               <table className="w-full text-left border-collapse text-sm md:text-base">
                 <thead>
-                  <tr className="bg-amber-50/50 border-b border-gray-100">
+                  <tr className="bg-[#1B3A2D]/5 border-b border-[#C9972A]/20">
                     {headers.map((header, hIdx) => (
-                      <th key={hIdx} className="px-6 py-4 font-bold text-[var(--islamic-green)] font-headings">
+                      <th key={hIdx} className="px-6 py-4 font-black text-[#1B3A2D] font-headings">
                         {parseInline(header, productMap)}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50 bg-white">
+                <tbody className="divide-y divide-[#C9972A]/10 bg-white/30">
                   {rows.map((row, rIdx) => (
-                    <tr key={rIdx} className="hover:bg-gray-50/50 transition-colors">
+                    <tr key={rIdx} className="hover:bg-[#FAF6EE]/50 transition-colors">
                       {row.map((cell, cIdx) => (
-                        <td key={cIdx} className="px-6 py-4 text-gray-600 leading-relaxed">
+                        <td key={cIdx} className="px-6 py-4 text-[#1B3A2D]/80 leading-relaxed font-sans">
                           {parseInline(cell, productMap)}
                         </td>
                       ))}
@@ -207,17 +207,17 @@ export function MarkdownRenderer({ content, productMap }: MarkdownRendererProps)
         const url = match[2];
         renderedElements.push(
           <figure key={i} className="my-8 flex flex-col items-center gap-3">
-            <div className="relative w-full aspect-[16/9] max-h-[500px] rounded-3xl overflow-hidden shadow-md border border-gray-100">
+            <div className="relative w-full aspect-[16/9] max-h-[500px] rounded-sm overflow-hidden shadow-md border border-[#C9972A]/10">
               <Image 
                 src={url}
                 alt={alt}
                 fill
-                className="object-cover hover:scale-105 transition-transform duration-500"
+                className="object-cover hover:scale-102 transition-transform duration-500"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
               />
             </div>
             {alt && (
-              <figcaption className="text-xs md:text-sm text-gray-500 font-sans italic">
+              <figcaption className="text-xs md:text-sm text-[#1B3A2D]/60 font-sans italic text-center">
                 {alt}
               </figcaption>
             )}
@@ -248,17 +248,22 @@ export function MarkdownRenderer({ content, productMap }: MarkdownRendererProps)
 
       if (isOrdered) {
         renderedElements.push(
-          <ol key={i} className="list-decimal pl-6 space-y-2 my-4">
+          <ol key={i} className="list-decimal pl-6 space-y-4 my-8 text-lg leading-[1.85] text-[#1B3A2D]/80 font-sans">
             {listItems.map((item, idx) => (
-              <li key={idx}>{parseInline(item, productMap)}</li>
+              <li key={idx} className="pl-2">
+                {parseInline(item, productMap)}
+              </li>
             ))}
           </ol>
         );
       } else {
         renderedElements.push(
-          <ul key={i} className="list-disc pl-6 space-y-2 my-4">
+          <ul key={i} className="space-y-4 my-8 pl-4">
             {listItems.map((item, idx) => (
-              <li key={idx}>{parseInline(item, productMap)}</li>
+              <li key={idx} className="flex items-start gap-4 text-lg leading-[1.85] text-[#1B3A2D]/80 font-sans">
+                <div className="w-2 h-2 bg-[#C9972A] mt-2.5 shrink-0 rounded-full" />
+                <span>{parseInline(item, productMap)}</span>
+              </li>
             ))}
           </ul>
         );
@@ -294,7 +299,7 @@ export function MarkdownRenderer({ content, productMap }: MarkdownRendererProps)
 
     if (paragraphLines.length > 0) {
       renderedElements.push(
-        <p key={i} className="text-base md:text-lg">
+        <p key={i} className="text-lg leading-[1.85] text-[#1B3A2D]/80 mb-6 font-sans">
           {parseInline(paragraphLines.join(' '), productMap)}
         </p>
       );
@@ -302,7 +307,7 @@ export function MarkdownRenderer({ content, productMap }: MarkdownRendererProps)
   }
 
   return (
-    <div className="space-y-6 text-gray-700 leading-relaxed font-sans">
+    <div className="space-y-6">
       {renderedElements}
     </div>
   );
@@ -350,7 +355,7 @@ function parseInline(text: string, productMap: Map<string, ReshapedProduct>): Re
         tokens.push(<span key={keyIdx++}>{imgMatch[1]}</span>);
       }
       tokens.push(
-        <span key={keyIdx++} className="inline-block relative align-middle max-w-full my-1 rounded-lg overflow-hidden border border-gray-100 shadow-sm aspect-video h-32">
+        <span key={keyIdx++} className="inline-block relative align-middle max-w-full my-1 rounded-sm overflow-hidden border border-[#C9972A]/10 shadow-sm aspect-video h-32">
           <Image 
             src={imgMatch[3]} 
             alt={imgMatch[2]} 
@@ -364,20 +369,24 @@ function parseInline(text: string, productMap: Map<string, ReshapedProduct>): Re
       if (boldMatch[1]) {
         tokens.push(<span key={keyIdx++}>{boldMatch[1]}</span>);
       }
-      tokens.push(<strong key={keyIdx++} className="font-bold text-[var(--islamic-green)]">{boldMatch[2]}</strong>);
+      tokens.push(
+        <strong key={keyIdx++} className="font-semibold text-[#1B3A2D] underline decoration-[#C9972A] decoration-2 underline-offset-4">
+          {boldMatch[2]}
+        </strong>
+      );
       remaining = boldMatch[3];
     } else if (firstMatch === 'italic' && italicMatch) {
       if (italicMatch[1]) {
         tokens.push(<span key={keyIdx++}>{italicMatch[1]}</span>);
       }
-      tokens.push(<em key={keyIdx++} className="italic">{italicMatch[2]}</em>);
+      tokens.push(<em key={keyIdx++} className="italic text-[#1B3A2D]">{italicMatch[2]}</em>);
       remaining = italicMatch[3];
     } else if (firstMatch === 'link' && linkMatch) {
       if (linkMatch[1]) {
         tokens.push(<span key={keyIdx++}>{linkMatch[1]}</span>);
       }
       tokens.push(
-        <a key={keyIdx++} href={linkMatch[3]} className="text-[var(--islamic-gold)] hover:underline font-semibold">
+        <a key={keyIdx++} href={linkMatch[3]} className="text-[#C9972A] hover:underline font-semibold transition-all">
           {linkMatch[2]}
         </a>
       );

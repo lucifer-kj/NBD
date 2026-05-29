@@ -1,95 +1,129 @@
-import React from 'react';
-import Image from 'next/image';
-import { ShoppingCart } from 'lucide-react';
+import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { getProduct, getProducts } from "@/lib/shopify";
+import ProductDetailsClient from "@/components/product/ProductDetailsClient";
+import ProductReviews from "@/components/product/ProductReviews";
+import ProductCard from "@/components/product-card";
 
-export default async function BookDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+type PageProps = {
+  params: Promise<{ slug: string }>;
+};
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  // Try fetching actual data
-  let book = null;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  try {
-    if (!apiUrl) {
-      throw new Error('NEXT_PUBLIC_API_URL is required to fetch books data');
-    }
-    const res = await fetch(`${apiUrl}/api/books/${slug}/`, { cache: 'no-store' });
-    if (res.ok) {
-      book = await res.json();
-    }
-  } catch (error) {
-    console.warn('Backend API not reachable. Using fallback dummy data.', error);
-    console.warn("Backend API not reachable. Using fallback dummy data.");
-  }
+  const product = await getProduct(slug);
 
-  if (!book) {
-    // Dummy fallback for UI demo
-    book = {
-      id: 1, 
-      title: 'The Noble Quran (English Translation)', 
-      slug: slug, 
-      author: 'Dr. Muhammad Taqi-ud-Din Al-Hilali', 
-      format: 'Hardcover', 
-      price: 950,
-      description: 'A summarized version of At-Tabari, Al-Qurtubi and Ibn Kathir with comments from Sahih Al-Bukhari.',
-      language: 'English/Arabic',
-      pages: 1200,
-      isbn: '978-9960-740-79-9',
-      stock_quantity: 45
+  if (!product) {
+    return {
+      title: 'Book Not Found | Naaz Book Depot',
     };
   }
 
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (!siteUrl) {
+    throw new Error('NEXT_PUBLIC_APP_URL is required to generate book metadata');
+  }
+  const url = `${siteUrl}/books/${product.handle}`;
+
+  return {
+    metadataBase: new URL(siteUrl),
+    title: `${product.title} | Authentic Islamic Book | Naaz Book Depot`,
+    description: product.description.slice(0, 160),
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title: product.title,
+      description: product.description.slice(0, 160),
+      url,
+      siteName: 'Naaz Book Depot',
+      images: product.images.map((img) => ({
+        url: img.url,
+        width: 800,
+        height: 800,
+        alt: img.altText || product.title,
+      })),
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: product.title,
+      description: product.description.slice(0, 160),
+      images: [product.featuredImage?.url || ''],
+    },
+  };
+}
+
+export const revalidate = 3600; // Revalidate every hour
+
+export async function generateStaticParams() {
+  const products = await getProducts({ query: 'tag:Books', first: 40 });
+  return products.map((product) => ({
+    slug: product.handle,
+  }));
+}
+
+export default async function BookDetailPage({ params }: PageProps) {
+  const { slug } = await params;
+  const product = await getProduct(slug);
+
+  if (!product) {
+    notFound();
+  }
+
+  // Fetch related books
+  const relatedBooks = await getProducts({
+    query: 'tag:Books',
+    first: 5
+  }).then(products => products.filter(p => p.id !== product.id).slice(0, 4));
+
+  const bookJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Book',
+    name: product.title,
+    description: product.description,
+    image: product.images[0]?.url,
+    isbn: product.tags?.find(t => t.toLowerCase().startsWith('isbn:'))?.split(':')[1] || '',
+    offers: {
+      '@type': 'Offer',
+      availability: product.availableForSale
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+      priceCurrency: product.priceRange.minVariantPrice.currencyCode,
+      price: product.priceRange.minVariantPrice.amount,
+    },
+  };
+
   return (
-    <div className="container mx-auto px-4 py-12 max-w-6xl">
-      <div className="flex flex-col md:flex-row gap-12">
-        {/* Left: Image */}
-        <div className="w-full md:w-1/3">
-          <div className="relative aspect-[3/4] bg-gray-50 rounded-2xl overflow-hidden shadow-lg border border-gray-100">
-            <Image src="/Images/Books.jpeg" alt={book.title} fill className="object-cover" />
-          </div>
-        </div>
+    <div className="bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(bookJsonLd)
+        }}
+      />
+      <div className="container mx-auto px-4 py-12 md:py-16 max-w-6xl">
+        {/* Main Product Details Section */}
+        <ProductDetailsClient product={product} />
 
-        {/* Right: Details */}
-        <div className="w-full md:w-2/3 flex flex-col">
-          <div className="text-sm text-[var(--islamic-gold)] font-bold mb-2 uppercase tracking-wide">{book.format}</div>
-          <h1 className="text-3xl md:text-5xl font-headings font-bold text-[var(--islamic-green)] mb-2">{book.title}</h1>
-          <p className="text-lg text-gray-600 mb-6">By {book.author}</p>
-          
-          <div className="text-4xl font-bold text-gray-900 mb-6">₹{book.price}</div>
+        {/* Reviews Section */}
+        <ProductReviews productId={product.id} productTitle={product.title} />
 
-          <p className="text-gray-700 leading-relaxed mb-8 border-b border-gray-100 pb-8">
-            {book.description}
-          </p>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-            <div>
-              <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Language</div>
-              <div className="font-semibold">{book.language}</div>
+        {/* Related Books */}
+        {relatedBooks.length > 0 && (
+          <div className="mt-24">
+            <div className="flex items-center justify-between mb-10">
+              <h2 className="text-2xl md:text-3xl font-headings font-bold text-[var(--islamic-green)]">Related Books</h2>
+              <div className="h-1 flex-1 mx-8 bg-gray-50 rounded-full hidden md:block" />
             </div>
-            <div>
-              <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Pages</div>
-              <div className="font-semibold">{book.pages}</div>
-            </div>
-            <div>
-              <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">ISBN</div>
-              <div className="font-semibold">{book.isbn || 'N/A'}</div>
-            </div>
-            <div>
-              <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Availability</div>
-              <div className={`font-semibold ${book.stock_quantity > 0 ? 'text-green-600' : 'text-red-500'}`}>
-                {book.stock_quantity > 0 ? 'In Stock' : 'Out of Stock'}
-              </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+              {relatedBooks.map((b) => (
+                <ProductCard key={b.id} product={b} showWishlist={false} />
+              ))}
             </div>
           </div>
-
-          <div className="flex gap-4 mt-auto">
-            <button className="flex-1 bg-[var(--islamic-gold)] text-[var(--islamic-green)] font-bold py-4 rounded-xl hover:bg-[#b89a2e] transition-colors shadow-md flex items-center justify-center gap-2">
-              <ShoppingCart size={20} />
-              Add to Cart
-            </button>
-            <button className="flex-1 border-2 border-[var(--islamic-green)] text-[var(--islamic-green)] font-bold py-4 rounded-xl hover:bg-[var(--islamic-green)] hover:text-white transition-colors">
-              Buy Now
-            </button>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

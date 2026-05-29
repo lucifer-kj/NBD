@@ -1,12 +1,37 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Calendar, ArrowLeft, Clock, BookOpen } from 'lucide-react';
-import { ScrollProgressBar, ShareButton } from '@/components/ui/blog-client';
+import { 
+  ArrowLeft, 
+  BookOpen, 
+  Bookmark, 
+  History,
+  MessageCircle
+} from 'lucide-react';
+import { Playfair_Display, Lora } from 'next/font/google';
+import { ScrollProgressBar, ShareButton, BlogFaqAccordion, MobileReaderBar } from '@/components/ui/blog-client';
+import { BlogToc } from './blog-toc';
+import { BlogSidebar } from './blog-sidebar';
+import { MarkdownRenderer } from './markdown-renderer';
 import { BlogPost } from '@/lib/blog';
 import { ReshapedProduct } from '@/types/shopify';
-import { MarkdownRenderer } from './markdown-renderer';
-import { BlogSidebar } from './blog-sidebar';
+import { formatPrice } from '@/lib/utils';
+
+// Load isolated Google Fonts to completely match the mock UI/UX style without leaking into other pages
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  weight: ['400', '700', '900'],
+  display: 'swap',
+  variable: '--font-playfair',
+});
+
+const lora = Lora({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  style: ['normal', 'italic'],
+  display: 'swap',
+  variable: '--font-lora',
+});
 
 interface BlogLayoutProps {
   post: BlogPost;
@@ -29,8 +54,18 @@ export function BlogLayout({
   readingTime,
   graphSchema,
 }: BlogLayoutProps) {
+  // Ensure the Frequently Asked Questions item is dynamically added to the Table of Contents if FAQs exist
+  const allHeadings = [...headings];
+  if (post.faqs && post.faqs.length > 0 && !allHeadings.some(h => h.id === 'faq')) {
+    allHeadings.push({ 
+      id: 'faq', 
+      text: 'Frequently Asked Questions', 
+      level: 2 
+    });
+  }
+
   return (
-    <article className="bg-[#FDFCFB] min-h-screen pb-20 relative font-sans">
+    <article className={`${playfair.variable} ${lora.variable} bg-[#FAF6EE] text-[#1B3A2D] font-[family-name:var(--font-lora)] selection:bg-[#C9972A] selection:text-white min-h-screen relative`}>
       <ScrollProgressBar />
       
       <script
@@ -38,212 +73,221 @@ export function BlogLayout({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(graphSchema) }}
       />
       
-      {/* Header / Hero */}
-      <header className="relative h-[40vh] md:h-[60vh] w-full bg-black">
-        <Image 
-          src={post.image || '/Images/Books.jpeg'} 
-          alt={post.title}
-          fill
-          className="object-cover opacity-60"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[var(--islamic-green)] to-transparent opacity-95" />
+      {/* 1. Dynamic Hero Redesign in Deep Forest Green (#163020) */}
+      <header className="relative w-full bg-[#163020] pt-20 pb-16 px-6 overflow-hidden border-b border-[#C9972A]/10">
+        {/* Decorative Texture Overlay */}
+        <div className="absolute inset-0 opacity-5 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/pinstripe-dark.png')]" />
         
-        <div className="absolute inset-0 flex items-end">
-          <div className="container mx-auto px-4 pb-12">
-            <Link 
-              href="/blog" 
-              className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 text-sm font-medium transition-colors"
-            >
-              <ArrowLeft size={16} />
-              Back to Blog
-            </Link>
-            
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-headings font-bold text-white max-w-4xl leading-tight">
-              {post.title}
-            </h1>
-            
-            <div className="flex flex-wrap items-center gap-6 mt-8 text-white/90">
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-full bg-[var(--islamic-gold)] flex items-center justify-center text-[var(--islamic-green)] font-bold">
-                  {post.author.charAt(0)}
-                </div>
-                <span className="font-medium">{post.author}</span>
+        <div className="max-w-[1440px] mx-auto relative z-10 flex flex-col items-center text-center">
+          <Link 
+            href="/blog" 
+            className="flex items-center gap-2 text-[#C9972A] font-sans text-sm font-semibold mb-8 hover:opacity-80 transition-opacity self-start md:self-center cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Insights</span>
+          </Link>
+          
+          <div className="bg-[#C9972A] text-[#163020] px-4 py-1 rounded-full font-sans text-xs font-bold uppercase tracking-widest mb-6">
+            {post.tags?.[0] || 'Spirituality'}
+          </div>
+          
+          <h1 className="font-[family-name:var(--font-playfair)] text-4xl md:text-6xl lg:text-[64px] font-black text-[#FAF6EE] max-w-[900px] leading-[1.1] mb-10 tracking-tight">
+            {post.title}
+          </h1>
+          
+          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#1B3A2D] border border-[#C9972A] flex items-center justify-center text-[#C9972A] font-black font-[family-name:var(--font-playfair)] text-xl">
+                {post.author.charAt(0)}
               </div>
-              
-              <div className="flex items-center gap-6 border-l border-white/20 pl-6">
-                <div className="flex items-center gap-2 text-sm">
-                  <Calendar size={18} className="text-[var(--islamic-gold)]" />
-                  {new Date(post.publishedAt).toLocaleDateString('en-IN', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                  })}
-                </div>
-                
-                <div className="flex items-center gap-2 text-sm">
-                  <Clock size={18} className="text-[var(--islamic-gold)]" />
-                  <span>{readingTime} min read</span>
-                </div>
-              </div>
+              <span className="font-sans font-medium text-[#FAF6EE]/90">{post.author}</span>
             </div>
+            <div className="flex items-center gap-2 text-[#FAF6EE]/60 text-sm font-sans">
+              <History className="w-4 h-4" />
+              <span>
+                {new Date(post.publishedAt).toLocaleDateString('en-IN', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric'
+                })}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-[#FAF6EE]/60 text-sm font-sans">
+              <BookOpen className="w-4 h-4" />
+              <span>{readingTime} min read</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mt-16 w-full border-t border-[#FAF6EE]/10 pt-6">
+          <div className="max-w-[1440px] mx-auto px-6 flex justify-between items-center text-[#FAF6EE]/40 text-[10px] font-sans font-bold uppercase tracking-[0.2em]">
+            <span>{wordCount} words</span>
+            <span>Published in {post.tags?.[0] || 'Spirituality'}</span>
           </div>
         </div>
       </header>
 
-      {/* Main Content Layout Grid */}
-      <div className="container mx-auto px-4 mt-12 max-w-7xl">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-          
-          {/* Main Article Body Column */}
-          <main className="col-span-1 lg:col-span-8">
-            <div className="bg-white rounded-3xl p-6 md:p-12 border border-gray-100 shadow-sm">
-              {/* Reading Stats Bar for premium UX */}
-              <div className="flex items-center gap-4 text-xs text-gray-400 mb-8 border-b border-gray-100 pb-6">
-                <span className="flex items-center gap-1.5">
-                  <BookOpen size={14} className="text-[var(--islamic-gold)]" />
-                  {wordCount} words
-                </span>
-                <span>•</span>
-                <span>Published in <span className="text-[var(--islamic-green)] font-semibold">Spirituality</span></span>
-              </div>
-
-              {/* TL;DR Container for GEO (Generative Engine Optimization) */}
-              {post.tldr && (
-                <div className="mb-8 p-6 bg-gradient-to-br from-amber-50/50 to-orange-50/30 rounded-3xl border border-amber-100/60 shadow-sm relative overflow-hidden backdrop-blur-sm">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--islamic-gold)] opacity-5 rounded-full blur-2xl pointer-events-none" />
-                  <h3 className="text-xs font-bold text-[var(--islamic-green)] uppercase tracking-wider mb-2 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[var(--islamic-gold)]" />
-                    TL;DR / Key Takeaways
-                  </h3>
-                  <p className="text-gray-700 text-sm md:text-base leading-relaxed italic">
-                    &ldquo;{post.tldr}&rdquo;
-                  </p>
-                </div>
-              )}
-
-              {/* Parsed Blog Markdown Content */}
-              <div className="prose prose-lg prose-stone max-w-3xl prose-headings:font-headings prose-headings:text-[var(--islamic-green)] leading-relaxed">
-                <MarkdownRenderer content={post.content} productMap={productMap} />
-              </div>
-
-              {/* Dynamic FAQ / Q&A Section for GEO & Crawlability */}
-              {post.faqs && post.faqs.length > 0 && (
-                <div className="mt-12 pt-8 border-t border-gray-100">
-                  <h3 className="text-xl font-headings font-bold text-[var(--islamic-green)] mb-6 flex items-center gap-2">
-                    <span className="text-[var(--islamic-gold)]">💬</span> Frequently Asked Questions
-                  </h3>
-                  <div className="space-y-4">
-                    {post.faqs.map((faq, index) => (
-                      <div key={index} className="bg-amber-50/20 border border-amber-100/40 rounded-2xl p-5 hover:bg-amber-50/30 transition-all">
-                        <h4 className="font-headings font-bold text-gray-800 text-sm md:text-base mb-2">
-                          Q: {faq.question}
-                        </h4>
-                        <p className="text-gray-600 text-xs md:text-sm leading-relaxed">
-                          {faq.answer}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {/* Footer / Sharing Bar */}
-              <div className="mt-16 pt-8 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                <div className="flex gap-2 flex-wrap">
-                  {post.tags?.map((tag: string) => (
-                    <span key={tag} className="bg-gray-100 text-gray-600 px-3.5 py-1 rounded-full text-xs font-medium">
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-                
-                <ShareButton title={post.title} excerpt={post.excerpt} />
-              </div>
+      {/* 2. Key Takeaways Banner in Antique Gold (#C9972A) */}
+      {post.tldr && (
+        <div className="w-full bg-[#C9972A] py-8 px-6 border-b border-[#FAF6EE]/10">
+          <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row items-center gap-6">
+            <div className="bg-[#FAF6EE] p-3 rounded-xl shadow-sm">
+              <Bookmark className="w-6 h-6 text-[#C9972A]" />
             </div>
+            <div>
+              <span className="block font-sans text-xs font-black text-[#1B3A2D]/60 tracking-[0.2em] mb-1 uppercase">
+                TL;DR / KEY TAKEAWAYS
+              </span>
+              <p className="font-[family-name:var(--font-lora)] italic text-[#FAF6EE] text-xl md:text-2xl font-medium leading-relaxed">
+                &ldquo;{post.tldr}&rdquo;
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
-            {/* Recommended Books Section */}
-            {recommendedProductsList.length > 0 && (
-              <div className="mt-8 p-8 bg-white rounded-3xl border border-gray-100 shadow-sm">
-                <h3 className="text-lg font-headings font-bold text-[var(--islamic-green)] mb-1 flex items-center gap-2">
-                  <span>📖</span> Recommended Books & Literature
-                </h3>
-                <p className="text-xs text-gray-500 mb-6 font-sans">
-                  Authenticated editions discussed in this article, curated directly from our bookstore collection.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {recommendedProductsList.map((product) => {
-                    const price = product.priceRange?.minVariantPrice;
-                    const imageUrl = product.images?.[0]?.url || '/Images/Books.jpeg';
-                    const formattedPriceStr = price 
-                      ? new Intl.NumberFormat('en-IN', { style: 'currency', currency: price.currencyCode }).format(parseFloat(price.amount))
-                      : 'Price unavailable';
+      {/* 3. Main Premium Grid Layout */}
+      <main className="max-w-[1440px] mx-auto px-6 py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-[240px_720px_280px] justify-center gap-10 relative">
+          
+          {/* Left Column Sidebar - Scroll-Tracked Table of Contents */}
+          <aside className="hidden lg:block sticky top-24 self-start max-h-[calc(100vh-120px)] overflow-y-auto scrollbar-none pr-1">
+            <BlogToc headings={allHeadings} title={post.title} />
+          </aside>
 
-                    return (
-                      <div 
-                        key={product.handle} 
-                        className="flex gap-4 p-4 rounded-2xl bg-amber-50/10 border border-amber-100/30 hover:border-[var(--islamic-gold)]/45 transition-all group hover:bg-amber-50/20"
-                      >
-                        <div className="relative w-20 h-28 rounded-lg overflow-hidden flex-shrink-0 shadow-sm border border-gray-100">
-                          <Image 
-                            src={imageUrl} 
-                            alt={product.title} 
-                            fill 
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        </div>
-                        <div className="flex flex-col justify-between py-1">
-                          <div>
-                            <h4 className="font-headings font-bold text-sm text-[var(--islamic-green)] line-clamp-2 leading-snug">
-                              {product.title}
-                            </h4>
-                            <p className="text-[10px] uppercase font-semibold text-[var(--islamic-gold)] tracking-wider mt-1.5 font-sans">
-                              {product.vendor || 'Naaz Editions'}
-                            </p>
-                          </div>
-                          <div className="mt-2 flex items-center justify-between gap-4">
-                            <span className="font-sans font-bold text-sm text-gray-900 font-numeric">
-                              {formattedPriceStr}
-                            </span>
-                            <Link 
-                              href={`/products/${product.handle}`}
-                              className="px-3.5 py-1.5 rounded-xl bg-[var(--islamic-green)] text-white text-[10px] font-bold uppercase tracking-wider hover:bg-[var(--islamic-gold)] hover:text-[var(--islamic-green)] transition-all flex items-center justify-center font-sans border border-transparent shadow-sm"
-                            >
-                              View Book
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+          {/* Center Column - Prose Copy via MarkdownRenderer */}
+          <article className="w-full">
+            <section className="mb-20">
+              <MarkdownRenderer content={post.content} productMap={productMap} />
+            </section>
+
+            {/* Dynamic FAQ Accordion for SEO Crawlability & Structured Data Schema */}
+            {post.faqs && post.faqs.length > 0 && (
+              <section id="faq" className="mt-20 pt-20 border-t border-[#C9972A]/20 scroll-mt-24">
+                <div className="flex items-center gap-3 mb-12">
+                  <MessageCircle className="w-8 h-8 text-[#C9972A]" />
+                  <h2 className="font-[family-name:var(--font-playfair)] text-3xl font-black text-[#C9972A]">
+                    Frequently Asked Questions
+                  </h2>
                 </div>
-              </div>
+                <BlogFaqAccordion faqs={post.faqs} />
+              </section>
             )}
 
-            {/* Author Box with enriched styling & glass-card pattern */}
-            <div className="mt-8 p-8 bg-white/70 backdrop-blur-md rounded-3xl border border-gray-100/85 shadow-sm flex flex-col sm:flex-row gap-6 items-center sm:items-start text-center sm:text-left glass-card hover:border-[var(--islamic-gold)]/30 transition-all duration-300">
-              <div className="w-16 h-16 rounded-full bg-[var(--islamic-green)] hover:bg-[var(--islamic-gold)] transition-colors flex items-center justify-center text-white hover:text-[var(--islamic-green)] text-2xl font-bold flex-shrink-0 shadow-inner">
-                {post.author.charAt(0)}
-              </div>
-              <div>
-                <h4 className="font-headings font-bold text-[var(--islamic-green)] flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                  Written by {post.author}
-                  <span className="bg-amber-100 text-[var(--islamic-green)] text-[10px] px-2.5 py-0.5 rounded-full font-sans uppercase font-bold tracking-wider">
-                    Verified Editorial since 1967
+            {/* Article Footer & Tags */}
+            <div className="mt-16 pt-8 border-t border-[#C9972A]/10 flex flex-wrap items-center justify-between gap-6">
+              <div className="flex gap-2 flex-wrap">
+                {post.tags?.map((tag: string) => (
+                  <span 
+                    key={tag} 
+                    className="px-4 py-2 border border-[#1B3A2D] text-[#C9972A] font-sans text-xs font-bold rounded-full transition-all hover:bg-[#C9972A] hover:text-[#FAF6EE] hover:border-[#C9972A]"
+                  >
+                    #{tag}
                   </span>
-                </h4>
-                <p className="text-gray-600 text-sm mt-2 leading-relaxed">
-                  Contributing editor and scholar at Naaz Book Depot. Committed to compiling, reviewing, and sharing authenticated Islamic literature and historical perspectives since 1967.
-                </p>
+                ))}
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <ShareButton title={post.title} excerpt={post.excerpt || ''} />
               </div>
             </div>
-          </main>
+          </article>
 
-          {/* Sticky Table of Contents Sidebar Column */}
-          <BlogSidebar recentPosts={recentPosts} headings={headings} />
+          {/* Right Column Sidebar - Heritage Seal, Newsletter Subscription */}
+          <BlogSidebar recentPosts={recentPosts} />
           
         </div>
-      </div>
+      </main>
+
+      {/* 4. Bottom Recommended Books / Products Grid in Pale Dark Cream (#F2EBD9) */}
+      {recommendedProductsList.length > 0 && (
+        <section className="w-full bg-[#F2EBD9] py-24 border-t border-[#C9972A]/10">
+          <div className="max-w-[1440px] mx-auto px-6">
+            <div className="flex flex-col items-center text-center mb-16">
+              <div className="w-12 h-12 bg-[#1B3A2D] flex items-center justify-center text-[#C9972A] mb-6 rounded-sm shadow-inner">
+                <BookOpen className="w-6 h-6" />
+              </div>
+              <h2 className="font-[family-name:var(--font-playfair)] text-4xl font-black text-[#1B3A2D] mb-4">
+                Recommended Books & Literature
+              </h2>
+              <p className="font-[family-name:var(--font-lora)] text-[#1B3A2D]/60 max-w-[600px] leading-relaxed text-lg">
+                Authenticated editions discussed in this article, curated directly from our bookstore collection in Kolkata.
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {recommendedProductsList.map((product) => {
+                const price = product.priceRange?.minVariantPrice;
+                const imageUrl = product.images?.[0]?.url || '/Images/Books.jpeg';
+                const formattedPriceStr = price 
+                  ? formatPrice(price.amount, price.currencyCode)
+                  : '₹0.00';
+
+                return (
+                  <div 
+                    key={product.handle} 
+                    className="group bg-white border border-[#C9972A]/10 p-4 transition-all duration-300 hover:shadow-2xl hover:shadow-[#C9972A]/10 hover:-translate-y-1 rounded-sm flex flex-col justify-between"
+                  >
+                    <div>
+                      <Link 
+                        href={`/products/${product.handle}`}
+                        className="relative w-full aspect-[3/4] mb-4 flex items-center justify-center bg-gray-50 overflow-hidden shadow-sm border border-[#C9972A]/5 group-hover:shadow-md transition-shadow duration-300 block"
+                      >
+                        <Image 
+                          src={imageUrl} 
+                          alt={product.title} 
+                          fill 
+                          className="object-cover group-hover:scale-103 transition-transform duration-500"
+                        />
+                      </Link>
+                      <div className="mb-4">
+                        <span className="text-[10px] font-sans font-black text-[#C9972A] tracking-[0.2em] uppercase">
+                          {product.vendor || 'NAAZ EDITIONS'}
+                        </span>
+                        <h4 className="font-[family-name:var(--font-lora)] font-semibold text-[#1B3A2D] text-lg leading-snug h-12 overflow-hidden mb-2 group-hover:text-[#C9972A] transition-colors">
+                          <Link href={`/products/${product.handle}`}>{product.title}</Link>
+                        </h4>
+                        <p className="font-[family-name:var(--font-lora)] font-bold text-[#1B3A2D] text-xl">{formattedPriceStr}</p>
+                      </div>
+                    </div>
+                    <Link 
+                      href={`/products/${product.handle}`}
+                      className="w-full py-3 bg-[#1B3A2D] text-[#FAF6EE] font-sans text-xs font-bold tracking-widest transition-all hover:bg-[#C9972A] hover:text-[#1B3A2D] text-center uppercase cursor-pointer"
+                    >
+                      VIEW BOOK
+                    </Link>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 5. Author Bio Strip with Custom Circular Initial */}
+      <section className="w-full bg-[#FAF6EE] border-t border-[#C9972A]/10 py-20">
+        <div className="max-w-[800px] mx-auto px-6 flex flex-col md:flex-row items-center gap-10">
+          <div className="w-32 h-32 rounded-full bg-[#1B3A2D] border-4 border-[#C9972A]/20 flex items-center justify-center text-[#C9972A] font-[family-name:var(--font-playfair)] text-5xl font-black shrink-0 shadow-xl shadow-[#1B3A2D]/10 select-none">
+            {post.author.charAt(0)}
+          </div>
+          <div className="flex flex-col items-center md:items-start text-center md:text-left">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mb-4">
+              <h5 className="font-[family-name:var(--font-playfair)] text-2xl font-black text-[#1B3A2D]">
+                Written by {post.author}
+              </h5>
+              <div className="bg-[#C9972A]/10 text-[#C9972A] px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full border border-[#C9972A]/20 select-none">
+                VERIFIED EDITORIAL SINCE 1967
+              </div>
+            </div>
+            <p className="font-[family-name:var(--font-lora)] text-[#1B3A2D]/60 text-lg leading-relaxed">
+              Contributing editor and scholar at Naaz Book Depot. Committed to compiling, reviewing, and sharing authenticated Islamic literature and historical perspectives since 1967. Our mission is to preserve the integrity of sacred texts for the next generation.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 6. Mobile Reader Bar for Premium mobile experience */}
+      <MobileReaderBar headings={allHeadings} title={post.title} />
     </article>
   );
 }

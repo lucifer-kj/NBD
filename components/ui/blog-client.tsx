@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Share2, Link2, List, X, ShoppingCart, Star, BookOpen, Info, ShieldCheck } from 'lucide-react';
+import { Share2, Link2, List, X, ShoppingCart, BookOpen, ShieldCheck, Plus, Minus } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCartStore } from '@/store/cart-store';
 import { motion, AnimatePresence } from 'framer-motion';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, cn } from '@/lib/utils';
 import { ReshapedProduct } from '@/types/shopify';
 
 interface HeadingItem {
@@ -289,26 +289,27 @@ export function NewsletterBox() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-white to-amber-50/40 border border-[var(--islamic-gold)]/30 shadow-sm rounded-3xl p-6 relative overflow-hidden group">
-      <div className="absolute top-0 right-0 w-24 h-24 bg-[var(--islamic-gold)]/10 rounded-full blur-xl pointer-events-none transition-transform group-hover:scale-125 duration-500" />
+    <div className="bg-[#1B3A2D] p-8 rounded-sm text-center relative overflow-hidden group border border-[#C9972A]/10">
+      <div className="absolute top-0 right-0 w-24 h-24 bg-[#C9972A]/5 rounded-full blur-xl pointer-events-none transition-transform group-hover:scale-125 duration-500" />
       
-      <h3 className="font-headings font-bold text-lg text-[var(--islamic-green)] flex items-center gap-2 mb-2">
-        <span>🕌</span> Naaz Newsletter
-      </h3>
-      <p className="text-gray-600 text-xs leading-relaxed mb-4">
-        Subscribe to receive monthly authenticated scholarly reviews, classic Islamic literature releases, and exclusive spiritual insights.
+      <span className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#C9972A]/10 text-[#C9972A] mb-4">
+        🕌
+      </span>
+      <h4 className="font-headings text-2xl font-black text-[#FAF6EE] mb-2">Naaz Newsletter</h4>
+      <p className="font-sans text-xs text-[#FAF6EE]/60 mb-6 leading-relaxed uppercase tracking-widest">
+        Subscribe to receive monthly authenticated scholarly reviews and exclusive releases.
       </p>
 
       {status === 'success' ? (
-        <div className="bg-emerald-50 border border-emerald-100 text-emerald-800 rounded-2xl p-4 text-center animate-in fade-in zoom-in-95 duration-200">
+        <div className="bg-emerald-950/40 border border-emerald-500/20 text-emerald-300 rounded-lg p-4 text-center animate-in fade-in zoom-in-95 duration-200">
           <p className="text-sm font-semibold">JazakAllah Khair! ✨</p>
-          <p className="text-xs mt-1 text-emerald-600">You have successfully subscribed to our newsletter.</p>
+          <p className="text-xs mt-1 text-emerald-400/80">Successfully subscribed to our newsletter.</p>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {status === 'error' && (
-            <p className="text-red-600 text-xs font-semibold animate-pulse">
-              Subscription failed. Please check your email and try again.
+            <p className="text-red-400 text-xs font-semibold animate-pulse text-left">
+              Subscription failed. Please check your email.
             </p>
           )}
           <input
@@ -317,13 +318,13 @@ export function NewsletterBox() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email address"
             required
-            className="w-full px-4 py-2.5 rounded-2xl bg-white border border-gray-100 focus:border-[var(--islamic-gold)] focus:ring-1 focus:ring-[var(--islamic-gold)] text-sm text-gray-800 placeholder-gray-400 outline-none transition-all"
+            className="w-full bg-[#FAF6EE] border-none px-4 py-3 text-sm font-sans placeholder:text-[#1B3A2D]/40 focus:ring-2 focus:ring-[#C9972A] outline-none text-[#1B3A2D] rounded-sm transition-all"
             disabled={status === 'loading'}
           />
           <button
             type="submit"
             disabled={status === 'loading'}
-            className="w-full py-2.5 rounded-2xl bg-[var(--islamic-green)] text-white font-semibold text-xs tracking-wider uppercase hover:bg-[var(--islamic-gold)] hover:text-[var(--islamic-green)] transition-all flex items-center justify-center gap-2 border border-transparent disabled:opacity-50"
+            className="w-full py-4 bg-[#C9972A] text-[#1B3A2D] font-sans text-xs font-black tracking-[0.2em] hover:bg-[#D4A843] transition-colors uppercase cursor-pointer rounded-sm disabled:opacity-50"
           >
             {status === 'loading' ? 'Subscribing...' : 'Subscribe'}
           </button>
@@ -589,3 +590,263 @@ export function InlineProductBadge({ product }: { product: ReshapedProduct }) {
     </span>
   );
 }
+
+interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+export function BlogFaqAccordion({ faqs }: { faqs: FaqItem[] }) {
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+
+  return (
+    <div className="flex flex-col">
+      {faqs.map((item, idx) => {
+        const isOpen = openFaq === idx;
+        return (
+          <div
+            key={idx}
+            className={cn(
+              "border-b border-[#C9972A]/20 transition-all duration-300",
+              isOpen && "bg-[#FAF6EE] border-l-4 border-l-[#C9972A]"
+            )}
+          >
+            <button
+              onClick={() => setOpenFaq(isOpen ? null : idx)}
+              className="w-full py-6 px-4 flex items-center justify-between text-left group cursor-pointer"
+            >
+              <span
+                className={cn(
+                  "font-body text-xl md:text-2xl font-medium transition-colors",
+                  isOpen ? "text-[#1B3A2D]" : "text-[#1B3A2D]/80 group-hover:text-[#C9972A]"
+                )}
+              >
+                {item.question}
+              </span>
+              {isOpen ? (
+                <Minus className="w-6 h-6 text-[#C9972A] shrink-0" />
+              ) : (
+                <Plus className="w-6 h-6 text-[#C9972A] shrink-0" />
+              )}
+            </button>
+            <AnimatePresence initial={false}>
+              {isOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden"
+                >
+                  <div className="pb-8 px-4 font-body text-lg leading-relaxed text-[#1B3A2D]/70 max-w-[700px]">
+                    {item.answer}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export function MobileReaderBar({ headings }: { headings: HeadingItem[]; title: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeId, setActiveId] = useState<string>('');
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    if (headings.length === 0) return;
+
+    // Observe headings to track the currently active section
+    const observers: IntersectionObserver[] = [];
+    
+    headings.forEach((heading) => {
+      const element = document.getElementById(heading.id);
+      if (element) {
+        const observer = new IntersectionObserver(
+          ([entry]) => {
+            if (entry.isIntersecting) {
+              setActiveId(heading.id);
+            }
+          },
+          {
+            threshold: 0.2,
+            rootMargin: '-10% 0px -60% 0px',
+          }
+        );
+        observer.observe(element);
+        observers.push(observer);
+      }
+    });
+
+    // Track reading progress
+    const handleScroll = () => {
+      const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalScroll > 0) {
+        const currentProgress = Math.min((window.scrollY / totalScroll) * 100, 100);
+        setProgress(Math.round(currentProgress));
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // initial call
+
+    return () => {
+      observers.forEach((obs) => obs.disconnect());
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [headings]);
+
+  const handleScrollTo = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      window.scrollTo({
+        top: element.offsetTop - 100,
+        behavior: 'smooth',
+      });
+      setIsOpen(false);
+    }
+  };
+
+  if (headings.length === 0) return null;
+
+  const activeHeading = headings.find(h => h.id === activeId);
+  const activeLabel = activeHeading ? activeHeading.text : 'Introduction';
+
+  // SVG Circular progress dimensions
+  const radius = 16;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+  return (
+    <>
+      {/* Floating Reader Bar at the bottom for premium Mobile UX */}
+      <div className="lg:hidden fixed bottom-6 left-4 right-4 z-[60] animate-in slide-in-from-bottom-10 duration-500">
+        <div className="bg-[#1B3A2D]/95 backdrop-blur-md text-[#FAF6EE] rounded-2xl border border-[#C9972A]/30 py-3 px-5 flex items-center justify-between shadow-2xl">
+          {/* Left: Section Indicator & TOC Trigger */}
+          <button 
+            onClick={() => setIsOpen(true)}
+            className="flex-1 flex items-center gap-3 text-left min-w-0 group cursor-pointer"
+          >
+            <div className="w-9 h-9 rounded-full bg-[#C9972A]/20 flex items-center justify-center border border-[#C9972A]/30 text-[#C9972A]">
+              <BookOpen className="w-4 h-4" />
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[10px] font-sans font-black text-[#C9972A] tracking-wider uppercase">
+                ACTIVE SECTION
+              </span>
+              <span className="text-sm font-semibold truncate pr-4 text-[#FAF6EE]/90 font-serif leading-tight">
+                {activeLabel}
+              </span>
+            </div>
+          </button>
+
+          {/* Right: Circular Progress Button & Menu Indicator */}
+          <div className="flex items-center gap-4 border-l border-[#C9972A]/20 pl-4 shrink-0">
+            <button
+              onClick={() => setIsOpen(true)}
+              className="relative w-10 h-10 flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-transform"
+            >
+              <svg className="w-10 h-10 transform -rotate-90 absolute">
+                <circle
+                  cx="20"
+                  cy="20"
+                  r={radius}
+                  className="stroke-[#C9972A]/10 fill-none"
+                  strokeWidth="3"
+                />
+                <circle
+                  cx="20"
+                  cy="20"
+                  r={radius}
+                  className="stroke-[#C9972A] fill-none transition-all duration-300"
+                  strokeWidth="3"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={strokeDashoffset}
+                  strokeLinecap="round"
+                />
+              </svg>
+              <List className="w-4.5 h-4.5 text-[#C9972A]" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Slide-Up Bottom Drawer Sheet for Table of Contents */}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.6 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsOpen(false)}
+              className="lg:hidden fixed inset-0 bg-black/60 z-[70] backdrop-blur-xs"
+            />
+
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="lg:hidden fixed bottom-0 left-0 right-0 max-h-[85vh] bg-[#163020] border-t-2 border-[#C9972A] rounded-t-[32px] p-6 z-[80] overflow-y-auto flex flex-col"
+            >
+              <div className="w-12 h-1.5 bg-[#C9972A]/30 rounded-full mx-auto mb-6 shrink-0" />
+
+              <div className="flex items-center justify-between mb-8 border-b border-[#C9972A]/10 pb-4 shrink-0">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-[#C9972A]/10 flex items-center justify-center text-[#C9972A]">
+                    <List className="w-4 h-4" />
+                  </div>
+                  <h3 className="font-[family-name:var(--font-playfair)] text-xl font-black text-[#C9972A] tracking-tight">
+                    Table of Contents
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-[#FAF6EE]/80 hover:bg-white/10 active:scale-90 transition-all cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto pr-1">
+                <ul className="flex flex-col gap-5">
+                  {headings.map((item) => {
+                    const isActive = activeId === item.id;
+                    return (
+                      <li key={item.id}>
+                        <button
+                          onClick={() => handleScrollTo(item.id)}
+                          className={cn(
+                            'w-full text-left font-serif text-base font-medium transition-all duration-300 py-1 pl-4 border-l-2',
+                            isActive
+                              ? 'text-[#C9972A] border-[#C9972A] font-bold bg-[#C9972A]/5 translate-x-1'
+                              : 'text-[#FAF6EE]/70 border-[#C9972A]/10 hover:text-[#FAF6EE] hover:border-[#FAF6EE]/30'
+                          )}
+                          style={{ marginLeft: `${(item.level - 1) * 8}px` }}
+                        >
+                          {item.text}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-[#C9972A]/10 text-center shrink-0">
+                <p className="text-[10px] font-sans font-black text-[#FAF6EE]/40 uppercase tracking-widest">
+                  Naaz Book Depot Editorial • {progress}% Read Completed
+                </p>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
+

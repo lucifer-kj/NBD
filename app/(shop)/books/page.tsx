@@ -2,10 +2,14 @@ import React from 'react';
 import ProductCard from '@/components/product-card';
 import { getProducts } from '@/lib/shopify';
 import { ReshapedProduct } from '@/types/shopify';
+import { Metadata } from 'next';
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Authentic Islamic Books & Quran Editions | Naaz Book Depot Store',
   description: 'Buy authentic Islamic books online in India. Wide selection of Quran, Hadith, Tafsir, and Islamic literature from India\'s trusted publishing house since 1967.',
+  alternates: {
+    canonical: `${process.env.NEXT_PUBLIC_APP_URL}/books`,
+  },
 };
 
 export const revalidate = 3600;

@@ -17,7 +17,7 @@ export default async function WishlistPage() {
   const customerId = session?.customerId;
 
   if (!session) {
-    redirect('/api/auth/login');
+    redirect('/login');
   }
 
   let customer = null;

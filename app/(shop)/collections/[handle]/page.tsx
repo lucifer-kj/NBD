@@ -72,8 +72,42 @@ export default async function CollectionPage({ params }: PageProps) {
     notFound();
   }
 
+  const itemListJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: collection.title,
+    description: collection.description,
+    numberOfItems: collection.products.length,
+    itemListElement: collection.products.map((product, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      item: {
+        '@type': 'Product',
+        name: product.title,
+        description: product.description,
+        image: product.featuredImage?.url || product.images[0]?.url,
+        url: `${process.env.NEXT_PUBLIC_APP_URL}/products/${product.handle}`,
+        offers: {
+          '@type': 'AggregateOffer',
+          availability: product.availableForSale
+            ? 'https://schema.org/InStock'
+            : 'https://schema.org/OutOfStock',
+          priceCurrency: product.priceRange.minVariantPrice.currencyCode,
+          highPrice: product.priceRange.maxVariantPrice.amount,
+          lowPrice: product.priceRange.minVariantPrice.amount,
+        }
+      }
+    }))
+  };
+
   return (
     <div className="bg-[#FAF9F6] min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(itemListJsonLd)
+        }}
+      />
       {/* Premium Gradient Hero Header */}
       <div className="relative overflow-hidden bg-gradient-to-br from-[#0F3823] via-[#0A2618] to-[#05140C] text-white py-16 md:py-24 px-4">
         {/* Subtle Decorative Elements */}

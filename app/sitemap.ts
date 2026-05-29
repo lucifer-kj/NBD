@@ -7,16 +7,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (!baseUrl) {
     throw new Error('NEXT_PUBLIC_APP_URL is required to generate the sitemap');
   }
-  // 1. Static and Core Routes
   const staticRoutes = [
     '',
     '/about',
-    '/search',
-
-    '/login',
-    '/register',
+    '/books',
+    '/atar',
+    '/blog',
     '/contact',
-    '/faq',
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date().toISOString(),

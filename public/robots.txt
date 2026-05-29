@@ -1,5 +1,13 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /auth/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /account
+Disallow: /login
+Disallow: /signup
+Disallow: /search
 
 # Protect checkout, search, and dynamic auth APIs from aggressive AI bots
 User-agent: GPTBot

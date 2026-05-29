@@ -14,6 +14,7 @@ export interface BlogPost {
   tldr?: string;
   faqs?: { question: string; answer: string }[];
   recommendedProducts?: string[];
+  type?: string;
 }
 
 const postsDirectory = path.join(process.cwd(), 'content/blog');
@@ -83,6 +84,8 @@ function getBlogPostData(fullPath: string, slug: string): BlogPost {
     tldr?: string;
     faqs?: string;
     recommendedProducts?: string[];
+    type?: string;
+    "@type"?: string;
     [key: string]: string | string[] | null | undefined;
   }
   const metadata: RawMetadata = {};
@@ -95,7 +98,8 @@ function getBlogPostData(fullPath: string, slug: string): BlogPost {
     lines.forEach((line) => {
       const parts = line.split(':');
       if (parts.length >= 2) {
-        const key = parts[0].trim();
+        const rawKey = parts[0].trim();
+        const key = rawKey.replace(/^['"]|['"]$/g, '');
         const value = parts.slice(1).join(':').trim().replace(/^['"]|['"]$/g, '');
         if (key === 'tags' || key === 'recommendedProducts') {
           try {
@@ -146,6 +150,7 @@ function getBlogPostData(fullPath: string, slug: string): BlogPost {
       : (typeof metadata.recommendedProducts === 'string' && metadata.recommendedProducts
           ? (metadata.recommendedProducts as string).replace(/[\[\]]/g, '').split(',').map((t) => t.trim().replace(/^['"]|['"]$/g, ''))
           : undefined),
+    type: metadata.type || metadata["@type"] || undefined,
   };
 }
 
