@@ -68,6 +68,12 @@ function LoginFormContent() {
 
       if (res.url) {
         try {
+          const { trackLogin } = await import('@/lib/analytics');
+          trackLogin('credentials');
+        } catch (e) {
+          console.error('Failed to track login event:', e);
+        }
+        try {
           window.sessionStorage.setItem('naazbook-auth-toast', JSON.stringify({ message: 'Welcome back! You are signed in.', type: 'success' }));
         } catch {
           // ignore session storage failures
@@ -86,6 +92,12 @@ function LoginFormContent() {
   };
 
   const handleGoogleSignIn = async () => {
+    try {
+      const { trackLogin } = await import('@/lib/analytics');
+      trackLogin('google');
+    } catch (e) {
+      console.error('Failed to track login event:', e);
+    }
     try {
       window.sessionStorage.setItem('naazbook-auth-toast', JSON.stringify({ message: 'Welcome back! You are signed in.', type: 'success' }));
     } catch {

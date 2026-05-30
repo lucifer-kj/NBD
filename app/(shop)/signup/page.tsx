@@ -59,6 +59,12 @@ export default function SignupPage() {
       const data = await res.json();
 
       if (res.ok && data.success) {
+        try {
+          const { trackSignUp } = await import('@/lib/analytics');
+          trackSignUp('shopify');
+        } catch (e) {
+          console.error('Failed to track signup event:', e);
+        }
         // Unification auto-login: Sign in the user client-side via NextAuth!
         try {
           const loginRes = await signIn('credentials', {

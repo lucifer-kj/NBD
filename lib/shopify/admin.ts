@@ -258,7 +258,22 @@ export async function getCustomerById(id: string) {
   return res.body.data.customer || null;
 }
 
+export async function resolveCustomerGid(id: string): Promise<string> {
+  if (!id.startsWith('gid://shopify/Customer/')) {
+    if (id.includes('@')) {
+      const customer = await getCustomerByEmail(id);
+      if (customer) {
+        return customer.id;
+      }
+    } else {
+      return `gid://shopify/Customer/${id}`;
+    }
+  }
+  return id;
+}
+
 export async function getCustomerDetailsById(id: string): Promise<ReshapedAdminCustomer | null> {
+  const resolvedId = await resolveCustomerGid(id);
   const query = `
     query getCustomerDetailsById($id: ID!) {
       customer(id: $id) {
@@ -361,7 +376,7 @@ export async function getCustomerDetailsById(id: string): Promise<ReshapedAdminC
     data: { customer: AdminCustomer };
   }>({
     query,
-    variables: { id },
+    variables: { id: resolvedId },
   });
 
   const customer = res.body.data.customer;
@@ -554,6 +569,7 @@ export async function createCustomerViaAdmin(input: { email: string; firstName: 
 }
 
 export async function createCustomerAddressAdmin(customerId: string, address: unknown) {
+  const resolvedId = await resolveCustomerGid(customerId);
   const query = `
     mutation customerAddressCreate($customerId: ID!, $address: MailingAddressInput!) {
       customerAddressCreate(customerId: $customerId, address: $address) {
@@ -572,7 +588,7 @@ export async function createCustomerAddressAdmin(customerId: string, address: un
     data: { customerAddressCreate: { customerAddress: { id: string }, userErrors: ShopifyUserError[] } }
   }>({
     query,
-    variables: { customerId, address }
+    variables: { customerId: resolvedId, address }
   });
 
   return res.body.data.customerAddressCreate;
@@ -604,6 +620,7 @@ export async function updateCustomerAddressAdmin(customerId: string, addressId: 
 }
 
 export async function deleteCustomerAddressAdmin(customerId: string, addressId: string) {
+  const resolvedId = await resolveCustomerGid(customerId);
   const query = `
     mutation customerAddressDelete($id: ID!, $customerId: ID!) {
       customerAddressDelete(id: $id, customerId: $customerId) {
@@ -620,13 +637,14 @@ export async function deleteCustomerAddressAdmin(customerId: string, addressId: 
     data: { customerAddressDelete: { deletedCustomerAddressId: string, userErrors: ShopifyUserError[] } }
   }>({
     query,
-    variables: { id: addressId, customerId }
+    variables: { id: addressId, customerId: resolvedId }
   });
 
   return res.body.data.customerAddressDelete;
 }
 
 export async function updateDefaultAddressAdmin(customerId: string, addressId: string) {
+  const resolvedId = await resolveCustomerGid(customerId);
   const query = `
     mutation customerDefaultAddressUpdate($addressId: ID!, $customerId: ID!) {
       customerDefaultAddressUpdate(addressId: $addressId, customerId: $customerId) {
@@ -645,13 +663,14 @@ export async function updateDefaultAddressAdmin(customerId: string, addressId: s
     data: { customerDefaultAddressUpdate: { customer: { id: string }, userErrors: ShopifyUserError[] } }
   }>({
     query,
-    variables: { addressId, customerId }
+    variables: { addressId, customerId: resolvedId }
   });
 
   return res.body.data.customerDefaultAddressUpdate;
 }
 
 export async function setCustomerCart(customerId: string, cartId: string) {
+  const resolvedId = await resolveCustomerGid(customerId);
   const query = `
     mutation customerUpdate($input: CustomerInput!) {
       customerUpdate(input: $input) {
@@ -672,7 +691,7 @@ export async function setCustomerCart(customerId: string, cartId: string) {
     query,
     variables: {
       input: {
-        id: customerId,
+        id: resolvedId,
         metafields: [
           {
             namespace: 'custom',

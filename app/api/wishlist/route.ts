@@ -58,6 +58,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
+    let customerId = session.customerId;
+    if (customerId && !customerId.startsWith('gid://shopify/Customer/')) {
+      if (customerId.includes('@')) {
+        const { getCustomerByEmail } = await import('@/lib/shopify/admin');
+        const adminCustomer = await getCustomerByEmail(customerId);
+        if (adminCustomer) {
+          customerId = adminCustomer.id;
+        }
+      } else {
+        customerId = `gid://shopify/Customer/${customerId}`;
+      }
+    }
+
     const body = await req.json();
     const { variantIds } = body;
 
@@ -71,7 +84,7 @@ export async function POST(req: NextRequest) {
       variables: {
         metafields: [
           {
-            ownerId: session.customerId,
+            ownerId: customerId,
             namespace: 'wishlist',
             key: 'items',
             type: 'json',

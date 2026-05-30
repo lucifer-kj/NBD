@@ -63,7 +63,19 @@ export const authOptions: NextAuthOptions = {
           // Get the Shopify customer ID to store in NextAuth session
           const { getCustomerDetails } = await import('@/lib/shopify');
           const customer = await getCustomerDetails(token);
-          const customerId = customer?.id || null;
+          let customerId = customer?.id || null;
+          let customerName = customer?.firstName || null;
+
+          if (!customerId) {
+            debug.step('credentials_authorize_fallback', 'Storefront getCustomerDetails returned null, querying Admin API by email', { email });
+            const { getCustomerByEmail } = await import('@/lib/shopify/admin');
+            const adminCustomer = await getCustomerByEmail(email);
+            if (adminCustomer) {
+              customerId = adminCustomer.id;
+              customerName = adminCustomer.firstName || null;
+              debug.step('credentials_authorize_fallback_success', 'Resolved customerId via Admin API', { customerId });
+            }
+          }
 
           debug.step('credentials_authorize_success', 'Shopify login succeeded', { customerId });
           return { 
@@ -71,7 +83,7 @@ export const authOptions: NextAuthOptions = {
             email, 
             shopifyToken: token, 
             customerId,
-            name: customer?.firstName || null
+            name: customerName
           };
         } catch (e) {
           debug.error('credentials_authorize_error', e);
@@ -102,6 +114,16 @@ export const authOptions: NextAuthOptions = {
                 const { getCustomerDetails } = await import('@/lib/shopify');
                 const customer = await getCustomerDetails(shopifyToken);
                 token.customerId = customer?.id || null;
+              }
+
+              if (!token.customerId) {
+                debug.step('jwt_google_bridge_fallback', 'Storefront getCustomerDetails returned null for Google user, querying Admin API by email', { email });
+                const { getCustomerByEmail } = await import('@/lib/shopify/admin');
+                const adminCustomer = await getCustomerByEmail(email);
+                if (adminCustomer) {
+                  token.customerId = adminCustomer.id;
+                  debug.step('jwt_google_bridge_fallback_success', 'Resolved Google user customerId via Admin API', { customerId: adminCustomer.id });
+                }
               }
             }
           }
