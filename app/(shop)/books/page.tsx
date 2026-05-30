@@ -20,7 +20,7 @@ export default async function BooksPage() {
     // Fetch products with "Books" tag or from a "Books" collection
     // For now, we'll fetch all and filter, or just fetch with a query
     books = await getProducts({ 
-      query: 'tag:Books',
+      query: 'tag:"Islamic Books" OR tag:Books',
       first: 50 
     });
   } catch (error) {

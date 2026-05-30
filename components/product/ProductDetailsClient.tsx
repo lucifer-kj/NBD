@@ -9,11 +9,13 @@ import {
   Minus, 
   Plus, 
   ChevronRight, 
-  ShieldCheck, 
   Truck,
   ArrowRight,
   Maximize2,
-  X as CloseIcon
+  X as CloseIcon,
+  Award,
+  BookOpen,
+  Package
 } from 'lucide-react';
 import { ReshapedProduct } from '@/types/shopify';
 import { useCartStore } from '@/store/cart-store';
@@ -203,9 +205,20 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
         </h1>
         
         {/* Rating */}
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex items-center gap-4 mb-4">
           <StarRating rating={ratingValue} size="md" />
           <span className="text-sm text-gray-500">({ratingValue} • Judge.me Certified)</span>
+        </div>
+
+        {/* Naaz Authenticity Stamp */}
+        <div className="mb-6 flex items-center gap-3.5 p-3.5 rounded-2xl bg-gradient-to-r from-emerald-50/70 via-amber-50/40 to-emerald-50/30 border border-emerald-100 shadow-sm backdrop-blur-sm">
+          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20 flex-shrink-0">
+            <Award size={18} className="text-[var(--islamic-gold)]" />
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-wider text-[var(--islamic-gold)]">Naaz Authenticity Stamp</p>
+            <p className="text-xs font-bold text-emerald-950">Established 1967 • 59+ Years of Trusted Islamic Publishing Legacy</p>
+          </div>
         </div>
 
         {/* Price */}
@@ -353,19 +366,48 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-3 p-4 rounded-2xl bg-gray-50 border border-gray-100">
-              <Truck size={20} className="text-[var(--islamic-gold)]" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* 100% Original Prints */}
+            <div className="flex items-start gap-3.5 p-4 rounded-2xl bg-gradient-to-br from-emerald-50/20 via-white to-amber-50/10 border border-emerald-100/50 hover:border-amber-200/60 hover:shadow-sm transition-all duration-300 group">
+              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 border border-amber-500/20 group-hover:scale-105 transition-transform flex-shrink-0">
+                <Award size={18} className="text-[var(--islamic-gold)]" />
+              </div>
               <div className="text-xs">
-                <p className="font-bold text-gray-800">Free Delivery</p>
-                <p className="text-gray-500">Orders above ₹999</p>
+                <p className="font-bold text-emerald-950 font-headings mb-0.5">100% Original Prints</p>
+                <p className="text-gray-500 leading-relaxed font-sans">Direct from authorized publishers since 1967</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-4 rounded-2xl bg-gray-50 border border-gray-100">
-              <ShieldCheck size={20} className="text-[var(--islamic-gold)]" />
+
+            {/* Scholarly Verified Editions */}
+            <div className="flex items-start gap-3.5 p-4 rounded-2xl bg-gradient-to-br from-emerald-50/20 via-white to-amber-50/10 border border-emerald-100/50 hover:border-amber-200/60 hover:shadow-sm transition-all duration-300 group">
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 group-hover:scale-105 transition-transform flex-shrink-0">
+                <BookOpen size={18} className="text-[var(--islamic-green)]" />
+              </div>
               <div className="text-xs">
-                <p className="font-bold text-gray-800">Secure Payment</p>
-                <p className="text-gray-500">100% Protected</p>
+                <p className="font-bold text-emerald-950 font-headings mb-0.5">Scholarly Verified Editions</p>
+                <p className="text-gray-500 leading-relaxed font-sans">Verified exegeses & translations for maximum accuracy</p>
+              </div>
+            </div>
+
+            {/* Respectful Protective Packaging */}
+            <div className="flex items-start gap-3.5 p-4 rounded-2xl bg-gradient-to-br from-emerald-50/20 via-white to-amber-50/10 border border-emerald-100/50 hover:border-amber-200/60 hover:shadow-sm transition-all duration-300 group">
+              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 border border-amber-500/20 group-hover:scale-105 transition-transform flex-shrink-0">
+                <Package size={18} className="text-[var(--islamic-gold)]" />
+              </div>
+              <div className="text-xs">
+                <p className="font-bold text-emerald-950 font-headings mb-0.5">Respectful Protective Packaging</p>
+                <p className="text-gray-500 leading-relaxed font-sans">Heavy-duty protection to ensure sacred & literature pages arrive pristine</p>
+              </div>
+            </div>
+
+            {/* Fast Pan-India Shipping */}
+            <div className="flex items-start gap-3.5 p-4 rounded-2xl bg-gradient-to-br from-emerald-50/20 via-white to-amber-50/10 border border-emerald-100/50 hover:border-amber-200/60 hover:shadow-sm transition-all duration-300 group">
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 group-hover:scale-105 transition-transform flex-shrink-0">
+                <Truck size={18} className="text-[var(--islamic-green)]" />
+              </div>
+              <div className="text-xs">
+                <p className="font-bold text-emerald-950 font-headings mb-0.5">Fast Pan-India Shipping</p>
+                <p className="text-gray-500 leading-relaxed font-sans">Fully tracked premium logistics partners</p>
               </div>
             </div>
           </div>
