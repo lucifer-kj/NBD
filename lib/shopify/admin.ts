@@ -8,7 +8,7 @@ type AdminCustomer = {
   lastName: string;
   email: string;
   phone: string | null;
-  acceptsMarketing: boolean;
+  acceptsMarketing?: boolean;
   orders: Connection<AdminOrder>;
   metafields: Connection<Metafield>;
   addresses: Connection<MailingAddress>;
@@ -19,7 +19,9 @@ type AdminCustomer = {
 
 type AdminOrder = {
   id: string;
-  orderNumber: number;
+  orderNumber?: number;
+  number?: number;
+  name?: string;
   processedAt: string;
   financialStatus: string;
   displayFulfillmentStatus: string;
@@ -282,12 +284,12 @@ export async function getCustomerDetailsById(id: string): Promise<ReshapedAdminC
         lastName
         email
         phone
-        acceptsMarketing
         orders(first: 20, reverse: true) {
           edges {
             node {
               id
-              orderNumber
+              number
+              name
               processedAt
               financialStatus
               fulfillmentStatus: displayFulfillmentStatus
@@ -393,6 +395,7 @@ export async function getCustomerDetailsById(id: string): Promise<ReshapedAdminC
       edges: (customer.orders?.edges || []).filter(Boolean).map((edge: { node: AdminOrder }) => ({
         node: {
           ...edge.node,
+          orderNumber: edge.node.orderNumber || edge.node.number || (edge.node.name ? parseInt(edge.node.name.replace('#', '')) : 0),
           fulfillmentStatus: edge.node.displayFulfillmentStatus || 'UNFULFILLED',
           currentTotalPrice: edge.node.currentTotalPriceSet?.shopMoney || { amount: '0', currencyCode: 'INR' },
           totalPrice: edge.node.totalPriceSet?.shopMoney || edge.node.currentTotalPriceSet?.shopMoney || { amount: '0', currencyCode: 'INR' },
@@ -430,7 +433,8 @@ export async function getOrderById(orderId: string): Promise<ReshapedAdminOrder 
     query getOrderById($id: ID!) {
       order(id: $id) {
         id
-        orderNumber
+        number
+        name
         processedAt
         financialStatus
         displayFulfillmentStatus
@@ -503,6 +507,7 @@ export async function getOrderById(orderId: string): Promise<ReshapedAdminOrder 
   // Reshape to match Storefront API structure
   return {
     ...order,
+    orderNumber: order.orderNumber || order.number || (order.name ? parseInt(order.name.replace('#', '')) : 0),
     fulfillmentStatus: order.displayFulfillmentStatus,
     currentTotalPrice: order.currentTotalPriceSet?.shopMoney || { amount: '0', currencyCode: 'INR' },
     totalPrice: order.totalPriceSet?.shopMoney || order.currentTotalPriceSet?.shopMoney || { amount: '0', currencyCode: 'INR' },
