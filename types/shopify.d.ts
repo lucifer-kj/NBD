@@ -50,6 +50,8 @@ export type ProductVariant = {
   }[];
   price: Money;
   compareAtPrice: Money | null;
+  sku?: string;
+  barcode?: string;
   image?: Image;
 };
 

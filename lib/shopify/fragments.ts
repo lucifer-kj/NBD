@@ -4,6 +4,7 @@ export const productFragment = `
     handle
     availableForSale
     title
+    vendor
     description
     descriptionHtml
     options {
@@ -26,6 +27,8 @@ export const productFragment = `
         node {
           id
           title
+          sku
+          barcode
           availableForSale
           selectedOptions {
             name
