@@ -16,6 +16,7 @@ import { formatPrice } from "@/lib/utils";
 import DiscountCodeInput from "./cart/DiscountCodeInput";
 import ShippingProgressBar from "./cart/ShippingProgressBar";
 import { trackBeginCheckout } from "@/lib/analytics";
+import { getProductUrl } from "@/lib/url-helper";
 
 export default function CartDrawer() {
   const { 
@@ -165,7 +166,7 @@ export default function CartDrawer() {
                         <div className="flex-1 min-w-0">
                           <div className="font-semibold text-sm md:text-base mb-1 line-clamp-2 leading-snug">
                             <Link 
-                              href={`/products/${line.merchandise.product.handle}`} 
+                              href={getProductUrl(line.merchandise.product)} 
                               className="hover:text-[var(--islamic-green)] transition-colors" 
                               onClick={closeCartDrawer}
                             >

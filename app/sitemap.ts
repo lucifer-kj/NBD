@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { getProducts, getCollections, getPolicies } from '@/lib/shopify';
 import { getBlogPosts } from '@/lib/blog';
+import { getProductUrl } from '@/lib/url-helper';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
@@ -43,7 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // 2. Dynamic Product Routes
   const productRoutes = products.map((product) => ({
-    url: `${baseUrl}/products/${product.handle}`,
+    url: `${baseUrl}${getProductUrl(product)}`,
     lastModified: product.updatedAt 
       ? new Date(product.updatedAt).toISOString() 
       : new Date().toISOString(),

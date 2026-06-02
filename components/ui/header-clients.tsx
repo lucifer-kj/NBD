@@ -60,6 +60,9 @@ export function ProductsDropdown({ productCategories }: { productCategories: Pro
         className="flex items-center text-white/90 hover:text-[var(--islamic-gold)] transition-colors font-semibold text-base py-2"
         type="button"
         onClick={() => setIsOpen((v) => !v)}
+        aria-haspopup="true"
+        aria-expanded={isOpen}
+        aria-controls="products-dropdown-menu"
       >
         Products
         <ChevronDown size={16} className={`ml-1 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -67,6 +70,8 @@ export function ProductsDropdown({ productCategories }: { productCategories: Pro
       {isOpen && (
         <div
           ref={dropdownRef}
+          id="products-dropdown-menu"
+          role="menu"
           className="absolute top-full left-0 mt-1 w-64 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl border border-white/20 py-4 z-50 animate-in fade-in slide-in-from-top-2 duration-200"
         >
           <div className="px-4 py-2 border-b border-gray-100">
@@ -111,6 +116,8 @@ export function SearchBox() {
         <button 
           onClick={() => setIsExpanded(true)} 
           className="text-white/90 hover:text-[var(--islamic-gold)] transition-colors p-2"
+          aria-label="Open search box"
+          aria-expanded={isExpanded}
         >
           <Search size={24} />
         </button>
@@ -170,6 +177,7 @@ export function UserActions() {
     return (
       <Link
         href="/login"
+        aria-label="Account login"
         className="flex items-center gap-2 p-2 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--islamic-gold)]"
       >
         <User size={24} className="text-white/90 hover:text-[var(--islamic-gold)]" />
@@ -180,6 +188,7 @@ export function UserActions() {
   return (
     <Link
       href={isAuthenticated ? "/account" : "/login"}
+      aria-label={isAuthenticated ? `Go to account page for ${displayName}` : "Account login"}
       className="flex items-center gap-2 p-2 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--islamic-gold)]"
     >
       {isAuthenticated ? (
@@ -218,7 +227,12 @@ export function MobileMenu() {
 
   return (
     <>
-      <button onClick={() => setIsOpen(!isOpen)} className="lg:hidden text-white/90 hover:text-[var(--islamic-gold)] p-2">
+      <button 
+        onClick={() => setIsOpen(!isOpen)} 
+        className="lg:hidden text-white/90 hover:text-[var(--islamic-gold)] p-2"
+        aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
+        aria-expanded={isOpen}
+      >
         {isOpen ? <X size={24} /> : <Menu size={24} />}
       </button>
 

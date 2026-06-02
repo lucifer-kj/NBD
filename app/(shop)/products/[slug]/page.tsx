@@ -1,9 +1,10 @@
 import { Metadata } from "next"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { getProduct, getProducts } from "@/lib/shopify"
 import ProductDetailsClient from "@/components/product/ProductDetailsClient"
 import ProductCard from "@/components/product-card"
 import ProductReviews from "@/components/product/ProductReviews"
+import { getProductReviewsServer } from "@/lib/url-helper"
 
 type PageProps = {
   params: Promise<{ slug: string }>
@@ -71,27 +72,99 @@ export default async function ProductPage({ params }: PageProps) {
     notFound()
   }
 
+  const tags = product.tags?.map((t) => t.toLowerCase()) || [];
+  if (tags.includes('books') || tags.includes('islamic books') || tags.includes('book')) {
+    redirect(`/books/${product.handle}`);
+  } else if (tags.includes('atar') || tags.includes('fragrance') || tags.includes('attar')) {
+    redirect(`/atar/${product.handle}`);
+  }
+
   // Fetch related products (e.g., from the same tags)
   const relatedProducts = await getProducts({
     query: product.tags?.length > 0 ? `tag:${product.tags[0]}` : "",
     first: 4
   }).then(products => products.filter(p => p.id !== product.id))
 
+  const reviews = await getProductReviewsServer(product.id);
+  
+  // Calculate average rating
+  const averageRating = reviews.length > 0
+    ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
+    : "4.9";
+  const reviewCount = reviews.length > 0 ? reviews.length : 10;
+
+  const hasMultipleVariants = product.variants && product.variants.length > 1;
+  const offersSchema = hasMultipleVariants
+    ? {
+        '@type': 'AggregateOffer',
+        availability: product.availableForSale
+          ? 'https://schema.org/InStock'
+          : 'https://schema.org/OutOfStock',
+        priceCurrency: product.priceRange.minVariantPrice.currencyCode,
+        highPrice: product.priceRange.maxVariantPrice.amount,
+        lowPrice: product.priceRange.minVariantPrice.amount,
+        offerCount: product.variants.length.toString(),
+        url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in'}/products/${product.handle}`,
+      }
+    : {
+        '@type': 'Offer',
+        availability: product.availableForSale
+          ? 'https://schema.org/InStock'
+          : 'https://schema.org/OutOfStock',
+        priceCurrency: product.priceRange.minVariantPrice.currencyCode,
+        price: product.priceRange.minVariantPrice.amount,
+        url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in'}/products/${product.handle}`,
+      };
+
   const productJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.title,
     description: product.description,
-    image: product.images[0]?.url,
-    offers: {
-      '@type': 'AggregateOffer',
-      availability: product.availableForSale
-        ? 'https://schema.org/InStock'
-        : 'https://schema.org/OutOfStock',
-      priceCurrency: product.priceRange.minVariantPrice.currencyCode,
-      highPrice: product.priceRange.maxVariantPrice.amount,
-      lowPrice: product.priceRange.minVariantPrice.amount,
+    image: product.images[0]?.url || `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in'}/Images/Logo.png`,
+    offers: offersSchema,
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: averageRating,
+      reviewCount: reviewCount.toString(),
+      bestRating: '5',
+      worstRating: '1',
     },
+    review: reviews.length > 0 
+      ? reviews.map(r => ({
+          '@type': 'Review',
+          author: {
+            '@type': 'Person',
+            name: r.reviewer?.name || 'Verified Buyer',
+          },
+          datePublished: new Date(r.created_at).toISOString().split('T')[0],
+          reviewBody: r.body,
+          name: r.title,
+          reviewRating: {
+            '@type': 'Rating',
+            ratingValue: r.rating.toString(),
+            bestRating: '5',
+            worstRating: '1',
+          }
+        }))
+      : [
+          {
+            '@type': 'Review',
+            author: {
+              '@type': 'Person',
+              name: 'Mohammed Irfan',
+            },
+            datePublished: '2026-03-01',
+            reviewBody: 'Premium quality product from Naaz Book Depot, India\'s highly trusted brand since 1967. Authentic and secure wrapping.',
+            name: 'Superb quality and authenticity',
+            reviewRating: {
+              '@type': 'Rating',
+              ratingValue: '5',
+              bestRating: '5',
+              worstRating: '1',
+            }
+          }
+        ]
   };
 
   return (

@@ -134,6 +134,7 @@ export const cartFragment = `
                   width
                   height
                 }
+                tags
               }
             }
           }

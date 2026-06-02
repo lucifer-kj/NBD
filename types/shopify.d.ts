@@ -95,6 +95,7 @@ export type CartLine = {
       handle: string;
       title: string;
       featuredImage: Maybe<Image>;
+      tags?: string[];
     };
   };
 };

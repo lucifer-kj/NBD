@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getBlogPosts } from '@/lib/blog';
 import { getProducts, getCollections } from '@/lib/shopify';
+import { getProductUrl } from '@/lib/url-helper';
 
 export const revalidate = 3600; // Cache the feed for 1 hour
 
@@ -56,7 +57,7 @@ export async function GET() {
       
       feedItems.push({
         title: `${product.title} (${formattedPrice})`,
-        link: `${baseUrl}/products/${product.handle}`,
+        link: `${baseUrl}${getProductUrl(product)}`,
         description: product.description || `Buy authentic ${product.title} from Naaz Book Depot Kolkata. Price: ${formattedPrice}.`,
         pubDate: new Date(product.updatedAt || new Date()).toUTCString(),
         author: 'Naaz Book Depot',

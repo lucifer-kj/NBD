@@ -16,6 +16,7 @@ import { useWishlist } from "@/hooks/use-wishlist";
 import { formatPrice } from "@/lib/utils";
 import { ReshapedProduct } from "@/types/shopify";
 import { trackAddToCart } from "@/lib/analytics";
+import { getProductUrl } from "@/lib/url-helper";
 
 interface ProductCardProps {
   product: ReshapedProduct;
@@ -64,6 +65,7 @@ export default function ProductCard({
 
   // Stock status
   const inStock = product.availableForSale;
+  const productUrl = getProductUrl(product);
 
   return (
     <motion.div
@@ -94,7 +96,7 @@ export default function ProductCard({
         )}
 
         {/* Image Section */}
-        <Link href={`/products/${product.handle}`} className="block relative aspect-[4/3] overflow-hidden rounded-t-2xl">
+        <Link href={productUrl} className="block relative aspect-[4/3] overflow-hidden rounded-t-2xl">
           <Image
             src={product.featuredImage?.url || "/Images/Logo.png"}
             alt={imageAlt}
@@ -112,10 +114,10 @@ export default function ProductCard({
             </span>
           </div>
         </Link>
-
+ 
         <CardContent className="flex flex-col flex-1 p-5 md:p-6 bg-white/50 relative z-10">
           <div className="mb-auto">
-            <Link href={`/products/${product.handle}`} className="block mb-2 group-hover:text-[var(--islamic-gold)] transition-colors duration-300">
+            <Link href={productUrl} className="block mb-2 group-hover:text-[var(--islamic-gold)] transition-colors duration-300">
               <h3 className="text-base md:text-lg font-bold text-[var(--charcoal)] line-clamp-2 leading-snug">
                 {product.title}
               </h3>

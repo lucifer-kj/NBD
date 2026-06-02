@@ -35,31 +35,34 @@ export function BlogToc({ headings, title }: BlogTocProps) {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
 
   // Group headings hierarchically (Level 3 items are categorized under their nearest preceding Level 1/2 parent)
-  const sections: TocSection[] = [];
-  let currentSection: TocSection | null = null;
+  const sections = React.useMemo(() => {
+    const secs: TocSection[] = [];
+    let currentSection: TocSection | null = null;
 
-  headings.forEach((h) => {
-    if (h.level === 1 || h.level === 2) {
-      currentSection = {
-        id: h.id,
-        text: h.text,
-        level: h.level,
-        subItems: [],
-      };
-      sections.push(currentSection);
-    } else if (h.level === 3) {
-      if (currentSection) {
-        currentSection.subItems.push(h);
-      } else {
-        sections.push({
+    headings.forEach((h) => {
+      if (h.level === 1 || h.level === 2) {
+        currentSection = {
           id: h.id,
           text: h.text,
           level: h.level,
           subItems: [],
-        });
+        };
+        secs.push(currentSection);
+      } else if (h.level === 3) {
+        if (currentSection) {
+          currentSection.subItems.push(h);
+        } else {
+          secs.push({
+            id: h.id,
+            text: h.text,
+            level: h.level,
+            subItems: [],
+          });
+        }
       }
-    }
-  });
+    });
+    return secs;
+  }, [headings]);
 
   useEffect(() => {
     if (headings.length === 0) return;
@@ -102,7 +105,7 @@ export function BlogToc({ headings, title }: BlogTocProps) {
         [activeSec.id]: true,
       }));
     }
-  }, [activeId]);
+  }, [activeId, sections]);
 
   const handleScrollTo = (id: string) => {
     const element = document.getElementById(id);

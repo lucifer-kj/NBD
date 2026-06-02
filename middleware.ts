@@ -5,6 +5,19 @@ import { getToken } from 'next-auth/jwt';
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Enforce protocol (HTTPS) and canonical host (www.naazbook.in) in production
+  if (process.env.NODE_ENV === 'production') {
+    const host = request.headers.get('host') || '';
+    const proto = request.headers.get('x-forwarded-proto') || 'https';
+    const canonicalBase = process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in';
+    const canonicalUrlObj = new URL(canonicalBase);
+    
+    if (host !== canonicalUrlObj.host || proto !== canonicalUrlObj.protocol.replace(':', '')) {
+      const targetUrl = new URL(request.nextUrl.pathname + request.nextUrl.search, canonicalBase);
+      return NextResponse.redirect(targetUrl, 301);
+    }
+  }
+
   // Check authentication status using NextAuth JWE token directly
   let isAuthenticated = false;
   try {

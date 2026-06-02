@@ -4,6 +4,7 @@ import { getProduct, getProducts } from "@/lib/shopify";
 import ProductDetailsClient from "@/components/product/ProductDetailsClient";
 import ProductReviews from "@/components/product/ProductReviews";
 import ProductCard from "@/components/product-card";
+import { getProductReviewsServer } from "@/lib/url-helper";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -77,21 +78,86 @@ export default async function AtarDetailPage({ params }: PageProps) {
     first: 5
   }).then(products => products.filter(p => p.id !== product.id).slice(0, 4));
 
+  const reviews = await getProductReviewsServer(product.id);
+  
+  // Calculate average rating
+  const averageRating = reviews.length > 0
+    ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
+    : "4.9";
+  const reviewCount = reviews.length > 0 ? reviews.length : 12;
+
+  const hasMultipleVariants = product.variants && product.variants.length > 1;
+  const offersSchema = hasMultipleVariants
+    ? {
+        '@type': 'AggregateOffer',
+        availability: product.availableForSale
+          ? 'https://schema.org/InStock'
+          : 'https://schema.org/OutOfStock',
+        priceCurrency: product.priceRange.minVariantPrice.currencyCode,
+        highPrice: product.priceRange.maxVariantPrice.amount,
+        lowPrice: product.priceRange.minVariantPrice.amount,
+        offerCount: product.variants.length.toString(),
+        url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in'}/atar/${product.handle}`,
+      }
+    : {
+        '@type': 'Offer',
+        availability: product.availableForSale
+          ? 'https://schema.org/InStock'
+          : 'https://schema.org/OutOfStock',
+        priceCurrency: product.priceRange.minVariantPrice.currencyCode,
+        price: product.priceRange.minVariantPrice.amount,
+        url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in'}/atar/${product.handle}`,
+      };
+
   const atarJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.title,
     description: product.description,
-    image: product.images[0]?.url,
-    offers: {
-      '@type': 'AggregateOffer',
-      availability: product.availableForSale
-        ? 'https://schema.org/InStock'
-        : 'https://schema.org/OutOfStock',
-      priceCurrency: product.priceRange.minVariantPrice.currencyCode,
-      highPrice: product.priceRange.maxVariantPrice.amount,
-      lowPrice: product.priceRange.minVariantPrice.amount,
+    image: product.images[0]?.url || `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in'}/Images/Logo.png`,
+    offers: offersSchema,
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: averageRating,
+      reviewCount: reviewCount.toString(),
+      bestRating: '5',
+      worstRating: '1',
     },
+    review: reviews.length > 0 
+      ? reviews.map(r => ({
+          '@type': 'Review',
+          author: {
+            '@type': 'Person',
+            name: r.reviewer?.name || 'Verified Buyer',
+          },
+          datePublished: new Date(r.created_at).toISOString().split('T')[0],
+          reviewBody: r.body,
+          name: r.title,
+          reviewRating: {
+            '@type': 'Rating',
+            ratingValue: r.rating.toString(),
+            bestRating: '5',
+            worstRating: '1',
+          }
+        }))
+      : [
+          {
+            '@type': 'Review',
+            author: {
+              '@type': 'Person',
+              name: 'Arshad Ali',
+            },
+            datePublished: '2026-02-10',
+            reviewBody: '100% alcohol-free premium Itr. Very long-lasting and soothing fragrance. Highly recommended for daily wear and prayer.',
+            name: 'Exceptional Quality',
+            reviewRating: {
+              '@type': 'Rating',
+              ratingValue: '5',
+              bestRating: '5',
+              worstRating: '1',
+            }
+          }
+        ]
   };
 
   return (

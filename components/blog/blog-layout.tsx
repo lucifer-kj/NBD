@@ -16,6 +16,7 @@ import { MarkdownRenderer } from './markdown-renderer';
 import { BlogPost } from '@/lib/blog';
 import { ReshapedProduct } from '@/types/shopify';
 import { formatPrice } from '@/lib/utils';
+import { getProductUrl } from '@/lib/url-helper';
 
 // Load isolated Google Fonts to completely match the mock UI/UX style without leaking into other pages
 const playfair = Playfair_Display({
@@ -230,7 +231,7 @@ export function BlogLayout({
                   >
                     <div>
                       <Link 
-                        href={`/products/${product.handle}`}
+                        href={getProductUrl(product)}
                         className="relative w-full aspect-[3/4] mb-4 flex items-center justify-center bg-gray-50 overflow-hidden shadow-sm border border-[#C9972A]/5 group-hover:shadow-md transition-shadow duration-300 block"
                       >
                         <Image 
@@ -245,13 +246,13 @@ export function BlogLayout({
                           {product.vendor || 'NAAZ EDITIONS'}
                         </span>
                         <h4 className="font-[family-name:var(--font-lora)] font-semibold text-[#1B3A2D] text-lg leading-snug h-12 overflow-hidden mb-2 group-hover:text-[#C9972A] transition-colors">
-                          <Link href={`/products/${product.handle}`}>{product.title}</Link>
+                          <Link href={getProductUrl(product)}>{product.title}</Link>
                         </h4>
                         <p className="font-[family-name:var(--font-lora)] font-bold text-[#1B3A2D] text-xl">{formattedPriceStr}</p>
                       </div>
                     </div>
                     <Link 
-                      href={`/products/${product.handle}`}
+                      href={getProductUrl(product)}
                       className="w-full py-3 bg-[#1B3A2D] text-[#FAF6EE] font-sans text-xs font-bold tracking-widest transition-all hover:bg-[#C9972A] hover:text-[#1B3A2D] text-center uppercase cursor-pointer"
                     >
                       VIEW BOOK

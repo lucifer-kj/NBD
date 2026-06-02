@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { getCollectionByHandle, getCollections } from '@/lib/shopify';
 import ProductCard from '@/components/product-card';
 import Image from 'next/image';
+import { getProductUrl } from '@/lib/url-helper';
 
 type PageProps = {
   params: Promise<{ handle: string }>;
@@ -86,7 +87,7 @@ export default async function CollectionPage({ params }: PageProps) {
         name: product.title,
         description: product.description,
         image: product.featuredImage?.url || product.images[0]?.url,
-        url: `${process.env.NEXT_PUBLIC_APP_URL}/products/${product.handle}`,
+        url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in'}${getProductUrl(product)}`,
         offers: {
           '@type': 'AggregateOffer',
           availability: product.availableForSale

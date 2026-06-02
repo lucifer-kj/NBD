@@ -158,67 +158,6 @@ export default function RootLayout({
             })
           }}
         />
-
-        {/* FAQ Schema */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "FAQPage",
-              "mainEntity": [
-                {
-                  "@type": "Question",
-                  "name": "What types of Islamic books does Naaz Book Depot sell?",
-                  "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "Naaz Book Depot stocks a wide range of Islamic books including Quran editions in Arabic, Urdu, English and Bengali, Hadith collections, Tafsir volumes, Fiqh books, Islamic history, children's Islamic books, and more. We also stock premium Attar and handcrafted Rehals (Quran stands)."
-                  }
-                },
-                {
-                  "@type": "Question",
-                  "name": "Does Naaz Book Depot deliver Islamic books across India?",
-                  "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "Yes, Naaz Book Depot ships Islamic books and products across India. You can place an order online through our website or contact us via WhatsApp at +91 91634 31395."
-                  }
-                },
-                {
-                  "@type": "Question",
-                  "name": "How long has Naaz Book Depot been in business?",
-                  "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "Naaz Book Depot was established in 1967 in Kolkata, West Bengal. We have been serving the Muslim community for over 57 years."
-                  }
-                },
-                {
-                  "@type": "Question",
-                  "name": "Are the Quran copies sold by Naaz Book Depot authentic?",
-                  "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "Yes. All Quran editions sold by Naaz Book Depot are sourced from verified, authentic publishers. We have curated our collection over decades to ensure scholarly authenticity and print quality."
-                  }
-                },
-                {
-                  "@type": "Question",
-                  "name": "Is the Attar sold by Naaz Book Depot alcohol-free?",
-                  "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "Yes. All Attar (Itr) sold at Naaz Book Depot is 100% alcohol-free, natural, and suitable for use before prayer."
-                  }
-                },
-                {
-                  "@type": "Question",
-                  "name": "Where is Naaz Book Depot located?",
-                  "acceptedAnswer": {
-                    "@type": "Answer",
-                    "text": "Naaz Book Depot is located at 1, Ismail Madani Lane, Kolkata, West Bengal, India. You can also reach us by phone at 033-2235-0051 or on WhatsApp."
-                  }
-                }
-              ]
-            })
-          }}
-        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

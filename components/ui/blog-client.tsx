@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Share2, Link2, List, X, ShoppingCart, BookOpen, ShieldCheck, Plus, Minus } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { getProductUrl } from '@/lib/url-helper';
 import { useCartStore } from '@/store/cart-store';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatPrice, cn } from '@/lib/utils';
@@ -369,7 +370,7 @@ export function InlineProductCard({ product }: { product: ReshapedProduct }) {
       <div className="flex flex-col sm:flex-row gap-6 items-start">
         {/* Cover Image */}
         <Link 
-          href={`/products/${product.handle}`}
+          href={getProductUrl(product)}
           className="relative w-28 h-40 rounded-2xl overflow-hidden shadow-md border border-gray-100/80 flex-shrink-0 bg-white group-hover:shadow-lg transition-shadow duration-300 block"
         >
           <Image 
@@ -396,7 +397,7 @@ export function InlineProductCard({ product }: { product: ReshapedProduct }) {
             </div>
 
             <h4 className="font-headings font-bold text-lg md:text-xl text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors line-clamp-2 leading-snug">
-              <Link href={`/products/${product.handle}`}>
+              <Link href={getProductUrl(product)}>
                 {product.title}
               </Link>
             </h4>
@@ -555,7 +556,7 @@ export function InlineProductBadge({ product }: { product: ReshapedProduct }) {
 
               <div className="flex items-center gap-2 mt-2">
                 <Link
-                  href={`/products/${product.handle}`}
+                  href={getProductUrl(product)}
                   className="px-2 py-1.5 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors text-[9px] font-bold uppercase tracking-wider rounded-xl font-sans"
                 >
                   View

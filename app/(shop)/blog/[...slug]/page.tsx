@@ -4,6 +4,7 @@ import { getBlogPostBySlug, getBlogPosts } from '@/lib/blog';
 import { getProduct } from '@/lib/shopify';
 import { ReshapedProduct } from '@/types/shopify';
 import { BlogLayout } from '@/components/blog/blog-layout';
+import { getProductUrl } from '@/lib/url-helper';
 
 interface BlogPostPageProps {
   params: Promise<{
@@ -199,7 +200,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       articleEntity.about = recommendedProductsList.map((prod) => ({
         "@type": "Product",
         "name": prod.title,
-        "url": `${siteUrl}/products/${prod.handle}`,
+        "url": `${siteUrl}${getProductUrl(prod)}`,
         "image": prod.images?.[0]?.url || `${siteUrl}/Images/Books.jpeg`,
         "description": prod.description
       }));
