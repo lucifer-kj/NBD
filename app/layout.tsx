@@ -9,6 +9,7 @@ import { AuthProvider } from "@/components/providers/auth-provider";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import AnimatedLayoutClient from "@/components/providers/animated-layout-client";
 import RoutePrefetcher from "@/components/providers/route-prefetch";
+import GoogleOneTap from "@/components/providers/google-onetap";
 
 import { ToastProvider } from "@/components/ui/toast"
 import WhatsAppButton from "@/components/ui/whatsapp-button";
@@ -174,6 +175,7 @@ export default function RootLayout({
         </noscript>
         <ToastProvider>
           <AuthProvider>
+            <GoogleOneTap />
             <ClientRoot>
               <GDPRScriptProvider>
                 <div className="min-h-screen flex flex-col">

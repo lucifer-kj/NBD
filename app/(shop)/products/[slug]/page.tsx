@@ -91,7 +91,6 @@ export default async function ProductPage({ params }: PageProps) {
   const averageRating = reviews.length > 0
     ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
     : "4.9";
-  const reviewCount = reviews.length > 0 ? reviews.length : 10;
 
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in';
   const baseSiteUrl = siteUrl.endsWith('/') ? siteUrl.slice(0, -1) : siteUrl;
@@ -129,7 +128,7 @@ export default async function ProductPage({ params }: PageProps) {
         },
       };
 
-  const productJsonLd: Record<string, any> = {
+  const productJsonLd: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.title,

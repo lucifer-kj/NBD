@@ -18,7 +18,8 @@ import {
   customerRecoverMutation,
   customerResetByUrlMutation,
   setMetafieldsMutation,
-  checkoutCustomerAssociateV2Mutation
+  checkoutCustomerAssociateV2Mutation,
+  customerAccessTokenRenewMutation
 } from './mutations';
 import {
   Product,
@@ -476,6 +477,30 @@ export async function logoutCustomer(customerAccessToken: string): Promise<boole
     cache: 'no-store'
   });
   return !res.body.data.customerAccessTokenDelete.userErrors.length;
+}
+
+export async function renewCustomerToken(customerAccessToken: string): Promise<CustomerAccessToken | { errors: string[] }> {
+  const res = await shopifyFetch<{
+    data: {
+      customerAccessTokenRenew: {
+        customerAccessToken: CustomerAccessToken;
+        userErrors: { message: string }[];
+      };
+    };
+  }>({
+    query: customerAccessTokenRenewMutation,
+    variables: { customerAccessToken },
+    cache: 'no-store'
+  });
+
+  const payload = res.body.data.customerAccessTokenRenew;
+  if (!payload) {
+    return { errors: ['Failed to renew customer token'] };
+  }
+  if (payload.userErrors && payload.userErrors.length > 0) {
+    return { errors: payload.userErrors.map((e: { message: string }) => e.message) };
+  }
+  return payload.customerAccessToken;
 }
 
 export async function createCustomer(input: Record<string, unknown>): Promise<Customer | { errors: string[] }> {

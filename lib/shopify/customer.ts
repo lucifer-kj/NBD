@@ -1,7 +1,8 @@
 import { loginCustomer, createCustomer } from './index';
 import { createDebug } from '@/lib/auth-debug';
+import type { CustomerAccessToken } from '../../types/shopify';
 
-export async function loginShopifyCustomer(email: string, password: string): Promise<string | null> {
+export async function loginShopifyCustomer(email: string, password: string): Promise<CustomerAccessToken | null> {
   const debug = createDebug('loginShopifyCustomer');
   try {
     debug.step('start', 'Calling loginCustomer');
@@ -11,9 +12,11 @@ export async function loginShopifyCustomer(email: string, password: string): Pro
       debug.step('user_errors', 'Shopify returned user errors', res.errors);
       return null;
     }
-    const token = 'accessToken' in res ? res.accessToken : null;
-    debug.step('done', 'loginShopifyCustomer completed', { hasToken: !!token });
-    return token;
+    if ('accessToken' in res) {
+      debug.step('done', 'loginShopifyCustomer completed', { hasToken: true });
+      return res as CustomerAccessToken;
+    }
+    return null;
   } catch (e) {
     debug.error('exception', e);
     return null;
@@ -41,12 +44,12 @@ export function generateDeterministicPassword(email: string) {
   return `${salt}_${Buffer.from(email).toString('base64')}`;
 }
 
-export async function getOrCreateShopifyCustomer({ email, firstName }: { email: string; firstName?: string }): Promise<string | null> {
+export async function getOrCreateShopifyCustomer({ email, firstName }: { email: string; firstName?: string }): Promise<CustomerAccessToken | null> {
   const password = generateDeterministicPassword(email);
 
   // Try to login first
-  let token = await loginShopifyCustomer(email, password);
-  if (token) return token;
+  let tokenObj = await loginShopifyCustomer(email, password);
+  if (tokenObj) return tokenObj;
 
   // Create the customer and retry
   try {
@@ -57,6 +60,6 @@ export async function getOrCreateShopifyCustomer({ email, firstName }: { email: 
   }
 
   // Retry login after creation
-  token = await loginShopifyCustomer(email, password);
-  return token;
+  tokenObj = await loginShopifyCustomer(email, password);
+  return tokenObj;
 }

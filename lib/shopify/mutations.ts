@@ -93,6 +93,21 @@ export const customerAccessTokenDeleteMutation = `
   }
 `;
 
+export const customerAccessTokenRenewMutation = `
+  mutation customerAccessTokenRenew($customerAccessToken: String!) {
+    customerAccessTokenRenew(customerAccessToken: $customerAccessToken) {
+      customerAccessToken {
+        accessToken
+        expiresAt
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`;
+
 export const customerCreateMutation = `
   mutation customerCreate($input: CustomerCreateInput!) {
     customerCreate(input: $input) {
