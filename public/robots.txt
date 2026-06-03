@@ -1,6 +1,4 @@
 User-agent: *
-User-agent: GPTBot
-User-agent: ClaudeBot
 Allow: /
 Disallow: /api/
 Disallow: /auth/
@@ -10,5 +8,18 @@ Disallow: /account
 Disallow: /login
 Disallow: /signup
 Disallow: /search
+
+# Protect checkout, search, and dynamic auth APIs from aggressive AI bots
+User-agent: GPTBot
+Disallow: /api/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /account
+
+User-agent: ClaudeBot
+Disallow: /api/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /account
 
 Sitemap: https://www.naazbook.in/sitemap.xml
