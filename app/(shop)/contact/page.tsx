@@ -76,8 +76,67 @@ const faqs = [
 ];
 
 export default function FAQPage() {
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in';
+  const baseSiteUrl = siteUrl.endsWith('/') ? siteUrl.slice(0, -1) : siteUrl;
+
+  const faqList = faqs.flatMap((group) =>
+    group.items.map((item) => ({
+      "@type": "Question",
+      "name": item.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": item.answer,
+      },
+    }))
+  );
+
+  const contactSchema = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "ContactPage",
+        "@id": `${baseSiteUrl}/contact#webpage`,
+        "url": `${baseSiteUrl}/contact`,
+        "name": "Contact & FAQ | Naaz Book Depot",
+        "description": "Find answers to common questions about ordering Islamic books, Qur'an, Atar, shipping, returns, and more at Naaz Book Depot.",
+        "isPartOf": {
+          "@type": "WebSite",
+          "@id": `${baseSiteUrl}/#website`,
+          "url": baseSiteUrl,
+          "name": "Naaz Book Depot"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${baseSiteUrl}/contact#faq`,
+        "mainEntity": faqList
+      },
+      {
+        "@type": "LocalBusiness",
+        "@id": `${baseSiteUrl}/#localbusiness`,
+        "name": "Naaz Book Depot",
+        "image": `${baseSiteUrl}/Images/Logo.png`,
+        "telephone": "+919051085118",
+        "email": "naazgroupofficial@gmail.com",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Kolkata",
+          "addressLocality": "Kolkata",
+          "addressRegion": "West Bengal",
+          "postalCode": "700001",
+          "addressCountry": "IN"
+        },
+        "url": baseSiteUrl
+      }
+    ]
+  };
+
   return (
     <div className="bg-white min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(contactSchema) }}
+      />
       {/* Hero Header */}
       <div className="bg-[var(--islamic-green-dark)] py-20 px-4 text-center relative overflow-hidden">
         <div className="islamic-pattern opacity-10" />

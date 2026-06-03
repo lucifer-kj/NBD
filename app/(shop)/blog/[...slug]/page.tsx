@@ -125,10 +125,25 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     [key: string]: unknown;
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL;
-  if (!siteUrl) {
-    throw new Error('NEXT_PUBLIC_APP_URL is required for blog schema generation');
-  }
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in';
+  const baseSiteUrl = siteUrl.endsWith('/') ? siteUrl.slice(0, -1) : siteUrl;
+
+  const getAbsoluteUrl = (pathStr: string) => {
+    if (!pathStr) return '';
+    if (pathStr.startsWith('http')) return pathStr;
+    const cleanPath = pathStr.startsWith('/') ? pathStr : `/${pathStr}`;
+    return `${baseSiteUrl}${cleanPath}`;
+  };
+
+  const formatDateISO = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr);
+      if (!isNaN(d.getTime())) {
+        return d.toISOString();
+      }
+    } catch {}
+    return dateStr;
+  };
 
   // Graph Schema.org implementation (combining Breadcrumb + Article for search crawler optimization)
   const graphSchema = {
@@ -136,40 +151,40 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     "@graph": [
       {
         "@type": "BreadcrumbList",
-        "@id": `${siteUrl}/blog/${post.slug}#breadcrumb`,
+        "@id": getAbsoluteUrl(`/blog/${post.slug}#breadcrumb`),
         "itemListElement": [
           {
             "@type": "ListItem",
             "position": 1,
             "name": "Home",
-            "item": siteUrl
+            "item": baseSiteUrl
           },
           {
             "@type": "ListItem",
             "position": 2,
             "name": "Blog",
-            "item": `${siteUrl}/blog`
+            "item": getAbsoluteUrl('/blog')
           },
           {
             "@type": "ListItem",
             "position": 3,
             "name": post.title,
-            "item": `${siteUrl}/blog/${post.slug}`
+            "item": getAbsoluteUrl(`/blog/${post.slug}`)
           }
         ]
       },
       {
         "@type": "BlogPosting",
-        "@id": `${siteUrl}/blog/${post.slug}#article`,
+        "@id": getAbsoluteUrl(`/blog/${post.slug}#article`),
         "isPartOf": {
           "@type": "WebPage",
-          "@id": `${siteUrl}/blog/${post.slug}`
+          "@id": getAbsoluteUrl(`/blog/${post.slug}`)
         },
         "headline": post.title,
         "description": post.excerpt,
-        "image": post.image ? `${siteUrl}${post.image}` : `${siteUrl}/Images/Books.jpeg`,
-        "datePublished": post.publishedAt,
-        "dateModified": post.lastModified,
+        "image": post.image ? getAbsoluteUrl(post.image) : getAbsoluteUrl('/Images/Books.jpeg'),
+        "datePublished": formatDateISO(post.publishedAt),
+        "dateModified": formatDateISO(post.lastModified),
         "author": {
           "@type": "Person",
           "name": post.author
@@ -177,13 +192,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         "publisher": {
           "@type": "Organization",
           "name": "Naaz Book Depot",
-          "url": siteUrl,
+          "url": baseSiteUrl,
           "logo": {
             "@type": "ImageObject",
-            "url": `${siteUrl}/Images/Logo.png`
+            "url": getAbsoluteUrl('/Images/Logo.png')
           }
         },
-        "mainEntityOfPage": `${siteUrl}/blog/${post.slug}`,
+        "mainEntityOfPage": getAbsoluteUrl(`/blog/${post.slug}`),
         "wordCount": wordCount,
         "timeRequired": `PT${readingTime}M`
       }
@@ -200,8 +215,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       articleEntity.about = recommendedProductsList.map((prod) => ({
         "@type": "Product",
         "name": prod.title,
-        "url": `${siteUrl}${getProductUrl(prod)}`,
-        "image": prod.images?.[0]?.url || `${siteUrl}/Images/Books.jpeg`,
+        "url": getAbsoluteUrl(getProductUrl(prod)),
+        "image": prod.images?.[0]?.url || getAbsoluteUrl('/Images/Books.jpeg'),
         "description": prod.description
       }));
     }
@@ -211,18 +226,18 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   if (post.type === 'Book') {
     graphSchema["@graph"].push({
       "@type": "Book",
-      "@id": `${siteUrl}/blog/${post.slug}#book`,
+      "@id": getAbsoluteUrl(`/blog/${post.slug}#book`),
       "name": post.title,
       "description": post.excerpt,
-      "image": post.image ? `${siteUrl}${post.image}` : `${siteUrl}/Images/Books.jpeg`,
+      "image": post.image ? getAbsoluteUrl(post.image) : getAbsoluteUrl('/Images/Books.jpeg'),
       "inLanguage": post.tags?.includes('urdu') ? 'ur' : (post.tags?.includes('bengali') ? 'bn' : 'en'),
       "publisher": {
         "@type": "Organization",
         "name": "Naaz Book Depot",
-        "url": siteUrl,
+        "url": baseSiteUrl,
         "logo": {
           "@type": "ImageObject",
-          "url": `${siteUrl}/Images/Logo.png`
+          "url": getAbsoluteUrl('/Images/Logo.png')
         }
       },
       "author": {
@@ -236,7 +251,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   if (post.faqs && post.faqs.length > 0) {
     graphSchema["@graph"].push({
       "@type": "FAQPage",
-      "@id": `${siteUrl}/blog/${post.slug}#faq`,
+      "@id": getAbsoluteUrl(`/blog/${post.slug}#faq`),
       "mainEntity": post.faqs.map((faq) => ({
         "@type": "Question",
         "name": faq.question,

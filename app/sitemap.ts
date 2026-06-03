@@ -3,6 +3,8 @@ import { getProducts, getCollections, getPolicies } from '@/lib/shopify';
 import { getBlogPosts } from '@/lib/blog';
 import { getProductUrl } from '@/lib/url-helper';
 
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
   if (!baseUrl) {

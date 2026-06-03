@@ -25,12 +25,20 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Validate HMAC
-    const genHash = crypto
-      .createHmac("sha256", process.env.SHOPIFY_WEBHOOK_SECRET!)
-      .update(rawBody, "utf8")
-      .digest("base64");
+    const secret = process.env.SHOPIFY_WEBHOOK_SECRET;
+    if (!secret) {
+      console.error("SHOPIFY_WEBHOOK_SECRET is not defined");
+      return NextResponse.json({ error: "Internal Error" }, { status: 500 });
+    }
 
-    if (genHash !== hmac) {
+    const computedHash = crypto
+      .createHmac("sha256", secret)
+      .update(rawBody, "utf8")
+      .digest();
+
+    const actualHmac = Buffer.from(hmac, "base64");
+
+    if (computedHash.length !== actualHmac.length || !crypto.timingSafeEqual(computedHash, actualHmac)) {
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 

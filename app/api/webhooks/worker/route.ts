@@ -27,14 +27,32 @@ async function handler(req: NextRequest) {
 
     // 1. Handle Product Updates
     if (topic.startsWith("products/")) {
+      const productId = payload.id;
       const handle = payload.handle;
+      let productHandle = handle;
+
+      try {
+        if (topic === "products/delete") {
+          const storedHandle = await redis.get<string>(`product:id_to_handle:${productId}`);
+          if (storedHandle) {
+            productHandle = storedHandle;
+            await redis.del(`product:id_to_handle:${productId}`);
+          }
+        } else if (productId && handle) {
+          // Store/update the mapping with 30 days TTL
+          await redis.set(`product:id_to_handle:${productId}`, handle, { ex: 2592000 });
+        }
+      } catch (redisError) {
+        console.error("Redis ID-to-handle mapping failed in worker:", redisError);
+      }
+
       revalidateTag("products");
       revalidatePath("/");
       revalidatePath("/products");
       
-      if (handle) {
-        revalidateTag(`product-${handle}`);
-        revalidatePath(`/products/${handle}`);
+      if (productHandle) {
+        revalidateTag(`product-${productHandle}`);
+        revalidatePath(`/products/${productHandle}`);
       }
     }
 

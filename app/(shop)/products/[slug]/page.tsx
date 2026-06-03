@@ -93,6 +93,9 @@ export default async function ProductPage({ params }: PageProps) {
     : "4.9";
   const reviewCount = reviews.length > 0 ? reviews.length : 10;
 
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in';
+  const baseSiteUrl = siteUrl.endsWith('/') ? siteUrl.slice(0, -1) : siteUrl;
+
   const hasMultipleVariants = product.variants && product.variants.length > 1;
   const offersSchema = hasMultipleVariants
     ? {
@@ -104,7 +107,12 @@ export default async function ProductPage({ params }: PageProps) {
         highPrice: product.priceRange.maxVariantPrice.amount,
         lowPrice: product.priceRange.minVariantPrice.amount,
         offerCount: product.variants.length.toString(),
-        url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in'}/products/${product.handle}`,
+        url: `${baseSiteUrl}/products/${product.handle}`,
+        priceValidUntil: '2027-12-31',
+        seller: {
+          '@type': 'Organization',
+          name: 'Naaz Book Depot',
+        },
       }
     : {
         '@type': 'Offer',
@@ -113,59 +121,56 @@ export default async function ProductPage({ params }: PageProps) {
           : 'https://schema.org/OutOfStock',
         priceCurrency: product.priceRange.minVariantPrice.currencyCode,
         price: product.priceRange.minVariantPrice.amount,
-        url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in'}/products/${product.handle}`,
+        url: `${baseSiteUrl}/products/${product.handle}`,
+        priceValidUntil: '2027-12-31',
+        seller: {
+          '@type': 'Organization',
+          name: 'Naaz Book Depot',
+        },
       };
 
-  const productJsonLd = {
+  const productJsonLd: Record<string, any> = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.title,
-    description: product.description,
-    image: product.images[0]?.url || `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in'}/Images/Logo.png`,
+    description: product.description || product.title,
+    image: product.images?.length > 0
+      ? product.images.map((img) => img.url)
+      : [`${baseSiteUrl}/Images/Logo.png`],
+    sku: product.variants?.[0]?.sku || product.id,
+    mpn: product.variants?.[0]?.sku || product.id,
+    brand: {
+      '@type': 'Brand',
+      name: product.vendor || 'Naaz Book Depot',
+    },
     offers: offersSchema,
-    aggregateRating: {
+  };
+
+  if (reviews.length > 0) {
+    productJsonLd.aggregateRating = {
       '@type': 'AggregateRating',
       ratingValue: averageRating,
-      reviewCount: reviewCount.toString(),
+      reviewCount: reviews.length.toString(),
       bestRating: '5',
       worstRating: '1',
-    },
-    review: reviews.length > 0 
-      ? reviews.map(r => ({
-          '@type': 'Review',
-          author: {
-            '@type': 'Person',
-            name: r.reviewer?.name || 'Verified Buyer',
-          },
-          datePublished: new Date(r.created_at).toISOString().split('T')[0],
-          reviewBody: r.body,
-          name: r.title,
-          reviewRating: {
-            '@type': 'Rating',
-            ratingValue: r.rating.toString(),
-            bestRating: '5',
-            worstRating: '1',
-          }
-        }))
-      : [
-          {
-            '@type': 'Review',
-            author: {
-              '@type': 'Person',
-              name: 'Mohammed Irfan',
-            },
-            datePublished: '2026-03-01',
-            reviewBody: 'Premium quality product from Naaz Book Depot, India\'s highly trusted brand since 1967. Authentic and secure wrapping.',
-            name: 'Superb quality and authenticity',
-            reviewRating: {
-              '@type': 'Rating',
-              ratingValue: '5',
-              bestRating: '5',
-              worstRating: '1',
-            }
-          }
-        ]
-  };
+    };
+    productJsonLd.review = reviews.map(r => ({
+      '@type': 'Review',
+      author: {
+        '@type': 'Person',
+        name: r.reviewer?.name || 'Verified Buyer',
+      },
+      datePublished: new Date(r.created_at).toISOString().split('T')[0],
+      reviewBody: r.body,
+      name: r.title,
+      reviewRating: {
+        '@type': 'Rating',
+        ratingValue: r.rating.toString(),
+        bestRating: '5',
+        worstRating: '1',
+      }
+    }));
+  }
 
   return (
     <div className="bg-white">
