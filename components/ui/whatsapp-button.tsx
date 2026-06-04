@@ -9,7 +9,11 @@ export default function WhatsAppButton() {
   const whatsappUrl = `https://wa.me/${whatsappNumber}`;
 
   // Hide on product pages for mobile devices to avoid overlap with sticky Buy Now bar
-  const isProductPage = pathname?.startsWith('/products/');
+  const cleanPath = pathname ? pathname.toLowerCase().replace(/\/$/, "") : "";
+  const isAuthPage = cleanPath === "/login" || cleanPath === "/signup";
+  const isProductPage = cleanPath.includes('/products/') || cleanPath.includes('/books/') || cleanPath.includes('/atar/');
+
+  if (isAuthPage || isProductPage) return null;
 
   return (
     <motion.a
@@ -20,7 +24,7 @@ export default function WhatsAppButton() {
       animate={{ scale: 1, opacity: 1 }}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
-      className={`fixed bottom-6 right-6 z-[100] bg-[#25D366] text-white p-4 rounded-full shadow-2xl flex items-center justify-center group ${
+      className={`fixed bottom-20 md:bottom-6 right-6 z-[100] bg-[#25D366] text-white p-4 rounded-full shadow-2xl flex items-center justify-center group ${
         isProductPage ? 'hidden md:flex' : 'flex'
       }`}
       aria-label="Contact us on WhatsApp"

@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useSession, signIn } from "next-auth/react";
 import { useEffect, useState, useRef } from "react";
 import Script from "next/script";
+
+import { usePathname } from "next/navigation";
 
 declare global {
   interface Window {
@@ -19,11 +22,18 @@ declare global {
 }
 
 export default function GoogleOneTap() {
-  const { data: session, status } = useSession();
+  const pathname = usePathname();
+  const { status } = useSession();
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const promptAttempted = useRef(false);
 
+  const isAuthPage = pathname === "/login" || pathname === "/signup";
+
   useEffect(() => {
+    if (isAuthPage) {
+      return;
+    }
+
     const initializeAndPrompt = () => {
       if (!window.google || status !== "unauthenticated" || promptAttempted.current) {
         return;
@@ -34,6 +44,11 @@ export default function GoogleOneTap() {
         console.warn("NEXT_PUBLIC_GOOGLE_CLIENT_ID is not defined in environment variables.");
         return;
       }
+
+      const isLocalhost = typeof window !== "undefined" && 
+        (window.location.hostname === "localhost" || 
+         window.location.hostname === "127.0.0.1" || 
+         window.location.hostname.startsWith("192.168."));
 
       try {
         promptAttempted.current = true;
@@ -53,7 +68,7 @@ export default function GoogleOneTap() {
               window.location.href = "/account";
             }
           },
-          fedcm_support: true, // Enforce browser-native FedCM flow
+          fedcm_support: !isLocalhost, // Enforce browser-native FedCM flow on production only
           cancel_on_tap_outside: false,
         });
 
@@ -81,12 +96,16 @@ export default function GoogleOneTap() {
       if (window.google) {
         try {
           window.google.accounts.id.cancel();
-        } catch (e) {
+        } catch {
           // ignore
         }
       }
     };
-  }, [scriptLoaded, status]);
+  }, [scriptLoaded, status, isAuthPage]);
+
+  if (isAuthPage) {
+    return null;
+  }
 
   return (
     <>

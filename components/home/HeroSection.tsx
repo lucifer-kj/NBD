@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowRight, BookOpen } from 'lucide-react';
+import { ArrowRight, BookOpen, Shield, Truck, Users } from 'lucide-react';
 
 const HeroSection = () => {
   const [typewriterText, setTypewriterText] = useState('');
@@ -23,14 +23,13 @@ const HeroSection = () => {
 
   return (
     <section className="relative h-[80vh] overflow-hidden flex items-center">
-      {/* Background with parallax effect */}
+      {/* Background with CSS scroll-driven parallax effect */}
       <div
-        className="absolute inset-0 z-0"
+        className="absolute inset-0 z-0 hero-scroll-parallax"
         style={{
           backgroundImage: "url('/Images/Image+Background.jpg')",
           backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed'
+          backgroundPosition: 'center'
         }}
       />
 
@@ -84,23 +83,39 @@ const HeroSection = () => {
             </p>
           </div>
 
-          <p className="text-base md:text-lg text-white/80 mb-8 leading-relaxed max-w-xl font-light">
-            Buy authentic Quran copies, Islamic literature, scholarly texts, and premium Attar — curated and published from Kolkata for Muslims across India and worldwide.
+          <p className="text-base md:text-lg text-white/80 mb-6 leading-relaxed max-w-xl font-light">
+            Buy authentic Quran copies, Islamic literature, scholarly texts, and Quran stands — curated and published from Kolkata for Muslims across India and worldwide.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4">
+          {/* Trust Signals Row */}
+          <div className="flex flex-wrap gap-3 mb-8">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm text-white/90 text-xs transition-colors duration-300 hover:bg-white/10">
+              <Shield size={14} className="text-[var(--islamic-gold)]" />
+              <span>Est. 1967</span>
+            </div>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm text-white/90 text-xs transition-colors duration-300 hover:bg-white/10">
+              <Truck size={14} className="text-[var(--islamic-gold)]" />
+              <span>Shipped India-Wide</span>
+            </div>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm text-white/90 text-xs transition-colors duration-300 hover:bg-white/10">
+              <Users size={14} className="text-[var(--islamic-gold)]" />
+              <span>10,000+ Ummah Served</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
             <Link
               href="/books"
-              className="group bg-[var(--islamic-gold)] text-[var(--islamic-green-dark)] px-8 py-3 rounded-xl font-bold hover:bg-[var(--islamic-gold-dark)] transition-all duration-300 text-center shadow-lg hover:shadow-[var(--islamic-gold)]/20 flex items-center justify-center gap-2 text-sm"
+              className="group bg-[var(--islamic-gold)] text-[var(--islamic-green-dark)] px-8 py-3.5 rounded-xl font-bold hover:bg-[var(--islamic-gold-dark)] transition-all duration-300 text-center shadow-lg hover:shadow-[var(--islamic-gold)]/20 flex items-center justify-center gap-2 text-sm w-full sm:w-auto"
             >
               Browse Islamic Books
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
-              href="/atar"
-              className="group border-2 border-white/30 text-white px-8 py-3 rounded-xl font-bold hover:bg-white hover:text-[var(--islamic-green-dark)] transition-all duration-300 text-center flex items-center justify-center gap-2 backdrop-blur-sm text-sm"
+              href="/products?search=rehal"
+              className="group border-2 border-white/30 text-white px-8 py-3.5 rounded-xl font-bold hover:bg-white hover:text-[var(--islamic-green-dark)] transition-all duration-300 text-center flex items-center justify-center gap-2 backdrop-blur-sm text-sm w-full sm:w-auto"
             >
-              Shop Premium Attar
+              Shop Quran Stands
               <BookOpen size={18} className="group-hover:scale-110 transition-transform" />
             </Link>
           </div>

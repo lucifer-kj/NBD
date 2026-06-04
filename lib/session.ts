@@ -76,20 +76,13 @@ export async function updateSession(): Promise<SessionPayload | null> {
 export async function deleteSession() {
   const cookieStore = await cookies();
   const domain = await getCookieDomain();
-  const isProd = process.env.NODE_ENV === 'production';
   
-  const nextAuthCookieName = isProd ? '__Secure-next-auth.session-token' : 'next-auth.session-token';
-  const callbackCookieName = isProd ? '__Secure-next-auth.callback-url' : 'next-auth.callback-url';
-  const csrfCookieName = isProd ? '__Secure-next-auth.csrf-token' : 'next-auth.csrf-token';
-
-  const cookiesToDelete = ['session', 'customerAccessToken', nextAuthCookieName, callbackCookieName, csrfCookieName];
-
-  for (const cookieName of cookiesToDelete) {
-    if (domain) {
-      cookieStore.delete({ name: cookieName, domain, path: '/' });
-    } else {
-      cookieStore.delete(cookieName);
-    }
+  if (domain) {
+    cookieStore.delete({ name: 'session', domain, path: '/' });
+    cookieStore.delete({ name: 'customerAccessToken', domain, path: '/' });
+  } else {
+    cookieStore.delete({ name: 'session', path: '/' });
+    cookieStore.delete({ name: 'customerAccessToken', path: '/' });
   }
 }
 

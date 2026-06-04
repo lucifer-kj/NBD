@@ -22,7 +22,7 @@ const SearchBar = () => {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search books, attars..."
+          placeholder="Search books, stands..."
           className="w-full pl-11 pr-4 py-2.5 rounded-full border border-gray-200 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--islamic-gold)] focus:border-transparent transition-all duration-300 text-sm"
         />
         <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[var(--islamic-gold)] transition-colors">

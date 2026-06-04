@@ -77,7 +77,7 @@ export default async function BooksPage() {
           </div>
           
           {books.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {books.map((book) => (
                 <ProductCard 
                   key={book.id}

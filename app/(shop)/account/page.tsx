@@ -116,7 +116,7 @@ export default async function AccountPage() {
             <h3 className="font-bold text-[var(--islamic-green)] mb-4">Quick Links</h3>
             <ul className="space-y-3 text-sm">
               <li><Link href="/books" className="text-gray-600 hover:text-[var(--islamic-gold)] transition-colors">Browse Books</Link></li>
-              <li><Link href="/atar" className="text-gray-600 hover:text-[var(--islamic-gold)] transition-colors">Premium Atars</Link></li>
+              <li><Link href="/products?search=rehal" className="text-gray-600 hover:text-[var(--islamic-gold)] transition-colors">Quran Stands</Link></li>
               <li><Link href="/contact" className="text-gray-600 hover:text-[var(--islamic-gold)] transition-colors">Support</Link></li>
             </ul>
           </div>

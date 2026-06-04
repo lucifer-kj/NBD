@@ -17,7 +17,7 @@ const ContactInfoStrip = () => {
   const loopedInfo = [...contactInfo, ...contactInfo];
 
   return (
-    <div className="text-[var(--islamic-green-dark)] py-3 px-4 overflow-hidden relative z-10" style={{ background: 'linear-gradient(to right, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #aa771c 100%)' }}>
+    <div className="hidden md:block text-[var(--islamic-green-dark)] py-3 px-4 overflow-hidden relative z-10" style={{ background: 'linear-gradient(to right, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #aa771c 100%)' }}>
       <div className="container mx-auto">
         {/* Desktop: normal flex, Mobile: horizontal scroll + animation */}
         <div className="hidden md:flex flex-wrap items-center justify-center gap-4 md:gap-8">

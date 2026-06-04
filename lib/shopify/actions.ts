@@ -1,9 +1,9 @@
 "use server"
 
 import { revalidateTag } from 'next/cache'
-import { createCart, addToCart, removeFromCart, updateCart, shopifyFetch, reshapeCart } from './index'
+import { createCart, addToCart, removeFromCart, updateCart, shopifyFetch, reshapeCart, getProducts } from './index'
 import { cartFragment } from './fragments'
-import { Cart } from '@/types/shopify'
+import { Cart, ReshapedProduct } from '@/types/shopify'
 
 export async function createCartAction() {
   return await createCart()
@@ -170,3 +170,21 @@ export async function getSessionAction() {
   }
 }
 
+export async function getCartFillersAction(gapAmount: number): Promise<ReshapedProduct[]> {
+  try {
+    const minPrice = gapAmount;
+    const maxPrice = gapAmount + 250;
+    const query = `variants.price:>=${minPrice} variants.price:<=${maxPrice}`;
+
+    const products = await getProducts({ query, first: 20 });
+
+    const excludedTags = ['atar', 'attar', 'fragrance'];
+    return products.filter((product) => {
+      const productTags = (product.tags || []).map((t) => t.toLowerCase());
+      return !productTags.some((tag) => excludedTags.includes(tag));
+    });
+  } catch (error) {
+    console.error('Error in getCartFillersAction:', error);
+    return [];
+  }
+}

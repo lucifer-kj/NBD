@@ -16,8 +16,7 @@ export async function GET(req: NextRequest) {
     const primaryPaths = [
       `https://${host}/`,
       `https://${host}/books`,
-      `https://${host}/atar`,
-      `https://${host}/products`,
+`https://${host}/products`,
       `https://${host}/blog`,
     ];
 

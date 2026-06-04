@@ -9,6 +9,8 @@ import {
   Minus, 
   Plus, 
   ChevronRight, 
+  ChevronLeft,
+  Share2,
   Truck,
   ArrowRight,
   Maximize2,
@@ -115,6 +117,30 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
     showToast(isItemInWishlist ? "Removed from wishlist" : "Added to wishlist", "info");
   };
 
+  const handleShare = async () => {
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: product.title,
+          text: `Check out ${product.title} at Naaz Book Depot`,
+          url: window.location.href,
+        });
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          console.error('Error sharing product:', err);
+        }
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        showToast("Product link copied to clipboard!", "success");
+      } catch (e) {
+        console.error('Copy to clipboard failed:', e);
+        showToast("Failed to copy link.", "error");
+      }
+    }
+  };
+
   // Extract metafields
   const ratingMeta = product.metafields?.find(m => m && m.namespace === 'reviews' && m.key === 'rating');
   const ratingValue = ratingMeta ? JSON.parse(ratingMeta.value).value : 4.8; // Fallback
@@ -138,13 +164,14 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="w-full h-full cursor-zoom-in"
+              className="relative w-full h-full cursor-zoom-in"
               onClick={() => setIsLightboxOpen(true)}
             >
               <Image
                 src={images[selectedImage].url}
                 alt={images[selectedImage].altText || product.title}
                 fill
+                style={{ viewTransitionName: `product-image-${product.id}` } as React.CSSProperties}
                 className="object-contain p-4 md:p-8"
                 priority
               />
@@ -191,8 +218,27 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
         transition={{ duration: 0.5 }}
         className="flex flex-col"
       >
+        {/* Mobile Go Back Button */}
+        <div className="md:hidden mb-4">
+          <button
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                if (window.history.length > 1) {
+                  window.history.back();
+                } else {
+                  window.location.href = '/products';
+                }
+              }
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-50 border border-gray-200 text-gray-700 text-xs font-semibold hover:bg-gray-100 transition-all duration-300"
+          >
+            <ChevronLeft size={14} />
+            <span>Back</span>
+          </button>
+        </div>
+
         {/* Breadcrumbs */}
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
+        <div className="hidden md:flex items-center gap-2 text-sm text-gray-500 mb-6">
           <span>Home</span>
           <ChevronRight size={14} />
           <span>Products</span>
@@ -200,7 +246,7 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
           <span className="text-[var(--islamic-green)] font-medium truncate">{product.title}</span>
         </div>
 
-        <h1 className="text-3xl md:text-4xl font-headings font-bold text-[var(--islamic-green)] mb-2">
+        <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-headings font-bold text-[var(--islamic-green)] leading-tight mb-2">
           {product.title}
         </h1>
         
@@ -217,7 +263,7 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
           </div>
           <div>
             <p className="text-[10px] font-black uppercase tracking-wider text-[var(--islamic-gold)]">Naaz Authenticity Stamp</p>
-            <p className="text-xs font-bold text-emerald-950">Established 1967 • 59+ Years of Trusted Islamic Publishing Legacy</p>
+            <p className="text-[10px] sm:text-xs font-bold text-emerald-950 leading-snug">Established 1967 • 59+ Years of Trusted Islamic Publishing Legacy</p>
           </div>
         </div>
 
@@ -361,8 +407,17 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
                   ? 'bg-red-50 border-red-100 text-red-500' 
                   : 'bg-gray-50 border-gray-100 text-gray-400 hover:text-red-500 hover:bg-red-50'
               }`}
+              aria-label={isItemInWishlist ? "Remove from wishlist" : "Add to wishlist"}
             >
               <Heart size={24} fill={isItemInWishlist ? "currentColor" : "none"} />
+            </button>
+
+            <button 
+              onClick={handleShare}
+              className="p-4 rounded-xl border-2 transition-all bg-gray-50 border-gray-100 text-gray-400 hover:text-[var(--islamic-gold)] hover:bg-[var(--islamic-beige)]"
+              aria-label="Share product"
+            >
+              <Share2 size={24} />
             </button>
           </div>
 

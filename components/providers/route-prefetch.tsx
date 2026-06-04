@@ -7,9 +7,7 @@ import { useRouter, usePathname } from 'next/navigation';
 const IMPORTANT_ROUTES = [
   '/products',
   '/books',
-  '/atar',
-
-  '/account',
+'/account',
   '/wishlist',
   '/blog',
   '/about',

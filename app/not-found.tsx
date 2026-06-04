@@ -50,8 +50,8 @@ export default function NotFound() {
               <Link href="/books" className="text-sm text-gray-500 hover:text-[var(--islamic-gold)] transition-colors">Browse Collection →</Link>
            </div>
            <div className="p-6 rounded-3xl bg-gray-50 border border-gray-100">
-              <h3 className="font-bold text-[var(--islamic-green)] mb-2">Premium Atars</h3>
-              <Link href="/atar" className="text-sm text-gray-500 hover:text-[var(--islamic-gold)] transition-colors">Shop Fragrances →</Link>
+              <h3 className="font-bold text-[var(--islamic-green)] mb-2">Quran Stands</h3>
+              <Link href="/products?search=rehal" className="text-sm text-gray-500 hover:text-[var(--islamic-gold)] transition-colors">Shop stands →</Link>
            </div>
            <div className="p-6 rounded-3xl bg-gray-50 border border-gray-100">
               <h3 className="font-bold text-[var(--islamic-green)] mb-2">Spiritual Blog</h3>

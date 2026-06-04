@@ -17,6 +17,9 @@ import DiscountCodeInput from "./cart/DiscountCodeInput";
 import ShippingProgressBar from "./cart/ShippingProgressBar";
 import { trackBeginCheckout } from "@/lib/analytics";
 import { getProductUrl } from "@/lib/url-helper";
+import { useState, useEffect } from "react";
+import { getCartFillersAction } from "@/lib/shopify/actions";
+import { ReshapedProduct } from "@/types/shopify";
 
 export default function CartDrawer() {
   const { 
@@ -31,7 +34,8 @@ export default function CartDrawer() {
     validateCart,
     unavailableItems,
     discountError,
-    clearDiscountError
+    clearDiscountError,
+    addItem
   } = useCartStore()
   const reduced = useReducedMotion();
   const mounted = useMounted();
@@ -40,6 +44,43 @@ export default function CartDrawer() {
   const count = lines.reduce((acc, line) => acc + line.quantity, 0)
   const totalAmount = cart?.cost?.totalAmount?.amount || "0.00"
 
+  // Cart Fillers state
+  const [fillers, setFillers] = useState<ReshapedProduct[]>([]);
+  const [addingVariantId, setAddingVariantId] = useState<string | null>(null);
+
+  const subtotal = cart ? Number(cart.cost.subtotalAmount.amount) : 0;
+  const gap = 999 - subtotal;
+
+  useEffect(() => {
+    let active = true;
+    if (gap > 0 && subtotal > 0) {
+      getCartFillersAction(gap)
+        .then((products) => {
+          if (active) {
+            setFillers(products.slice(0, 3));
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to load cart fillers:", err);
+        });
+    } else {
+      setFillers([]);
+    }
+    return () => {
+      active = false;
+    };
+  }, [gap, subtotal]);
+
+  const handleAddFiller = async (variantId: string) => {
+    setAddingVariantId(variantId);
+    try {
+      await addItem(variantId, 1);
+    } catch (err) {
+      console.error("Failed to add filler:", err);
+    } finally {
+      setAddingVariantId(null);
+    }
+  };
 
   const handleCheckout = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -223,6 +264,63 @@ export default function CartDrawer() {
                     )})}
                   </div>
                 )}
+
+                {/* Cart Fillers Suggestions */}
+                {gap > 0 && subtotal > 0 && fillers.length > 0 && (
+                  <div className="mt-6 border-t border-dashed border-gray-250 pt-6 animate-in fade-in duration-500">
+                    <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-1.5">
+                      <span className="w-1.5 h-3.5 bg-[var(--islamic-green)] rounded-full"></span>
+                      Complete your order for Free Shipping!
+                    </h3>
+                    <div className="space-y-3">
+                      {fillers.map((product) => {
+                        const variant = product.variants.find(v => v.availableForSale) || product.variants[0];
+                        if (!variant) return null;
+                        
+                        const isAdding = addingVariantId === variant.id;
+                        
+                        return (
+                          <div key={product.id} className="flex items-center justify-between bg-white border border-gray-150 rounded-xl p-3 shadow-xs hover:border-gray-300 transition-all duration-200 group">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="relative w-12 h-12 flex-shrink-0">
+                                <Image
+                                  src={product.featuredImage?.url || "/Images/p1.jpg"}
+                                  alt={product.title}
+                                  width={48}
+                                  height={48}
+                                  className="w-full h-full rounded-lg object-cover border border-gray-100 shadow-sm"
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <h4 className="text-xs font-semibold text-gray-800 truncate leading-snug group-hover:text-[var(--islamic-green)] transition-colors">
+                                  {product.title}
+                                </h4>
+                                <p className="text-xs font-bold text-[var(--islamic-green)] mt-0.5">
+                                  {formatPrice(variant.price.amount)}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            <button
+                              onClick={() => handleAddFiller(variant.id)}
+                              disabled={isAdding || isLoading}
+                              className="flex items-center justify-center gap-1 bg-gray-50 hover:bg-[var(--islamic-green)] text-gray-700 hover:text-white border border-gray-200 hover:border-[var(--islamic-green)] font-bold text-xs px-3 py-1.5 rounded-lg transition-all duration-200 disabled:opacity-50"
+                            >
+                              {isAdding ? (
+                                <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                              ) : (
+                                <>
+                                  <Plus className="w-3 h-3" />
+                                  Add
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Footer */}
@@ -285,4 +383,3 @@ export default function CartDrawer() {
     </Drawer.Root>
   )
 }
- 

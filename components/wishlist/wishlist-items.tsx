@@ -87,7 +87,7 @@ export default function WishlistItems({ products: initialProducts }: WishlistIte
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8">
       {products.map((product) => {
         if (!product) return null;
         
@@ -120,12 +120,12 @@ export default function WishlistItems({ products: initialProducts }: WishlistIte
               )}
             </div>
             
-            <div className="p-6 flex-1 flex flex-col">
-              <Link href={isUnavailable ? "#" : `/products/${product.handle}`} className={`font-bold text-lg text-gray-900 ${!isUnavailable && "group-hover:text-[var(--islamic-green)]"} transition-colors line-clamp-2 mb-2`}>
+            <div className="p-4 sm:p-6 flex-1 flex flex-col">
+              <Link href={isUnavailable ? "#" : `/products/${product.handle}`} className={`font-bold text-sm sm:text-lg text-gray-900 ${!isUnavailable && "group-hover:text-[var(--islamic-green)]"} transition-colors line-clamp-2 mb-2`}>
                 {product.title || "Unknown Product"}
               </Link>
               
-              <p className="font-bold text-[var(--islamic-green)] mb-6">
+              <p className="font-bold text-[var(--islamic-green)] mb-4 sm:mb-6">
                 {price ? formatPrice(price.amount, price.currencyCode) : "Price Unavailable"}
               </p>
 

@@ -12,12 +12,7 @@ export function getProductUrl(product: ProductUrlInput): string {
   if (tags.includes('books') || tags.includes('islamic books') || tags.includes('book')) {
     return `/books/${product.handle}`;
   }
-  
-  if (tags.includes('atar') || tags.includes('fragrance') || tags.includes('attar')) {
-    return `/atar/${product.handle}`;
-  }
-  
-  return `/products/${product.handle}`;
+return `/products/${product.handle}`;
 }
 
 export interface Review {

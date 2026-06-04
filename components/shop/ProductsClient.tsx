@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { fadeInUp, staggerContainer } from "@/lib/motion.config"
 import { useSearchParams } from 'next/navigation'
 
-const CATEGORIES = ['All Products', 'Books', 'Atar', 'Prayer Mats', 'Rehals', 'Newest']
+const CATEGORIES = ['All Products', 'Books', 'Prayer Mats', 'Rehals', 'Newest']
 
 interface ProductsClientProps {
   initialProducts: ReshapedProduct[];
@@ -25,6 +25,12 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
   
   // Filter products based on category and search query
   const filteredProducts = initialProducts.filter(product => {
+    const hasFragranceTag = product.tags?.some(tag => {
+      const lowerTag = tag.toLowerCase();
+      return lowerTag === 'atar' || lowerTag === 'attar' || lowerTag === 'fragrance';
+    });
+    if (hasFragranceTag) return false;
+
     const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                          product.description?.toLowerCase().includes(searchQuery.toLowerCase())
     
@@ -52,7 +58,7 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[var(--islamic-gold)] transition-colors" size={18} />
             <input
               type="text"
-              placeholder="Search literature, fragrances..."
+              placeholder="Search literature, stands..."
               className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--islamic-gold)]/20 focus:border-[var(--islamic-gold)] transition-all shadow-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -126,7 +132,7 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
                 animate="show"
                 variants={staggerContainer}
                 className={viewMode === 'grid' 
-                  ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-8" 
+                  ? "grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-8" 
                   : "flex flex-col gap-4"
                 }
               >

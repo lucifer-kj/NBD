@@ -78,11 +78,11 @@ export default function ProductReviews({ productId, productTitle }: ProductRevie
 
   return (
     <div className="mt-20 pt-10 border-t border-gray-100">
-      <div className="flex items-center justify-between mb-10">
-        <h2 className="text-2xl font-headings font-bold text-[var(--islamic-green)]">
-          Customer Reviews {productTitle && <span className="text-gray-400 font-normal">for {productTitle}</span>}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-10 gap-4">
+        <h2 className="text-xl md:text-2xl font-headings font-bold text-[var(--islamic-green)] leading-tight">
+          Customer Reviews {productTitle && <span className="block sm:inline text-sm md:text-base text-gray-400 font-normal mt-1 sm:mt-0 sm:ml-2">for {productTitle}</span>}
         </h2>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Star size={20} fill="#D4AF37" className="text-[var(--islamic-gold)]" />
           <span className="font-bold">
             {reviews.length > 0 

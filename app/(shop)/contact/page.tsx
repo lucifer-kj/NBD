@@ -9,7 +9,7 @@ import {
 
 export const metadata = {
   title: 'Frequently Asked Questions (FAQ) | Naaz Book Depot',
-  description: 'Find answers to common questions about ordering Islamic books, Qur\'an, Atar, shipping, returns, and more at Naaz Book Depot.',
+  description: 'Find answers to common questions about ordering Islamic books, Qur\'an, stands, shipping, returns, and more at Naaz Book Depot.',
 };
 
 const faqs = [
@@ -39,11 +39,7 @@ const faqs = [
         question: "Are the books and Qur'ans authentic?",
         answer: "Absolutely. Naaz Book Depot has been a trusted publisher since 1967. We specialize in authentic Islamic literature and Qur'ans that undergo rigorous proofreading and quality checks."
       },
-      {
-        question: "What makes your Atar unique?",
-        answer: "Our premium fragrances and Atars are sourced from the finest ingredients, ensuring long-lasting and pure scents that are alcohol-free and suitable for all occasions."
-      }
-    ]
+]
   },
   {
     category: "Payments & Security",
@@ -65,7 +61,7 @@ const faqs = [
     items: [
       {
         question: "What is your return policy?",
-        answer: "We offer a 7-day return policy for books and products in their original, unused condition. Fragrances and Atars are non-returnable once the seal is broken due to hygiene reasons."
+        answer: "We offer a 7-day return policy for books and stands in their original, unused condition."
       },
       {
         question: "How do I initiate an exchange?",

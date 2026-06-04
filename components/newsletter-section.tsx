@@ -91,7 +91,7 @@ export default function NewsletterSection() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Your email address"
-                  className={`rounded-xl px-5 py-3.5 text-[var(--islamic-green)] bg-white/95 border-2 focus:outline-none focus:ring-2 focus:ring-[var(--islamic-gold)] flex-1 transition-all duration-200 text-sm touch-target ${
+                  className={`rounded-xl h-12 px-5 text-[var(--islamic-green)] bg-white/95 border-2 focus:outline-none focus:ring-2 focus:ring-[var(--islamic-gold)] flex-1 transition-all duration-200 text-sm ${
                     error ? "border-red-400" : "border-transparent"
                   }`}
                   aria-invalid={!!error}
@@ -101,7 +101,7 @@ export default function NewsletterSection() {
                 />
                 <motion.button
                   type="submit"
-                  className="btn-primary touch-target inline-flex items-center justify-center gap-2 px-6 py-3.5 min-w-[140px]"
+                  className="btn-primary h-12 w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6"
                   whileTap={{ scale: 0.97 }}
                   disabled={loading}
                   aria-busy={loading}

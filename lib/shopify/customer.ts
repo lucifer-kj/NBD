@@ -45,21 +45,45 @@ export function generateDeterministicPassword(email: string) {
 }
 
 export async function getOrCreateShopifyCustomer({ email, firstName }: { email: string; firstName?: string }): Promise<CustomerAccessToken | null> {
+  const debug = createDebug('getOrCreateShopifyCustomer');
+  debug.step('start', 'getOrCreateShopifyCustomer initiated', { email, firstName });
+  
   const password = generateDeterministicPassword(email);
 
   // Try to login first
+  debug.step('login_attempt_1', 'Attempting first storefront customer login');
   let tokenObj = await loginShopifyCustomer(email, password);
-  if (tokenObj) return tokenObj;
+  if (tokenObj) {
+    debug.step('login_success_1', 'First login attempt succeeded (customer already existed with deterministic password)');
+    await debug.commit(email);
+    return tokenObj;
+  }
+  debug.step('login_failed_1', 'First login attempt failed (customer may not exist or has different password)');
 
   // Create the customer and retry
   try {
-    await createShopifyCustomer({ email, firstName, password });
+    debug.step('create_customer_attempt', 'Attempting storefront customer creation via mutations');
+    const result = await createShopifyCustomer({ email, firstName, password });
+    if (result && 'errors' in result) {
+      debug.step('create_customer_errors', 'Storefront customer creation returned user errors', result.errors);
+    } else {
+      debug.step('create_customer_success', 'Storefront customer created successfully', { result });
+    }
   } catch (e) {
-    console.error('Failed to create Shopify customer during OAuth bridge:', e);
+    debug.error('create_customer_exception', e);
+    await debug.commit(email);
     return null;
   }
 
   // Retry login after creation
+  debug.step('login_attempt_2', 'Attempting second storefront customer login after creation');
   tokenObj = await loginShopifyCustomer(email, password);
+  if (tokenObj) {
+    debug.step('login_success_2', 'Second login attempt succeeded');
+  } else {
+    debug.step('login_failed_2', 'Second login attempt failed');
+  }
+  
+  await debug.commit(email);
   return tokenObj;
 }

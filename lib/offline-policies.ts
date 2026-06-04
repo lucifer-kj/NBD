@@ -55,9 +55,8 @@ export const OFFLINE_POLICIES: Record<string, OfflinePolicy> = {
       <h2>2. Eligible Items for Return</h2>
       <ul>
         <li>Books with printing defects, missing pages, or severe transit damage.</li>
-        <li>Incorrect product delivered (different book title, edition, or Attar scent).</li>
-        <li>Unopened and unused premium Attar bottles with seal intact.</li>
-      </ul>
+        <li>Incorrect product delivered (different book title or edition).</li>
+</ul>
 
       <h2>3. Non-Returnable Items</h2>
       <ul>
@@ -80,7 +79,7 @@ export const OFFLINE_POLICIES: Record<string, OfflinePolicy> = {
     handle: 'shipping-policy',
     body: `
       <h2>1. Shipping Locations & Delivery</h2>
-      <p><strong>Naaz Book Depot</strong> ships authentic Islamic books, Qur'ans, and premium Attar across all states and Union Territories in <strong>India</strong>. We partner with reliable national courier services to ensure your orders reach you safely and promptly.</p>
+      <p><strong>Naaz Book Depot</strong> ships authentic Islamic books, Qur'ans, and stands across all states and Union Territories in <strong>India</strong>. We partner with reliable national courier services to ensure your orders reach you safely and promptly.</p>
 
       <h2>2. Shipping & Handling Time</h2>
       <ul>
@@ -109,7 +108,7 @@ export const OFFLINE_POLICIES: Record<string, OfflinePolicy> = {
       <p>All content, branding, logo designs, book cover designs, text, graphics, and layout on this website are the intellectual property of <strong>Naaz Book Depot</strong> (or respective authors/publishers) and are protected by applicable copyright and trademark laws. Reproducing any content without written permission is strictly prohibited.</p>
 
       <h2>3. Accuracy of Content & Product Details</h2>
-      <p>We make every effort to display the colors, specifications, and details of our books and Attar as accurately as possible. However, we do not warrant that product descriptions, editions, cover designs, or other content are completely error-free or up-to-date. In case of discrepancies, please contact our support.</p>
+      <p>We make every effort to display the colors, specifications, and details of our books and stands as accurately as possible. However, we do not warrant that product descriptions, editions, cover designs, or other content are completely error-free or up-to-date. In case of discrepancies, please contact our support.</p>
 
       <h2>4. Pricing & Availability</h2>
       <p>Prices and availability of products on our storefront are subject to change without notice. We reserve the right to modify or discontinue any product, book title, or service at any time.</p>

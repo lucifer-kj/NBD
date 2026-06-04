@@ -184,7 +184,7 @@ export default async function BookDetailPage({ params }: PageProps) {
               <div className="h-1 flex-1 mx-8 bg-gray-50 rounded-full hidden md:block" />
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
               {relatedBooks.map((b) => (
                 <ProductCard key={b.id} product={b} showWishlist={false} />
               ))}

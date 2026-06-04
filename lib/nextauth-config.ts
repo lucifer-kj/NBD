@@ -239,8 +239,26 @@ export const authOptions: NextAuthOptions = {
 
               if (!token.customerId) {
                 debug.step('jwt_google_bridge_fallback', 'Storefront getCustomerDetails returned null for Google user, querying Admin API by email', { email });
-                const { getCustomerByEmail } = await import('@/lib/shopify/admin');
-                const adminCustomer = await getCustomerByEmail(email);
+                const { getCustomerByEmail, createCustomerViaAdmin } = await import('@/lib/shopify/admin');
+                let adminCustomer = await getCustomerByEmail(email);
+                
+                if (!adminCustomer) {
+                  debug.step('jwt_google_bridge_admin_create', 'Customer not found on Shopify. Creating customer via Admin API', { email });
+                  try {
+                    const createdCust = await createCustomerViaAdmin({
+                      email,
+                      firstName: name?.split(' ')[0] || 'Valued',
+                      lastName: name?.split(' ').slice(1).join(' ') || 'Customer'
+                    });
+                    if (createdCust) {
+                      adminCustomer = createdCust;
+                      debug.step('jwt_google_bridge_admin_create_success', 'Created customer via Admin API', { customerId: createdCust.id });
+                    }
+                  } catch (createErr) {
+                    debug.error('jwt_google_bridge_admin_create_failed', createErr);
+                  }
+                }
+
                 if (adminCustomer) {
                   token.customerId = adminCustomer.id;
                   debug.step('jwt_google_bridge_fallback_success', 'Resolved Google user customerId via Admin API', { customerId: adminCustomer.id });

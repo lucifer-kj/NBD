@@ -2,8 +2,7 @@ import React from "react";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/footer";
+import StoreLayout from "@/components/layout/StoreLayout";
 import ClientRoot from "@/components/providers/client-root";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
@@ -12,9 +11,7 @@ import RoutePrefetcher from "@/components/providers/route-prefetch";
 import GoogleOneTap from "@/components/providers/google-onetap";
 
 import { ToastProvider } from "@/components/ui/toast"
-import WhatsAppButton from "@/components/ui/whatsapp-button";
 import GDPRScriptProvider from "@/components/providers/gdpr-script-provider";
-import CookieConsent from "@/components/layout/cookie-consent";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,13 +32,13 @@ if (!SITE_URL) {
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: "Naaz Book Depot | Authentic Islamic Books, Quran & Attar — Since 1967",
-  description: "Buy authentic Islamic books, Quran editions in Arabic, Urdu & English, premium Attar and Qur'an stands. India's trusted Islamic publisher since 1967. Based in Kolkata.",
+  title: "Naaz Book Depot | Authentic Islamic Books & Quran — Since 1967",
+  description: "Buy authentic Islamic books, Quran editions in Arabic, Urdu & English, and Qur'an stands. India's trusted Islamic publisher since 1967. Based in Kolkata.",
   // Improve SEO and sharing
   openGraph: {
     type: "website",
     title: "Naaz Book Depot | Authentic Islamic Books & Quran — Since 1967",
-    description: "India's trusted Islamic publisher since 1967. Buy authentic Quran editions, Islamic books, and premium Attar. Based in Kolkata, serving Muslims worldwide.",
+    description: "India's trusted Islamic publisher since 1967. Buy authentic Quran editions, Islamic books, and stands. Based in Kolkata, serving Muslims worldwide.",
     siteName: "Naaz Book Depot",
     url: SITE_URL,
     locale: "en_IN",
@@ -57,7 +54,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Naaz Book Depot | Authentic Islamic Books & Quran",
-    description: "India's trusted Islamic publisher since 1967. Buy authentic Quran editions, Islamic books, and premium Attar.",
+    description: "India's trusted Islamic publisher since 1967. Buy authentic Quran editions, Islamic books, and stands.",
     images: ["/Images/og-image.jpeg"],
   },
   icons: {
@@ -96,7 +93,7 @@ export default function RootLayout({
               "alternateName": "Naaz Group",
               "url": SITE_URL,
               "logo": `${SITE_URL}/logo.png`,
-              "description": "India's trusted Islamic book publisher and retailer since 1967. Specialising in authentic Quran editions, Islamic literature, and premium Attar.",
+              "description": "India's trusted Islamic book publisher and retailer since 1967. Specialising in authentic Quran editions, Islamic literature, and stands.",
               "foundingDate": "1967",
               "founder": {
                 "@type": "Person",
@@ -178,18 +175,12 @@ export default function RootLayout({
             <GoogleOneTap />
             <ClientRoot>
               <GDPRScriptProvider>
-                <div className="min-h-screen flex flex-col">
-                  <Navbar />
-                  <main className="flex-1">
-                    <ErrorBoundary>
-                      <AnimatedLayoutClient>{children}</AnimatedLayoutClient>
-                    </ErrorBoundary>
-                  </main>
-                  <Footer />
-                  <WhatsAppButton />
+                <StoreLayout>
+                  <ErrorBoundary>
+                    <AnimatedLayoutClient>{children}</AnimatedLayoutClient>
+                  </ErrorBoundary>
                   <RoutePrefetcher />
-                  <CookieConsent />
-                </div>
+                </StoreLayout>
               </GDPRScriptProvider>
             </ClientRoot>
           </AuthProvider>

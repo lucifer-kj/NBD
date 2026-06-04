@@ -102,6 +102,7 @@ export default function ProductCard({
             alt={imageAlt}
             fill
             sizes="(max-width: 640px) 90vw, (max-width: 1024px) 40vw, 300px"
+            style={{ viewTransitionName: `product-image-${product.id}` } as React.CSSProperties}
             className="object-cover transition-transform duration-700 group-hover:scale-110"
             priority={false}
           />
@@ -115,53 +116,65 @@ export default function ProductCard({
           </div>
         </Link>
  
-        <CardContent className="flex flex-col flex-1 p-5 md:p-6 bg-white/50 relative z-10">
+        <CardContent className="flex flex-col flex-1 p-3 sm:p-5 md:p-6 bg-white/50 relative z-10">
           <div className="mb-auto">
             <Link href={productUrl} className="block mb-2 group-hover:text-[var(--islamic-gold)] transition-colors duration-300">
-              <h3 className="text-base md:text-lg font-bold text-[var(--charcoal)] line-clamp-2 leading-snug">
+              <h3 className="text-sm sm:text-base md:text-lg font-bold text-[var(--charcoal)] line-clamp-2 leading-snug">
                 {product.title}
               </h3>
             </Link>
             
-            {/* Rating - Only show if data exists, otherwise hide or show generic stars if desired */}
-            <div className="flex items-center gap-2 mb-4">
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    size={12}
-                    className="fill-[var(--islamic-gold)] text-[var(--islamic-gold)]"
-                  />
-                ))}
+            {/* Rating & Stock Status */}
+            <div className="flex flex-wrap items-center justify-between mb-3 gap-1.5">
+              <div className="flex items-center gap-1 min-w-0">
+                <div className="flex shrink-0">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      size={10}
+                      className="fill-[var(--islamic-gold)] text-[var(--islamic-gold)]"
+                    />
+                  ))}
+                </div>
+                <span className="text-[9px] font-bold text-[var(--charcoal)]/50 tracking-tighter uppercase truncate">Authentic</span>
               </div>
-              <span className="text-[10px] font-bold text-[var(--charcoal)]/50 tracking-tighter uppercase">Authentic</span>
+              {inStock ? (
+                <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-100 shrink-0">
+                  In Stock
+                </span>
+              ) : (
+                <span className="text-[9px] font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full border border-red-100 shrink-0">
+                  Out of Stock
+                </span>
+              )}
             </div>
           </div>
 
-          <div className="flex items-center justify-between mt-4">
-            <div className="flex flex-col">
-              <span className="text-[10px] text-gray-400 uppercase tracking-tighter">Current Price</span>
+          <div className="flex flex-col mt-4 pt-3 border-t border-[#e9e3d9]/30">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] text-gray-400 font-medium">Price</span>
               <span className="text-lg md:text-xl font-black text-[var(--islamic-green)]">
                 {formatPrice(parseFloat(product.priceRange.minVariantPrice.amount))}
               </span>
             </div>
             
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              onClick={handleAddToCart}
-              disabled={!inStock || cartLoading}
-              className={`p-3 md:p-4 rounded-2xl shadow-xl transition-all duration-300 flex items-center justify-center ${
-                inStock 
-                  ? "bg-[var(--islamic-green)] hover:bg-[var(--islamic-green-dark)] text-white hover:shadow-[0_12px_24px_0_rgba(45,90,76,0.3)]" 
-                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
-              }`}
-            >
-              {cartLoading ? (
-                <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <ShoppingCart className="w-5 h-5 md:w-6 md:h-6" />
-              )}
-            </motion.button>
+            {/* Add to Cart Button - always visible on mobile, hover-revealed on desktop */}
+            <div className="mt-3 md:mt-0 md:h-0 md:opacity-0 md:group-hover:h-10 md:group-hover:opacity-100 md:group-hover:mt-3 transition-all duration-300 overflow-hidden">
+              <button
+                onClick={handleAddToCart}
+                disabled={!inStock || cartLoading}
+                className="w-full py-2 px-4 rounded-xl bg-[var(--islamic-gold)] text-[var(--islamic-green-dark)] hover:bg-[var(--islamic-gold-dark)] hover:text-white font-bold text-xs md:text-sm flex items-center justify-center gap-2 shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:hover:scale-100"
+              >
+                {cartLoading ? (
+                  <span className="w-4 h-4 border-2 border-[var(--islamic-green-dark)] border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <ShoppingCart size={13} />
+                    <span>Add to Cart</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </CardContent>
       </Card>

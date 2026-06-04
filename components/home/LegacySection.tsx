@@ -36,7 +36,7 @@ export default function LegacySection() {
 
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-headings font-bold text-[var(--islamic-green)] tracking-tight leading-tight">
               A Multi-Generational Legacy of
-              <span className="block text-[var(--islamic-gold)] italic font-light mt-1">Sacred Literature & Publishing Trust</span>
+              <span className="block text-[var(--islamic-gold)] italic font-bold md:font-light mt-1 font-serif md:font-headings text-[clamp(20px,5vw,36px)] leading-tight">Sacred Literature & Publishing Trust</span>
             </h2>
 
             <div className="gold-divider w-24 h-1 bg-[var(--islamic-gold)] mb-6" />
@@ -48,6 +48,13 @@ export default function LegacySection() {
               <p>
                 Our core commitment has always been unwavering: supplying fully authentic, scholarly verified copies of the Holy Qur&apos;an, verified translations, exegeses, and classic literature. We bridge the rich heritage of classical Islamic research with contemporary printing excellence.
               </p>
+            </div>
+
+            {/* Mobile Testimonial Card */}
+            <div className="md:hidden mt-6 bg-[#FAF7F0] border-l-4 border-[var(--islamic-gold)] pl-4 py-4 pr-4 rounded-r-xl shadow-sm">
+              <p className="text-[var(--islamic-gold)] text-[10px] font-black uppercase tracking-widest mb-1">Established 1967</p>
+              <span className="text-gray-800 text-base font-headings font-bold block">Mohammad Irfan</span>
+              <p className="text-gray-600 text-xs mt-0.5 font-light">Founder & Visual Custodian</p>
             </div>
 
             {/* Editorial Trust Pillars */}
@@ -116,7 +123,7 @@ export default function LegacySection() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/80 via-black/20 to-transparent" />
               
-              <div className="absolute bottom-6 left-6 right-6 p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-center text-white">
+              <div className="hidden md:block absolute bottom-6 left-6 right-6 p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-center text-white">
                 <p className="text-amber-400 text-[10px] font-black uppercase tracking-widest mb-1">Established 1967</p>
                 <span className="text-white text-lg font-headings font-bold block">Mohammad Irfan</span>
                 <p className="text-white/80 text-xs mt-0.5 font-light">Founder & Visual Custodian</p>
