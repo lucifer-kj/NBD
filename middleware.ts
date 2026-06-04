@@ -39,15 +39,15 @@ export async function middleware(request: NextRequest) {
   // Security: Content Security Policy & Security Headers
   const cspHeader = `
     default-src 'self';
-    script-src 'self' 'unsafe-inline' https://cdn.shopify.com https://vitals.vercel-insights.com https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com;
-    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-    img-src 'self' blob: data: https://cdn.shopify.com https://*.shopifycdn.com https://v.fastly.net https://www.google-analytics.com https://www.googletagmanager.com https://google-analytics.com;
+    script-src 'self' 'unsafe-inline' https://cdn.shopify.com https://vitals.vercel-insights.com https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com https://accounts.google.com;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com;
+    img-src 'self' blob: data: https://cdn.shopify.com https://*.shopifycdn.com https://v.fastly.net https://www.google-analytics.com https://www.googletagmanager.com https://google-analytics.com https://*.googleusercontent.com https://*.google.com;
     font-src 'self' https://fonts.gstatic.com;
-    connect-src 'self' https://*.shopify.com https://*.google-analytics.com https://vitals.vercel-insights.com https://account.naazbook.in https://3xbr00-f7.myshopify.com;
-    frame-src 'self' https://www.googletagmanager.com https://*.shopify.com;
+    connect-src 'self' https://*.shopify.com https://*.google-analytics.com https://vitals.vercel-insights.com https://account.naazbook.in https://3xbr00-f7.myshopify.com https://accounts.google.com;
+    frame-src 'self' https://www.googletagmanager.com https://*.shopify.com https://accounts.google.com;
     object-src 'none';
     base-uri 'self';
-    form-action 'self' https://*.shopify.com https://account.naazbook.in;
+    form-action 'self' https://*.shopify.com https://account.naazbook.in https://accounts.google.com;
     frame-ancestors 'self';
     upgrade-insecure-requests;
   `.replace(/\s{2,}/g, ' ').trim();
