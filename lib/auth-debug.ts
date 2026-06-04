@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { Redis } from '@upstash/redis';
 
 export type AuthDebugStep = {
   timestamp: string;
@@ -83,17 +84,44 @@ export function createAuthDebugContext(request: Request) {
 
 // Lightweight debug context usable outside of an HTTP Request (e.g., NextAuth callbacks)
 export function createDebug(name?: string) {
-  const enabled = process.env.AUTH_DEBUG === 'true';
   const id = `${name ?? 'auth'}-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+  const steps: any[] = [];
+
   function step(stepName: string, message: string, details?: unknown) {
-    if (!enabled) return;
-    const payload = { id, timestamp: new Date().toISOString(), step: stepName, message, details };
-    console.info('[AUTH DEBUG]', payload);
+    const payload = { timestamp: new Date().toISOString(), step: stepName, message, details };
+    steps.push(payload);
+    console.info(`[AUTH DEBUG ${id}] ${stepName}: ${message}`, details);
   }
+
   function error(stepName: string, err: unknown) {
-    if (!enabled) return;
-    const payload = { id, timestamp: new Date().toISOString(), step: stepName, error: err instanceof Error ? { name: err.name, message: err.message, stack: err.stack } : err };
-    console.error('[AUTH DEBUG]', payload);
+    const errObj = err instanceof Error ? { name: err.name, message: err.message, stack: err.stack } : err;
+    const payload = { timestamp: new Date().toISOString(), step: stepName, error: errObj };
+    steps.push(payload);
+    console.error(`[AUTH DEBUG ERROR ${id}] ${stepName}`, errObj);
   }
-  return { id, step, error };
+
+  async function commit(identifier?: string) {
+    try {
+      const redisUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+      const redisToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+      if (!redisUrl || !redisToken) return;
+
+      const redis = new Redis({ url: redisUrl, token: redisToken });
+      const logKey = 'auth:diagnostics:logs';
+      const logEntry = {
+        traceId: id,
+        name: name || 'auth',
+        identifier: identifier || 'unknown',
+        timestamp: new Date().toISOString(),
+        steps
+      };
+
+      await redis.lpush(logKey, JSON.stringify(logEntry));
+      await redis.ltrim(logKey, 0, 49); // Keep last 50 entries
+    } catch (e) {
+      console.error('Failed to commit auth trace to Redis:', e);
+    }
+  }
+
+  return { id, step, error, commit };
 }

@@ -277,6 +277,8 @@ export async function GET(req: NextRequest) {
   const isEnvHealthy = Object.values(envResults).every(v => v.status === 'PASS' || ('warning' in v && v.warning));
   log(`Environment Health: ${isEnvHealthy ? 'HEALTHY' : 'UNHEALTHY (missing core variables)'}`);
 
+  const authLogs: any[] = [];
+
   // 3. Perform Redis Connection Handshake
   log('Initiating connection handshake to Upstash Redis...');
   const redisResults = {
@@ -346,6 +348,27 @@ export async function GET(req: NextRequest) {
           redisResults.keys.lastRotation = { present: true, value: formattedDate };
           log(`Last key rotation occurred at: ${formattedDate}`);
         }
+      }
+
+      // Fetch auth diagnostics logs from Redis
+      log('Fetching recent authentication diagnostics logs from Redis...');
+      try {
+        const rawAuthLogs = await redis.lrange('auth:diagnostics:logs', 0, 49);
+        if (rawAuthLogs && rawAuthLogs.length > 0) {
+          log(`Found ${rawAuthLogs.length} auth trace log entries in Redis.`);
+          for (const raw of rawAuthLogs) {
+            try {
+              const entry = typeof raw === 'string' ? JSON.parse(raw) : raw;
+              authLogs.push(entry);
+            } catch (err) {
+              log(`Error parsing auth log entry: ${err instanceof Error ? err.message : String(err)}`);
+            }
+          }
+        } else {
+          log('No auth trace log entries found in Redis.');
+        }
+      } catch (logFetchErr) {
+        log(`Failed to fetch auth:diagnostics:logs: ${logFetchErr instanceof Error ? logFetchErr.message : String(logFetchErr)}`);
       }
     } catch (e) {
       redisResults.error = e instanceof Error ? e.message : String(e);
@@ -588,7 +611,8 @@ export async function GET(req: NextRequest) {
     redis: redisResults,
     storefront: storefrontResults,
     admin: adminResults,
-    logs
+    logs,
+    authLogs
   };
 
   const html = getDashboardHtml(dashboardData, secretParam || '', isEnvHealthy);
@@ -621,6 +645,83 @@ function getDashboardHtml(data: any, secretKey: string, isEnvHealthy: boolean): 
     : '';
 
   const redisError = data.redis.error || '';
+
+  const escapeHtml = (str: string) => {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  };
+
+  let authLogsHtml = '';
+  if (!data.authLogs || data.authLogs.length === 0) {
+    authLogsHtml = `
+      <div style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.9rem;">
+        No authentication trace logs recorded in Redis yet. Run a login attempt to generate logs.
+      </div>
+    `;
+  } else {
+    authLogsHtml = `
+      <div class="timeline-container">
+        ${data.authLogs.map((log: any, idx: number) => {
+          const hasError = log.steps?.some((s: any) => s.step?.includes('error') || s.error || s.step?.includes('failed') || s.step?.includes('rate_limit') || s.step?.includes('fail'));
+          const isSuccess = log.steps?.some((s: any) => s.step?.includes('success'));
+          const statusClass = hasError ? 'fail' : (isSuccess ? 'pass' : 'warning');
+          const statusText = hasError ? 'FAILED' : (isSuccess ? 'SUCCESS' : 'IN_PROGRESS');
+          
+          return `
+            <div class="timeline-card" style="border-left: 4px solid ${hasError ? 'var(--danger-red)' : (isSuccess ? 'var(--islamic-green-glowing)' : 'var(--warning-amber)')}">
+              <details ${idx === 0 ? 'open' : ''}>
+                <summary class="timeline-card-header">
+                  <div class="timeline-card-title">
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                    <span>${log.name || 'auth-flow'}</span>
+                    <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-secondary); opacity: 0.8;">(${log.identifier || 'unknown'})</span>
+                  </div>
+                  <div class="timeline-card-meta">
+                    <span>ID: <code>${log.traceId || 'N/A'}</code></span>
+                    <span>${new Date(log.timestamp).toLocaleString()}</span>
+                    <span style="color: var(--islamic-gold); font-size: 0.9rem; margin-left: 0.25rem;">▼</span>
+                  </div>
+                </summary>
+                
+                <div class="timeline-card-body">
+                  ${log.steps?.map((step: any) => {
+                    const stepTime = step.timestamp ? new Date(step.timestamp).toLocaleTimeString() : 'N/A';
+                    const isStepErr = step.step?.includes('error') || step.error || step.step?.includes('failed') || step.step?.includes('rate_limit') || step.step?.includes('fail');
+                    const isStepSuccess = step.step?.includes('success');
+                    const dotClass = isStepErr ? 'error' : (isStepSuccess ? 'success' : 'step-info');
+                    
+                    let stepDetailsHtml = '';
+                    const detailsObj = step.details || step.error;
+                    if (detailsObj !== undefined && detailsObj !== null) {
+                      stepDetailsHtml = `
+                        <div class="trace-step-details">${typeof detailsObj === 'object' ? escapeHtml(JSON.stringify(detailsObj, null, 2)) : escapeHtml(String(detailsObj))}</div>
+                      `;
+                    }
+
+                    return `
+                      <div class="trace-step">
+                        <span class="trace-dot ${dotClass}"></span>
+                        <div class="trace-step-header">
+                          <span>${step.step || 'step'}</span>
+                          <span class="trace-step-time">${stepTime}</span>
+                        </div>
+                        <div class="trace-step-msg">${step.message || (isStepErr ? 'An error occurred.' : '')}</div>
+                        ${stepDetailsHtml}
+                      </div>
+                    `;
+                  }).join('') || '<div style="color: var(--text-muted); font-size: 0.8rem;">No trace steps recorded.</div>'}
+                </div>
+              </details>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
 
   return `
     <!DOCTYPE html>
@@ -1114,6 +1215,124 @@ function getDashboardHtml(data: any, secretKey: string, isEnvHealthy: boolean): 
           color: var(--text-primary);
           border-color: var(--border-glass);
         }
+
+        /* Live Auth Diagnostics Timeline */
+        .timeline-container {
+          margin-top: 1rem;
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+        .timeline-card {
+          background: rgba(0, 0, 0, 0.2);
+          border: 1px solid var(--border-glass);
+          border-radius: 16px;
+          padding: 1.25rem;
+          margin-bottom: 0.5rem;
+          transition: all 0.2s ease;
+        }
+        .timeline-card:hover {
+          border-color: rgba(255, 255, 255, 0.15);
+          background: rgba(255, 255, 255, 0.03);
+        }
+        .timeline-card-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          cursor: pointer;
+          user-select: none;
+          outline: none;
+          list-style: none;
+        }
+        .timeline-card-header::-webkit-details-marker {
+          display: none;
+        }
+        .timeline-card-title {
+          font-family: 'Outfit', sans-serif;
+          font-size: 1.05rem;
+          font-weight: 700;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+        .timeline-card-meta {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.75rem;
+          color: var(--text-muted);
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+        .timeline-card-body {
+          margin-top: 1.25rem;
+          padding-top: 1.25rem;
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+        .trace-step {
+          position: relative;
+          padding-left: 1.5rem;
+          border-left: 2px solid rgba(255, 255, 255, 0.05);
+          padding-bottom: 0.5rem;
+        }
+        .trace-step:last-child {
+          border-left: none;
+          padding-bottom: 0;
+        }
+        .trace-dot {
+          position: absolute;
+          left: -6px;
+          top: 4px;
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: var(--text-muted);
+        }
+        .trace-dot.success {
+          background: var(--islamic-green-glowing);
+          box-shadow: 0 0 8px var(--islamic-green-glowing);
+        }
+        .trace-dot.error {
+          background: var(--danger-red);
+          box-shadow: 0 0 8px var(--danger-red);
+        }
+        .trace-dot.step-info {
+          background: var(--islamic-gold);
+          box-shadow: 0 0 6px var(--islamic-gold);
+        }
+        .trace-step-header {
+          display: flex;
+          justify-content: space-between;
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+        .trace-step-time {
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.75rem;
+          color: var(--text-muted);
+        }
+        .trace-step-msg {
+          font-size: 0.8rem;
+          color: var(--text-secondary);
+          margin-top: 0.25rem;
+        }
+        .trace-step-details {
+          background: rgba(0, 0, 0, 0.4);
+          border: 1px solid var(--border-glass);
+          border-radius: 8px;
+          padding: 0.5rem 0.75rem;
+          margin-top: 0.5rem;
+          font-family: 'JetBrains Mono', monospace;
+          font-size: 0.75rem;
+          color: var(--islamic-gold-glow);
+          white-space: pre-wrap;
+          word-break: break-all;
+          max-height: 150px;
+          overflow-y: auto;
+        }
       </style>
     </head>
     <body>
@@ -1299,6 +1518,18 @@ function getDashboardHtml(data: any, secretKey: string, isEnvHealthy: boolean): 
               </div>
             </div>
             ${adminError ? `<div class="error-block">${adminError}</div>` : ''}
+          </div>
+
+          <!-- Card: Live Authentication & OAuth Session Diagnostics (Full Width) -->
+          <div class="card full-width">
+            <div class="sandbox-title" style="margin-bottom:0.25rem;">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color: var(--islamic-gold);"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+              Live Authentication & OAuth Session Diagnostics
+            </div>
+            <div style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1.5rem;">
+              Displays the active execution steps of Credentials, Google OAuth, and One Tap login pipelines. Use this timeline to inspect exact trace logs, exceptions, and tokens in real-time.
+            </div>
+            ${authLogsHtml}
           </div>
 
           <!-- Card 5: Sandbox Session Decryption Suite (Full Width) -->

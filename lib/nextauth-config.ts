@@ -114,7 +114,7 @@ export const authOptions: NextAuthOptions = {
           }
 
           debug.step('google_onetap_success', 'Google One Tap login succeeded', { customerId });
-          return {
+          const user = {
             id: email,
             email,
             shopifyToken: tokenObj.accessToken,
@@ -122,8 +122,11 @@ export const authOptions: NextAuthOptions = {
             customerId,
             name: customerName || name
           };
+          await debug.commit(email);
+          return user;
         } catch (e) {
           debug.error('google_onetap_error', e);
+          await debug.commit(credentials?.credential ? 'onetap_verification' : undefined);
           return null;
         }
       }
@@ -136,9 +139,12 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials): Promise<AppAuthUser | null> {
         const debug = createDebug('nextauth-credentials');
+        let email: string | undefined = undefined;
         try {
           if (!credentials) return null;
-          const { email, password } = credentials as { email: string; password: string };
+          const creds = credentials as { email: string; password: string };
+          email = creds.email;
+          const { password } = creds;
           debug.step('credentials_authorize', 'Authorize called for credentials', { emailPresent: !!email });
           
           // Rate Limit check based on client IP
@@ -182,7 +188,7 @@ export const authOptions: NextAuthOptions = {
           }
 
           debug.step('credentials_authorize_success', 'Shopify login succeeded', { customerId });
-          return { 
+          const user = { 
             id: email, 
             email, 
             shopifyToken: tokenObj.accessToken, 
@@ -190,8 +196,11 @@ export const authOptions: NextAuthOptions = {
             customerId,
             name: customerName
           };
+          await debug.commit(email);
+          return user;
         } catch (e) {
           debug.error('credentials_authorize_error', e);
+          await debug.commit(email);
           // If we explicitly threw the rate-limit error, bubble it up to user
           if (e instanceof Error && e.message.includes('Too many login attempts')) {
             throw e;
@@ -245,6 +254,7 @@ export const authOptions: NextAuthOptions = {
             token.shopifyTokenExpiresAt = (authUser as any).shopifyTokenExpiresAt ?? null;
             token.customerId = authUser.customerId ?? null;
           }
+          await debug.commit(token.email || undefined);
         } else {
           // Background token renewal check
           const shopifyToken = token.shopifyToken;
@@ -269,14 +279,17 @@ export const authOptions: NextAuthOptions = {
                 debug.step('jwt_token_renewal_success', 'Successfully renewed Shopify customer token', {
                   newExpiresAt: renewalRes.expiresAt
                 });
+                await debug.commit(token.email || undefined);
               } else {
                 debug.step('jwt_token_renewal_failed', 'Shopify token renewal returned errors', renewalRes.errors);
+                await debug.commit(token.email || undefined);
               }
             }
           }
         }
       } catch (e) {
         debug.error('jwt_error', e);
+        await debug.commit(token.email || undefined);
       }
       return token;
     },

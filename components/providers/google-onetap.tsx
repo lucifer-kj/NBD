@@ -23,56 +23,57 @@ export default function GoogleOneTap() {
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const promptAttempted = useRef(false);
 
-  const initializeAndPrompt = () => {
-    if (!window.google || status !== "unauthenticated" || promptAttempted.current) {
-      return;
-    }
-
-    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    if (!clientId) {
-      console.warn("NEXT_PUBLIC_GOOGLE_CLIENT_ID is not defined in environment variables.");
-      return;
-    }
-
-    try {
-      promptAttempted.current = true;
-      window.google.accounts.id.initialize({
-        client_id: clientId,
-        callback: async (response: any) => {
-          console.info("Google One Tap (FedCM) credential received.");
-          const result = await signIn("google-onetap", {
-            credential: response.credential,
-            redirect: false,
-          });
-          if (result?.error) {
-            console.error("NextAuth Google One Tap sign-in error:", result.error);
-            promptAttempted.current = false; // Reset to allow retry
-          } else {
-            console.info("NextAuth Google One Tap sign-in succeeded.");
-          }
-        },
-        fedcm_support: true, // Enforce browser-native FedCM flow
-        cancel_on_tap_outside: false,
-      });
-
-      window.google.accounts.id.prompt((notification) => {
-        if (notification.isNotDisplayed()) {
-          console.warn("One Tap prompt was not displayed:", notification.getNotDisplayedReason());
-          promptAttempted.current = false;
-        } else if (notification.isSkippedMoment()) {
-          console.warn("One Tap prompt skipped moment:", notification.getSkippedReason());
-          promptAttempted.current = false;
-        } else if (notification.isDismissedMoment()) {
-          console.info("One Tap prompt dismissed by user:", notification.getDismissedReason());
-        }
-      });
-    } catch (e) {
-      console.error("Error initializing Google One Tap:", e);
-      promptAttempted.current = false;
-    }
-  };
-
   useEffect(() => {
+    const initializeAndPrompt = () => {
+      if (!window.google || status !== "unauthenticated" || promptAttempted.current) {
+        return;
+      }
+
+      const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+      if (!clientId) {
+        console.warn("NEXT_PUBLIC_GOOGLE_CLIENT_ID is not defined in environment variables.");
+        return;
+      }
+
+      try {
+        promptAttempted.current = true;
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: async (response: any) => {
+            console.info("Google One Tap (FedCM) credential received.");
+            const result = await signIn("google-onetap", {
+              credential: response.credential,
+              redirect: false,
+            });
+            if (result?.error) {
+              console.error("NextAuth Google One Tap sign-in error:", result.error);
+              promptAttempted.current = false; // Reset to allow retry
+            } else {
+              console.info("NextAuth Google One Tap sign-in succeeded.");
+              window.location.href = "/account";
+            }
+          },
+          fedcm_support: true, // Enforce browser-native FedCM flow
+          cancel_on_tap_outside: false,
+        });
+
+        window.google.accounts.id.prompt((notification) => {
+          if (notification.isNotDisplayed()) {
+            console.warn("One Tap prompt was not displayed:", notification.getNotDisplayedReason());
+            promptAttempted.current = false;
+          } else if (notification.isSkippedMoment()) {
+            console.warn("One Tap prompt skipped moment:", notification.getSkippedReason());
+            promptAttempted.current = false;
+          } else if (notification.isDismissedMoment()) {
+            console.info("One Tap prompt dismissed by user:", notification.getDismissedReason());
+          }
+        });
+      } catch (e) {
+        console.error("Error initializing Google One Tap:", e);
+        promptAttempted.current = false;
+      }
+    };
+
     if (scriptLoaded && status === "unauthenticated") {
       initializeAndPrompt();
     }
