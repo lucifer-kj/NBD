@@ -269,7 +269,7 @@ export const authOptions: NextAuthOptions = {
 
           if (account.provider === 'credentials' || account.provider === 'google-onetap') {
             token.shopifyToken = authUser.shopifyToken ?? null;
-            token.shopifyTokenExpiresAt = (authUser as any).shopifyTokenExpiresAt ?? null;
+            token.shopifyTokenExpiresAt = authUser.shopifyTokenExpiresAt ?? null;
             token.customerId = authUser.customerId ?? null;
           }
           await debug.commit(token.email || undefined);

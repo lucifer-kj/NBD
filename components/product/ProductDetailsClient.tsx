@@ -398,26 +398,29 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
               {isLoading ? "Processing..." : "Buy Now"}
               {!isLoading && <ArrowRight size={20} className="shrink-0" />}
             </Button>
+          </div>
 
+          {/* Wishlist & Share Actions */}
+          <div className="flex items-center justify-end gap-3">
             <button 
               onClick={handleWishlistToggle}
               disabled={isSyncing}
-              className={`p-4 rounded-xl border-2 transition-all ${
+              className={`p-3 rounded-xl border-2 transition-all ${
                 isItemInWishlist 
                   ? 'bg-red-50 border-red-100 text-red-500' 
                   : 'bg-gray-50 border-gray-100 text-gray-400 hover:text-red-500 hover:bg-red-50'
               }`}
               aria-label={isItemInWishlist ? "Remove from wishlist" : "Add to wishlist"}
             >
-              <Heart size={24} fill={isItemInWishlist ? "currentColor" : "none"} />
+              <Heart size={20} fill={isItemInWishlist ? "currentColor" : "none"} />
             </button>
 
             <button 
               onClick={handleShare}
-              className="p-4 rounded-xl border-2 transition-all bg-gray-50 border-gray-100 text-gray-400 hover:text-[var(--islamic-gold)] hover:bg-[var(--islamic-beige)]"
+              className="p-3 rounded-xl border-2 transition-all bg-gray-50 border-gray-100 text-gray-400 hover:text-[var(--islamic-gold)] hover:bg-[var(--islamic-beige)]"
               aria-label="Share product"
             >
-              <Share2 size={24} />
+              <Share2 size={20} />
             </button>
           </div>
 

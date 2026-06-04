@@ -277,7 +277,20 @@ export async function GET(req: NextRequest) {
   const isEnvHealthy = Object.values(envResults).every(v => v.status === 'PASS' || ('warning' in v && v.warning));
   log(`Environment Health: ${isEnvHealthy ? 'HEALTHY' : 'UNHEALTHY (missing core variables)'}`);
 
-  const authLogs: any[] = [];
+  type AuthLog = {
+    name?: string;
+    identifier?: string;
+    traceId?: string;
+    timestamp: string;
+    steps?: Array<{
+      step?: string;
+      message?: string;
+      timestamp?: string;
+      error?: unknown;
+      details?: unknown;
+    }>;
+  };
+  const authLogs: AuthLog[] = [];
 
   // 3. Perform Redis Connection Handshake
   log('Initiating connection handshake to Upstash Redis...');
@@ -665,12 +678,12 @@ function getDashboardHtml(data: any, secretKey: string, isEnvHealthy: boolean): 
   } else {
     authLogsHtml = `
       <div class="timeline-container">
-        ${data.authLogs.map((log: any, idx: number) => {
-          const hasError = log.steps?.some((s: any) => s.step?.includes('error') || s.error || s.step?.includes('failed') || s.step?.includes('rate_limit') || s.step?.includes('fail'));
-          const isSuccess = log.steps?.some((s: any) => s.step?.includes('success'));
-          const statusClass = hasError ? 'fail' : (isSuccess ? 'pass' : 'warning');
-          const statusText = hasError ? 'FAILED' : (isSuccess ? 'SUCCESS' : 'IN_PROGRESS');
-          
+            ${data.authLogs.map((log: Record<string, unknown>, idx: number) => {
+              const steps = (log.steps as Array<Record<string, unknown>>) || [];
+              const hasError = steps.some((s: Record<string, unknown>) => (s.step as string)?.includes('error') || s.error || (s.step as string)?.includes('failed') || (s.step as string)?.includes('rate_limit') || (s.step as string)?.includes('fail'));
+              const isSuccess = steps.some((s: Record<string, unknown>) => (s.step as string)?.includes('success'));
+              const statusClass = hasError ? 'fail' : (isSuccess ? 'pass' : 'warning');
+              const statusText = hasError ? 'FAILED' : (isSuccess ? 'SUCCESS' : 'IN_PROGRESS');
           return `
             <div class="timeline-card" style="border-left: 4px solid ${hasError ? 'var(--danger-red)' : (isSuccess ? 'var(--islamic-green-glowing)' : 'var(--warning-amber)')}">
               <details ${idx === 0 ? 'open' : ''}>
@@ -682,16 +695,17 @@ function getDashboardHtml(data: any, secretKey: string, isEnvHealthy: boolean): 
                   </div>
                   <div class="timeline-card-meta">
                     <span>ID: <code>${log.traceId || 'N/A'}</code></span>
-                    <span>${new Date(log.timestamp).toLocaleString()}</span>
+                    <span>${new Date(log.timestamp as string).toLocaleString()}</span>
                     <span style="color: var(--islamic-gold); font-size: 0.9rem; margin-left: 0.25rem;">▼</span>
                   </div>
                 </summary>
                 
                 <div class="timeline-card-body">
-                  ${log.steps?.map((step: any) => {
-                    const stepTime = step.timestamp ? new Date(step.timestamp).toLocaleTimeString() : 'N/A';
-                    const isStepErr = step.step?.includes('error') || step.error || step.step?.includes('failed') || step.step?.includes('rate_limit') || step.step?.includes('fail');
-                    const isStepSuccess = step.step?.includes('success');
+                  ${steps.map((step: Record<string, unknown>) => {
+                    const stepTime = step.timestamp ? new Date(step.timestamp as string).toLocaleTimeString() : 'N/A';
+                    const stepStr = step.step as string;
+                    const isStepErr = stepStr?.includes('error') || step.error || stepStr?.includes('failed') || stepStr?.includes('rate_limit') || stepStr?.includes('fail');
+                    const isStepSuccess = stepStr?.includes('success');
                     const dotClass = isStepErr ? 'error' : (isStepSuccess ? 'success' : 'step-info');
                     
                     let stepDetailsHtml = '';

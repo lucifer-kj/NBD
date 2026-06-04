@@ -46,7 +46,7 @@ export default function NewsletterSection() {
       {/* Subtle geometric pattern accent */}
       <span className="islamic-pattern absolute inset-0 opacity-15 pointer-events-none z-0" aria-hidden="true" />
       
-      <div className="container mx-auto px-4 md:px-6 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
         <div className="max-w-2xl mx-auto text-center">
           <motion.h2
             variants={fadeInUp}
@@ -114,7 +114,7 @@ export default function NewsletterSection() {
                   ) : (
                     <Send size={16} />
                   )}
-                  {loading ? "Subscribing..." : "Subscribe & Stay Enlightened"}
+                  {loading ? "Subscribing..." : "Subscribe"}
                 </motion.button>
               </form>
             )}

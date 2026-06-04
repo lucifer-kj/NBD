@@ -19,13 +19,13 @@ export default function LegacySection() {
       <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="container mx-auto px-4 md:px-6">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
         <motion.div 
           ref={ref}
           initial="hidden"
           animate={inView ? "show" : "hidden"}
           variants={reduced ? undefined : staggerContainerSlow}
-          className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center max-w-6xl mx-auto"
+          className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center"
         >
           {/* Left: Text Content & Editorial Pillars (7 cols) */}
           <motion.div variants={fadeInLeft} className="lg:col-span-7 space-y-6">

@@ -4,8 +4,9 @@ import { Redis } from '@upstash/redis';
 export type AuthDebugStep = {
   timestamp: string;
   step: string;
-  message: string;
+  message?: string;
   details?: unknown;
+  error?: unknown;
 };
 
 export class AuthDebugContext {
@@ -85,7 +86,7 @@ export function createAuthDebugContext(request: Request) {
 // Lightweight debug context usable outside of an HTTP Request (e.g., NextAuth callbacks)
 export function createDebug(name?: string) {
   const id = `${name ?? 'auth'}-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
-  const steps: any[] = [];
+  const steps: AuthDebugStep[] = [];
 
   function step(stepName: string, message: string, details?: unknown) {
     const payload = { timestamp: new Date().toISOString(), step: stepName, message, details };

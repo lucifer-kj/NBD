@@ -21,6 +21,20 @@ const HeroSection = () => {
     }
   }, [typewriterIndex]);
 
+  // Load Razorpay donation button script
+  useEffect(() => {
+    const container = document.getElementById('razorpay-donation-container');
+    if (container && !container.hasChildNodes()) {
+      const form = document.createElement('form');
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/payment-button.js';
+      script.setAttribute('data-payment_button_id', 'pl_SrYn1lmplsHeX0');
+      script.async = true;
+      form.appendChild(script);
+      container.appendChild(form);
+    }
+  }, []);
+
   return (
     <section className="relative h-[80vh] overflow-hidden flex items-center">
       {/* Background with CSS scroll-driven parallax effect */}
@@ -37,7 +51,7 @@ const HeroSection = () => {
       <div className="absolute inset-0 bg-gradient-to-br from-[var(--islamic-green-dark)]/90 via-[var(--islamic-green)]/70 to-[var(--islamic-green-dark)]/90 z-[1]"></div>
 
       {/* Enhanced Glassmorphism Quranic Verse Overlay */}
-      <div className="hidden lg:block absolute top-10 right-10 max-w-[320px] p-8 rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl text-right transform hover:scale-105 transition-all duration-700 z-10">
+      <div className="hidden lg:block absolute top-8 right-10 max-w-[300px] p-5 rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl text-right transform hover:scale-105 transition-all duration-700 z-10">
         <div className="relative z-10">
           <p className="font-arabic text-white text-l leading-loose mb-4 drop-shadow-lg">
             اقْرَأْ بِاسْمِ رَبِّكَ الَّذِي خَلَقَ
@@ -64,8 +78,23 @@ const HeroSection = () => {
         </div>
       </div>
 
+      {/* Razorpay Donation Button — positioned below the verse card */}
+      <div className="hidden lg:flex absolute bottom-8 right-10 z-10 group">
+        <div className="relative">
+          <div
+            id="razorpay-donation-container"
+            className="razorpay-donation-btn rounded-xl overflow-hidden shadow-lg border border-white/10 backdrop-blur-sm transition-all duration-300 hover:shadow-[0_8px_24px_rgba(212,168,83,0.3)] hover:scale-105"
+          />
+          {/* Tooltip */}
+          <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-[var(--islamic-green-dark)] text-white text-[10px] font-medium rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none shadow-lg">
+            Support our mission ✨
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[var(--islamic-green-dark)]"></div>
+          </div>
+        </div>
+      </div>
+
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-6 flex items-center">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6 flex items-center">
         <div className="max-w-2xl">
           <div className="inline-block px-3 py-1 rounded-full bg-[var(--islamic-gold)]/10 border border-[var(--islamic-gold)]/20 text-[var(--islamic-gold)] text-[10px] font-bold tracking-widest uppercase mb-4 animate-fade-in">
             Established 1967

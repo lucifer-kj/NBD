@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-  ProductsDropdown,
   SearchBox,
   UserActions,
   AnimatedCartIcon,
@@ -22,10 +21,7 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const productCategories = [
-    { name: 'Islamic Books', path: '/books', available: true },
-    { name: 'All Products', path: '/products', available: true },
-  ];
+
 
   return (
     <header
@@ -72,7 +68,12 @@ const Navbar = () => {
               Home
             </Link>
 
-            <ProductsDropdown productCategories={productCategories} />
+            <Link
+              href="/products"
+              className="text-white/90 hover:text-[var(--islamic-gold)] transition-colors duration-300 font-semibold text-base relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-[2px] after:bg-[var(--islamic-gold)] after:scale-x-0 hover:after:scale-x-100 after:transition-transform"
+            >
+              Products
+            </Link>
 
             <Link
               href="/blog"
