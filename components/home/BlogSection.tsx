@@ -2,63 +2,13 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Calendar, ChevronRight } from 'lucide-react';
-import { getBlogPosts, BlogPost } from '@/lib/blog';
+import { getBlogPosts } from '@/lib/blog';
 
 export default async function BlogSection() {
   const actualPosts = getBlogPosts();
   
-  // High quality default fallback posts to ensure 4 items are always populated to match the visual mock layout
-  const defaultPosts: BlogPost[] = [
-    {
-      slug: "complete-guide-islamic-books-india",
-      title: "The Complete Guide to Authentic Islamic Books & Classical Texts",
-      excerpt: "Explore the rich history, categorization, and validation of classical Islamic reference books in India. Learn what to look for when building your spiritual library.",
-      publishedAt: new Date().toISOString(),
-      author: "Shaykh Faraz",
-      image: "/Images/About.jpg",
-      content: "",
-      lastModified: new Date().toISOString()
-    },
-    {
-      slug: "significance-daily-quran-recitation",
-      title: "The Spiritual Impact of Daily Quran Recitation & Reflection",
-      excerpt: "A deep dive into the spiritual benefits of daily Quranic reading and reflection, drawing from authentic scholarly guidance and historical insights.",
-      publishedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-      author: "Mufti Irfan",
-      image: "/Images/Books.jpeg",
-      content: "",
-      lastModified: new Date().toISOString()
-    },
-    {
-      slug: "hadith-compilation-beginners-guide",
-      title: "Understanding Hadith Compilation: A Complete Beginner's Guide",
-      excerpt: "Learn how authentic traditions of the Prophet (PBUH) were compiled, categorized, and preserved by classical scholars over centuries.",
-      publishedAt: new Date(Date.now() - 86400000 * 5).toISOString(),
-      author: "Moulana Saad",
-      image: "/Images/Sahih Al-Bukhari.jpg",
-      content: "",
-      lastModified: new Date().toISOString()
-    },
-    {
-      slug: "how-to-choose-perfect-quran-stand-rehal",
-      title: "How to Choose the Perfect Quran Stand (Rehal) for Daily Reading",
-      excerpt: "A practical guide to selecting a Rehal stand based on ergonomic height, high-quality wood, craftsmanship, and daily usage patterns.",
-      publishedAt: new Date(Date.now() - 86400000 * 10).toISOString(),
-      author: "Naaz Editorial",
-      image: "/Images/Rehals.jpeg",
-      content: "",
-      lastModified: new Date().toISOString()
-    }
-  ];
-
-  // Merge so actual posts take precedence
+  // Display only actual posts, completely removing temporary mock blog fallbacks
   const displayPosts = [...actualPosts];
-  for (const defPost of defaultPosts) {
-    if (displayPosts.length >= 4) break;
-    if (!displayPosts.some(p => p.slug === defPost.slug)) {
-      displayPosts.push(defPost);
-    }
-  }
 
   if (displayPosts.length === 0) return null;
 
@@ -86,9 +36,9 @@ export default async function BlogSection() {
         </div>
 
         {/* Split Layout: Left side featured post, right side vertical list of posts */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-stretch">
-          {/* LEFT: Featured Post (3/5 Columns) */}
-          <div className="lg:col-span-3 h-full">
+        <div className={`grid grid-cols-1 ${listPosts.length > 0 ? 'lg:grid-cols-5' : 'lg:grid-cols-1 max-w-4xl mx-auto'} gap-8 items-stretch`}>
+          {/* LEFT: Featured Post (3/5 Columns, or full-width if no list posts) */}
+          <div className={`${listPosts.length > 0 ? 'lg:col-span-3' : 'lg:col-span-1'} h-full`}>
             <Link 
               href={`/blog/${featuredPost.slug}`}
               className="group flex flex-col h-full bg-[#FCFAF7] border border-[#e9e3d9] rounded-3xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-500"
@@ -98,7 +48,7 @@ export default async function BlogSection() {
                   src={featuredPost.image || '/Images/Books.jpeg'} 
                   alt={featuredPost.title}
                   fill
-                  sizes="(max-width: 1024px) 90vw, 600px"
+                  sizes="(max-width: 1024px) 90vw, 800px"
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
@@ -139,47 +89,49 @@ export default async function BlogSection() {
             </Link>
           </div>
 
-          {/* RIGHT: Stack of 3 list posts (2/5 Columns) */}
-          <div className="lg:col-span-2 flex flex-col gap-6 justify-between h-full">
-            {listPosts.map((post) => (
-              <Link 
-                key={post.slug} 
-                href={`/blog/${post.slug}`}
-                className="group flex gap-4 p-4 bg-white border border-[#e9e3d9] rounded-2xl hover:shadow-md transition-all duration-300 flex-1 items-center"
-              >
-                {/* Horizontal thumbnail image on the left with 16:9 aspect ratio */}
-                <div className="relative w-24 aspect-[16/9] sm:w-28 rounded-xl overflow-hidden shrink-0 bg-gray-50 border border-gray-100">
-                  <Image 
-                    src={post.image || '/Images/Books.jpeg'} 
-                    alt={post.title}
-                    fill
-                    sizes="120px"
-                    className="object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                </div>
-                
-                {/* Details on the right */}
-                <div className="flex flex-col flex-grow justify-between min-h-[90px]">
-                  <div>
-                    <span className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-1 block">
-                      {new Date(post.publishedAt).toLocaleDateString('en-IN', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric'
-                      })}
-                    </span>
-                    <h4 className="font-headings font-bold text-sm sm:text-base text-gray-800 line-clamp-2 leading-snug group-hover:text-[var(--islamic-gold)] transition-colors mb-2">
-                      {post.title}
-                    </h4>
+          {/* RIGHT: Stack of list posts (2/5 Columns, rendered only if list posts exist) */}
+          {listPosts.length > 0 && (
+            <div className="lg:col-span-2 flex flex-col gap-6 justify-between h-full">
+              {listPosts.map((post) => (
+                <Link 
+                  key={post.slug} 
+                  href={`/blog/${post.slug}`}
+                  className="group flex gap-4 p-4 bg-white border border-[#e9e3d9] rounded-2xl hover:shadow-md transition-all duration-300 flex-1 items-center"
+                >
+                  {/* Horizontal thumbnail image on the left with 16:9 aspect ratio */}
+                  <div className="relative w-24 aspect-[16/9] sm:w-28 rounded-xl overflow-hidden shrink-0 bg-gray-50 border border-gray-100">
+                    <Image 
+                      src={post.image || '/Images/Books.jpeg'} 
+                      alt={post.title}
+                      fill
+                      sizes="120px"
+                      className="object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
                   </div>
                   
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[var(--islamic-green)] group-hover:text-[var(--islamic-gold)] transition-colors">
-                    Read Article <ChevronRight size={12} />
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
+                  {/* Details on the right */}
+                  <div className="flex flex-col flex-grow justify-between min-h-[90px]">
+                    <div>
+                      <span className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-1 block">
+                        {new Date(post.publishedAt).toLocaleDateString('en-IN', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric'
+                        })}
+                      </span>
+                      <h4 className="font-headings font-bold text-sm sm:text-base text-gray-800 line-clamp-2 leading-snug group-hover:text-[var(--islamic-gold)] transition-colors mb-2">
+                        {post.title}
+                      </h4>
+                    </div>
+                    
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[var(--islamic-green)] group-hover:text-[var(--islamic-gold)] transition-colors">
+                      Read Article <ChevronRight size={12} />
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </section>
