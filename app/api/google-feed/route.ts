@@ -1,19 +1,20 @@
 import { getProducts } from '@/lib/shopify';
+import { getProductUrl } from '@/lib/url-helper';
 
 export async function GET() {
   const products = await getProducts({ first: 250 });
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in';
 
   let itemsXml = '';
 
   for (const product of products) {
-    const handle = product.handle;
     const vendor = product.vendor || 'Naaz Book Depot';
     
     for (const variant of product.variants) {
       const id = variant.sku || variant.id.replace('gid://shopify/ProductVariant/', '');
       const title = variant.title === 'Default Title' ? product.title : `${product.title} - ${variant.title}`;
       const description = product.description || title;
-      const link = `https://www.naazbook.in/product/${handle}`;
+      const link = `${baseUrl}${getProductUrl(product)}`;
       const imageLink = variant.image?.url || product.featuredImage?.url || '';
       const price = variant.price.amount;
       const currency = variant.price.currencyCode;

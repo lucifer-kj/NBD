@@ -18,6 +18,14 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Redirect singular /product/... to plural /products/...
+  if (pathname.startsWith('/product/')) {
+    const targetPathname = pathname.replace(/^\/product\//, '/products/');
+    const url = request.nextUrl.clone();
+    url.pathname = targetPathname;
+    return NextResponse.redirect(url, 301);
+  }
+
   // Check authentication status using NextAuth JWE token directly
   let isAuthenticated = false;
   try {
