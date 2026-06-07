@@ -32,9 +32,10 @@ import { useToast } from '@/components/ui/toast';
 interface ProductDetailsClientProps {
   product: ReshapedProduct;
   initialWishlisted?: boolean;
+  reviews?: any[];
 }
 
-export default function ProductDetailsClient({ product }: ProductDetailsClientProps) {
+export default function ProductDetailsClient({ product, reviews }: ProductDetailsClientProps) {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
@@ -141,9 +142,17 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
     }
   };
 
-  // Extract metafields
+  // Extract rating from reviews or metafields
+  const reviewsRating = reviews && reviews.length > 0
+    ? parseFloat((reviews.reduce((acc: number, r: any) => acc + r.rating, 0) / reviews.length).toFixed(1))
+    : null;
+
   const ratingMeta = product.metafields?.find(m => m && m.namespace === 'reviews' && m.key === 'rating');
-  const ratingValue = ratingMeta ? JSON.parse(ratingMeta.value).value : 4.8; // Fallback
+  const metaRatingValue = ratingMeta ? parseFloat(JSON.parse(ratingMeta.value).value) : null;
+
+  const ratingValue = reviewsRating ?? metaRatingValue;
+
+  const ratingCount = reviews ? reviews.length : (ratingMeta ? JSON.parse(product.metafields?.find(m => m && m.namespace === 'reviews' && m.key === 'votes')?.value || '{"value":0}').value : 0);
   const careInstructions = product.metafields?.find(m => m && m.namespace === 'custom' && m.key === 'care_instructions')?.value;
   const techSpecs = product.metafields?.find(m => m && m.namespace === 'custom' && m.key === 'technical_specs')?.value;
 
@@ -285,10 +294,14 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
         </h1>
         
         {/* Rating */}
-        <div className="flex items-center gap-4 mb-4">
-          <StarRating rating={ratingValue} size="md" />
-          <span className="text-sm text-gray-500">({ratingValue} • Judge.me Certified)</span>
-        </div>
+        {ratingValue !== null && ratingValue > 0 && (
+          <div className="flex items-center gap-4 mb-4">
+            <StarRating rating={ratingValue} size="md" />
+            <span className="text-sm text-gray-500">
+              ({ratingValue.toFixed(1)}{ratingCount > 0 ? ` • ${ratingCount} ${ratingCount === 1 ? 'Review' : 'Reviews'}` : ''} • Judge.me Certified)
+            </span>
+          </div>
+        )}
 
         {/* Naaz Authenticity Stamp */}
         <div className="mb-6 flex items-center gap-3.5 p-3.5 rounded-2xl bg-gradient-to-r from-emerald-50/70 via-amber-50/40 to-emerald-50/30 border border-emerald-100 shadow-sm backdrop-blur-sm">

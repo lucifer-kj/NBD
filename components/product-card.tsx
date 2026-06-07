@@ -67,6 +67,9 @@ export default function ProductCard({
   const inStock = product.availableForSale;
   const productUrl = getProductUrl(product);
 
+  const ratingMeta = product.metafields?.find(m => m && m.namespace === 'reviews' && m.key === 'rating');
+  const ratingValue = ratingMeta ? parseFloat(JSON.parse(ratingMeta.value).value) : null;
+
   return (
     <motion.div
       ref={ref}
@@ -126,18 +129,30 @@ export default function ProductCard({
             
             {/* Rating & Stock Status */}
             <div className="flex flex-wrap items-center justify-between mb-3 gap-1.5">
-              <div className="flex items-center gap-1 min-w-0">
-                <div className="flex shrink-0">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      size={10}
-                      className="fill-[var(--islamic-gold)] text-[var(--islamic-gold)]"
-                    />
-                  ))}
+              {ratingValue !== null && ratingValue > 0 ? (
+                <div className="flex items-center gap-1 min-w-0">
+                  <div className="flex shrink-0">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        size={10}
+                        className={
+                          i < Math.floor(ratingValue)
+                            ? "fill-[var(--islamic-gold)] text-[var(--islamic-gold)] shrink-0"
+                            : "text-gray-300 shrink-0"
+                        }
+                      />
+                    ))}
+                  </div>
+                  <span className="text-[9px] font-bold text-[var(--charcoal)]/50 tracking-tighter uppercase truncate">
+                    {ratingValue.toFixed(1)}
+                  </span>
                 </div>
-                <span className="text-[9px] font-bold text-[var(--charcoal)]/50 tracking-tighter uppercase truncate">Authentic</span>
-              </div>
+              ) : (
+                <span className="text-[9px] font-bold text-[var(--charcoal)]/40 tracking-tighter uppercase truncate">
+                  Authentic Edition
+                </span>
+              )}
               {inStock ? (
                 <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-100 shrink-0">
                   In Stock

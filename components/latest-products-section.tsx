@@ -64,6 +64,9 @@ export default function LatestProductsSection({ products, loading = false }: Lat
   const featuredProduct = products[0];
   const gridProducts = products.slice(1, 7);
 
+  const featuredRatingMeta = featuredProduct?.metafields?.find(m => m && m.namespace === 'reviews' && m.key === 'rating');
+  const featuredRatingValue = featuredRatingMeta ? parseFloat(JSON.parse(featuredRatingMeta.value).value) : null;
+
   return (
     <section className="py-16 md:py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
@@ -149,14 +152,30 @@ export default function LatestProductsSection({ products, loading = false }: Lat
 
                     {/* Generic Rating & Stock Status */}
                     <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-1.5">
-                        <div className="flex text-[#c19a4e]">
-                          {[...Array(5)].map((_, i) => (
-                            <Star key={i} size={14} className="fill-current" />
-                          ))}
+                      {featuredRatingValue !== null && featuredRatingValue > 0 ? (
+                        <div className="flex items-center gap-1.5">
+                          <div className="flex text-[#c19a4e]">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                size={14}
+                                className={
+                                  i < Math.floor(featuredRatingValue)
+                                    ? "fill-current"
+                                    : "text-gray-600"
+                                }
+                              />
+                            ))}
+                          </div>
+                          <span className="text-[10px] text-white/50 font-bold uppercase tracking-widest">
+                            {featuredRatingValue.toFixed(1)}
+                          </span>
                         </div>
-                        <span className="text-[10px] text-white/50 font-bold uppercase tracking-widest">Authentic</span>
-                      </div>
+                      ) : (
+                        <span className="text-[10px] text-white/40 font-bold uppercase tracking-widest">
+                          Authentic Edition
+                        </span>
+                      )}
                       {featuredProduct.availableForSale ? (
                         <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
                           In Stock
@@ -201,6 +220,9 @@ export default function LatestProductsSection({ products, loading = false }: Lat
                 const productUrl = getProductUrl(product);
                 const isItemInWishlist = isInWishlist(product.id);
 
+                const ratingMeta = product.metafields?.find(m => m && m.namespace === 'reviews' && m.key === 'rating');
+                const ratingValue = ratingMeta ? parseFloat(JSON.parse(ratingMeta.value).value) : null;
+
                 return (
                   <motion.div
                     key={product.id}
@@ -243,11 +265,30 @@ export default function LatestProductsSection({ products, loading = false }: Lat
 
                         {/* Stars & Stock */}
                         <div className="flex items-center justify-between mb-3 gap-1">
-                          <div className="flex text-[#c19a4e] shrink-0">
-                            {[...Array(5)].map((_, i) => (
-                              <Star key={i} size={10} className="fill-current" />
-                            ))}
-                          </div>
+                          {ratingValue !== null && ratingValue > 0 ? (
+                            <div className="flex items-center gap-1 min-w-0">
+                              <div className="flex text-[#c19a4e] shrink-0">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    size={10}
+                                    className={
+                                      i < Math.floor(ratingValue)
+                                        ? "fill-current shrink-0"
+                                        : "text-gray-300 shrink-0"
+                                    }
+                                  />
+                                ))}
+                              </div>
+                              <span className="text-[9px] font-bold text-gray-500 uppercase truncate">
+                                {ratingValue.toFixed(1)}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-[9px] font-bold text-gray-400 uppercase truncate">
+                              Authentic
+                            </span>
+                          )}
                           {product.availableForSale ? (
                             <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-100 shrink-0">
                               In Stock

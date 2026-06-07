@@ -164,7 +164,7 @@ export default async function BookDetailPage({ params }: PageProps) {
       />
       <div className="container mx-auto px-4 py-12 md:py-16 max-w-6xl">
         {/* Main Product Details Section */}
-        <ProductDetailsClient product={product} />
+        <ProductDetailsClient product={product} reviews={reviews} />
 
         {/* Reviews Section */}
         <ProductReviews productId={product.id} productTitle={product.title} />
