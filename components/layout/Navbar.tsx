@@ -45,14 +45,14 @@ const Navbar = () => {
               />
             </div>
             <div className="flex flex-col items-start justify-center">
-              <h1
+              <span
                 className={`font-headings font-bold tracking-wide transition-all duration-300 ${
                   isScrolled ? "text-base md:text-xl lg:text-2xl" : "text-lg md:text-2xl lg:text-3xl"
                 }`}
                 style={{ background: 'linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
               >
                 Naaz Book Depot
-              </h1>
+              </span>
               <p className={`hidden md:block text-[9px] md:text-xs text-[var(--islamic-gold)]/80 font-medium italic transition-all duration-300 ${isScrolled ? "opacity-0 h-0 overflow-hidden" : "opacity-100 mt-0.5"}`}>
                 Publishing the Light of Knowledge
               </p>
@@ -105,8 +105,9 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* Action Buttons - Mobile Hamburger Only */}
-          <div className="md:hidden flex items-center">
+          {/* Action Buttons - Mobile */}
+          <div className="md:hidden flex items-center space-x-4">
+            <AnimatedCartIcon />
             <MobileMenu />
           </div>
         </div>

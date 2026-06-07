@@ -41,7 +41,34 @@ export default async function BooksPage() {
       <div className="flex flex-col md:flex-row gap-8">
         {/* Sidebar */}
         <div className="w-full md:w-64 flex-shrink-0">
-          <div className="bg-[#F8F6F3] p-6 rounded-2xl sticky top-24 border border-gray-100">
+          {/* Mobile Collapsible Accordion */}
+          <details className="group md:hidden bg-[#F8F6F3] p-4 rounded-2xl border border-gray-100 select-none">
+            <summary className="font-headings font-bold text-base text-[var(--islamic-green)] cursor-pointer flex items-center justify-between outline-none">
+              <span>Filter by Category</span>
+              <span className="text-[var(--islamic-gold)] text-xs transition-transform duration-300 group-open:rotate-180">▼</span>
+            </summary>
+            <ul className="mt-4 space-y-3 text-[var(--charcoal)]/80 text-sm">
+              <li className="flex items-center gap-2 hover:text-[var(--islamic-gold)] cursor-pointer transition-colors">
+                <span className="w-2 h-2 rounded-full bg-[var(--islamic-gold)]" />
+                Quran & Tafseer
+              </li>
+              <li className="flex items-center gap-2 hover:text-[var(--islamic-gold)] cursor-pointer transition-colors">
+                <span className="w-2 h-2 rounded-full bg-gray-300" />
+                Hadith
+              </li>
+              <li className="flex items-center gap-2 hover:text-[var(--islamic-gold)] cursor-pointer transition-colors">
+                <span className="w-2 h-2 rounded-full bg-gray-300" />
+                Fiqh
+              </li>
+              <li className="flex items-center gap-2 hover:text-[var(--islamic-gold)] cursor-pointer transition-colors">
+                <span className="w-2 h-2 rounded-full bg-gray-300" />
+                History
+              </li>
+            </ul>
+          </details>
+
+          {/* Desktop Static Sidebar */}
+          <div className="hidden md:block bg-[#F8F6F3] p-6 rounded-2xl sticky top-24 border border-gray-100">
             <h3 className="font-headings font-bold text-xl text-[var(--islamic-green)] mb-4">Categories</h3>
             <ul className="space-y-3 text-[var(--charcoal)]/80">
               <li className="flex items-center gap-2 hover:text-[var(--islamic-gold)] cursor-pointer transition-colors">

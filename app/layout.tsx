@@ -33,12 +33,12 @@ if (!SITE_URL) {
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: "Naaz Book Depot | Authentic Islamic Books & Quran — Since 1967",
-  description: "Buy authentic Islamic books, Quran editions in Arabic, Urdu & English, and Qur'an stands. India's trusted Islamic publisher since 1967. Based in Kolkata.",
+  description: "Buy authentic Quran copies, stands, and classical Islamic literature online. India's trusted publisher since 1967. Shipped nationwide from Kolkata.",
   // Improve SEO and sharing
   openGraph: {
     type: "website",
     title: "Naaz Book Depot | Authentic Islamic Books & Quran — Since 1967",
-    description: "India's trusted Islamic publisher since 1967. Buy authentic Quran editions, Islamic books, and stands. Based in Kolkata, serving Muslims worldwide.",
+    description: "Shop authentic Quran editions, stands, and Islamic literature from India's trusted publisher since 1967. Fast shipping nationwide from Kolkata.",
     siteName: "Naaz Book Depot",
     url: SITE_URL,
     locale: "en_IN",
@@ -66,6 +66,7 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -79,8 +80,7 @@ export default function RootLayout({
         {/* Yandex Webmaster Verification */}
         <meta name="yandex-verification" content="1ef3d4fdf8182b6d" />
         {/* Preconnect to important domains for faster loading */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://cdn.shopify.com" />
 
         {/* Organization Schema */}
         <script
@@ -128,6 +128,7 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": ["BookStore", "LocalBusiness"],
+              "@id": "https://www.naazbook.in/#localbusiness",
               "name": "Naaz Book Depot",
               "image": `${SITE_URL}/Images/About.jpg`,
               "url": SITE_URL,

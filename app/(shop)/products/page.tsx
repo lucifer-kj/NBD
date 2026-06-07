@@ -6,7 +6,7 @@ import { ReshapedProduct } from "@/types/shopify"
 
 export const metadata: Metadata = {
   title: 'All Products | Naaz Book Depot',
-  description: 'Explore our full collection of authentic Islamic literature, premium fragrances, and prayer essentials.',
+  description: 'Browse our complete catalog of authentic Quran copies, stands (rehals), classical Islamic books, scholarly works, and accessories at Naaz Book Depot Kolkata.',
   alternates: {
     canonical: `${process.env.NEXT_PUBLIC_APP_URL}/products`,
   },

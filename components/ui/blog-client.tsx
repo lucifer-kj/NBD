@@ -656,6 +656,7 @@ export function MobileReaderBar({ headings }: { headings: HeadingItem[]; title: 
   const [isOpen, setIsOpen] = useState(false);
   const [activeId, setActiveId] = useState<string>('');
   const [progress, setProgress] = useState(0);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     if (headings.length === 0) return;
@@ -723,56 +724,83 @@ export function MobileReaderBar({ headings }: { headings: HeadingItem[]; title: 
 
   return (
     <>
-      {/* Floating Reader Bar at the bottom for premium Mobile UX */}
-      <div className="lg:hidden fixed bottom-6 left-4 right-4 z-[60] animate-in slide-in-from-bottom-10 duration-500">
-        <div className="bg-[#1B3A2D]/95 backdrop-blur-md text-[#FAF6EE] rounded-2xl border border-[#C9972A]/30 py-3 px-5 flex items-center justify-between shadow-2xl">
-          {/* Left: Section Indicator & TOC Trigger */}
-          <button 
-            onClick={() => setIsOpen(true)}
-            className="flex-1 flex items-center gap-3 text-left min-w-0 group cursor-pointer"
+      {/* Floating Reader Progress Button (Mirrors WhatsApp Button on the bottom-left) */}
+      <div className="lg:hidden fixed bottom-20 left-4 z-[60] select-none">
+        <motion.div
+          layout
+          transition={{ type: "spring", stiffness: 350, damping: 28 }}
+          className={cn(
+            "bg-[#1B3A2D]/95 backdrop-blur-md text-[#FAF6EE] border border-[#C9972A]/30 shadow-2xl flex items-center overflow-hidden h-12 transition-all duration-300",
+            isExpanded ? "rounded-full pr-3 pl-1.5 w-auto max-w-[280px]" : "rounded-full w-12 justify-center"
+          )}
+        >
+          {/* Circular Progress Ring Icon (Click to toggle expansion or open TOC if expanded) */}
+          <div
+            onClick={() => {
+              if (!isExpanded) {
+                setIsExpanded(true);
+              } else {
+                setIsOpen(true);
+              }
+            }}
+            className="relative w-10 h-10 flex items-center justify-center shrink-0 cursor-pointer"
           >
-            <div className="w-9 h-9 rounded-full bg-[#C9972A]/20 flex items-center justify-center border border-[#C9972A]/30 text-[#C9972A]">
-              <BookOpen className="w-4 h-4" />
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-[10px] font-sans font-black text-[#C9972A] tracking-wider uppercase">
+            <svg className="w-10 h-10 transform -rotate-90 absolute">
+              <circle
+                cx="20"
+                cy="20"
+                r={radius}
+                className="stroke-[#C9972A]/10 fill-none"
+                strokeWidth="2.5"
+              />
+              <circle
+                cx="20"
+                cy="20"
+                r={radius}
+                className="stroke-[#C9972A] fill-none transition-all duration-300"
+                strokeWidth="2.5"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+              />
+            </svg>
+            <List className="w-4 h-4 text-[#C9972A]" />
+          </div>
+
+          {/* Active section title (visible when expanded, clicking opens TOC drawer) */}
+          {isExpanded && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1, duration: 0.2 }}
+              onClick={() => setIsOpen(true)}
+              className="flex-1 min-w-0 text-left flex flex-col justify-center pl-1.5 pr-2 select-none outline-none"
+            >
+              <span className="text-[8px] font-sans font-black text-[#C9972A] tracking-wider uppercase leading-none">
                 ACTIVE SECTION
               </span>
-              <span className="text-sm font-semibold truncate pr-4 text-[#FAF6EE]/90 font-serif leading-tight">
+              <span className="text-[11px] font-bold truncate text-[#FAF6EE]/90 font-serif leading-normal max-w-[150px] mt-0.5">
                 {activeLabel}
               </span>
-            </div>
-          </button>
+            </motion.button>
+          )}
 
-          {/* Right: Circular Progress Button & Menu Indicator */}
-          <div className="flex items-center gap-4 border-l border-[#C9972A]/20 pl-4 shrink-0">
-            <button
-              onClick={() => setIsOpen(true)}
-              className="relative w-10 h-10 flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-transform"
+          {/* Close button to collapse it back */}
+          {isExpanded && (
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsExpanded(false);
+              }}
+              className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-[#FAF6EE]/80 hover:bg-white/10 shrink-0 cursor-pointer outline-none focus:ring-1 focus:ring-[#C9972A]/40"
             >
-              <svg className="w-10 h-10 transform -rotate-90 absolute">
-                <circle
-                  cx="20"
-                  cy="20"
-                  r={radius}
-                  className="stroke-[#C9972A]/10 fill-none"
-                  strokeWidth="3"
-                />
-                <circle
-                  cx="20"
-                  cy="20"
-                  r={radius}
-                  className="stroke-[#C9972A] fill-none transition-all duration-300"
-                  strokeWidth="3"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={strokeDashoffset}
-                  strokeLinecap="round"
-                />
-              </svg>
-              <List className="w-4.5 h-4.5 text-[#C9972A]" />
-            </button>
-          </div>
-        </div>
+              <X className="w-3 h-3" />
+            </motion.button>
+          )}
+        </motion.div>
       </div>
 
       {/* Slide-Up Bottom Drawer Sheet for Table of Contents */}

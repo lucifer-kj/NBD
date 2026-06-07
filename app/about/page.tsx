@@ -1,5 +1,11 @@
 import { Heart, Book, Users, CheckCircle } from "lucide-react";
 import Image from "next/image";
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "About Us | Naaz Book Depot Kolkata",
+  description: "Learn about Naaz Book Depot, India's trusted publisher of authentic Islamic books, Qurans, and stands since 1967. Led by MD Irfan with 60+ years of dedication.",
+}
 
 export default function AboutPage() {
   return (

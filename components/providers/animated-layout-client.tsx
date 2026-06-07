@@ -20,7 +20,7 @@ export default function AnimatedLayoutClient({ children }: { children: ReactNode
     <AnimatePresence mode="wait">
       <motion.div
         key={pathname}
-        initial="initial"
+        initial={false}
         animate="animate"
         exit="exit"
         variants={reduced ? undefined : fadeSlidePageTransition}

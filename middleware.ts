@@ -26,19 +26,55 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 301);
   }
 
-  // Check authentication status using NextAuth JWE token directly
+  // Redirect old /perfumes, /perfume, or /categories/perfumes paths to /atar (Phase 2 SEO scoring fix)
+  if (pathname === '/perfumes' || pathname === '/perfume' || pathname === '/categories/perfumes' || pathname === '/categories/perfume') {
+    const url = request.nextUrl.clone();
+    url.pathname = '/atar';
+    return NextResponse.redirect(url, 301);
+  }
+  if (pathname.startsWith('/perfumes/')) {
+    const targetPathname = pathname.replace(/^\/perfumes\//, '/atar/');
+    const url = request.nextUrl.clone();
+    url.pathname = targetPathname;
+    return NextResponse.redirect(url, 301);
+  }
+  if (pathname.startsWith('/perfume/')) {
+    const targetPathname = pathname.replace(/^\/perfume\//, '/atar/');
+    const url = request.nextUrl.clone();
+    url.pathname = targetPathname;
+    return NextResponse.redirect(url, 301);
+  }
+  if (pathname.startsWith('/categories/perfumes/')) {
+    const targetPathname = pathname.replace(/^\/categories\/perfumes\//, '/atar/');
+    const url = request.nextUrl.clone();
+    url.pathname = targetPathname;
+    return NextResponse.redirect(url, 301);
+  }
+  if (pathname.startsWith('/categories/perfume/')) {
+    const targetPathname = pathname.replace(/^\/categories\/perfume\//, '/atar/');
+    const url = request.nextUrl.clone();
+    url.pathname = targetPathname;
+    return NextResponse.redirect(url, 301);
+  }
+
+  const protectedRoutes = ['/account', '/wishlist'];
+  const requiresAuth = protectedRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
+
+  // Check authentication status using NextAuth JWE token directly (only for protected routes)
   let isAuthenticated = false;
-  try {
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET || process.env.SESSION_SECRET,
-      secureCookie: process.env.NODE_ENV === 'production',
-    });
-    if (token) {
-      isAuthenticated = true;
+  if (requiresAuth) {
+    try {
+      const token = await getToken({
+        req: request,
+        secret: process.env.NEXTAUTH_SECRET || process.env.SESSION_SECRET,
+        secureCookie: process.env.NODE_ENV === 'production',
+      });
+      if (token) {
+        isAuthenticated = true;
+      }
+    } catch {
+      // Invalid token is not authenticated.
     }
-  } catch {
-    // Invalid token is not authenticated.
   }
 
   // Prepare standard response
@@ -66,9 +102,6 @@ export async function middleware(request: NextRequest) {
   response.headers.set('X-Frame-Options', 'SAMEORIGIN');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'origin-when-cross-origin');
-
-  const protectedRoutes = ['/account', '/wishlist'];
-  const requiresAuth = protectedRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 
   if (requiresAuth && !isAuthenticated) {
     const url = request.nextUrl.clone();

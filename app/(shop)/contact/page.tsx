@@ -112,14 +112,14 @@ export default function FAQPage() {
         "@id": `${baseSiteUrl}/#localbusiness`,
         "name": "Naaz Book Depot",
         "image": `${baseSiteUrl}/Images/Logo.png`,
-        "telephone": "+919051085118",
+        "telephone": "+91-033-2235-0051",
         "email": "naazgroupofficial@gmail.com",
         "address": {
           "@type": "PostalAddress",
-          "streetAddress": "Kolkata",
+          "streetAddress": "1, Ismail Madani Lane",
           "addressLocality": "Kolkata",
           "addressRegion": "West Bengal",
-          "postalCode": "700001",
+          "postalCode": "700073",
           "addressCountry": "IN"
         },
         "url": baseSiteUrl

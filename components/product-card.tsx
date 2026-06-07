@@ -96,17 +96,17 @@ export default function ProductCard({
         )}
 
         {/* Image Section */}
-        <Link href={productUrl} className="block relative aspect-[4/3] overflow-hidden rounded-t-2xl">
+        <Link href={productUrl} className="block relative aspect-square overflow-hidden rounded-t-2xl bg-white border-b border-gray-100/50">
           <Image
             src={product.featuredImage?.url || "/Images/Logo.png"}
             alt={imageAlt}
             fill
             sizes="(max-width: 640px) 90vw, (max-width: 1024px) 40vw, 300px"
             style={{ viewTransitionName: `product-image-${product.id}` } as React.CSSProperties}
-            className="object-cover transition-transform duration-700 group-hover:scale-110"
+            className="object-contain p-3.5 transition-transform duration-700 group-hover:scale-105"
             priority={false}
           />
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500" />
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500" />
           
           {/* Quick View Overlay */}
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0">
@@ -150,7 +150,7 @@ export default function ProductCard({
             </div>
           </div>
 
-          <div className="flex flex-col mt-4 pt-3 border-t border-[#e9e3d9]/30">
+          <div className="flex flex-col mt-2.5 pt-2.5 border-t border-[#e9e3d9]/30">
             <div className="flex items-center justify-between">
               <span className="text-[10px] text-gray-400 font-medium">Price</span>
               <span className="text-lg md:text-xl font-black text-[var(--islamic-green)]">
@@ -159,7 +159,7 @@ export default function ProductCard({
             </div>
             
             {/* Add to Cart Button - always visible on mobile, hover-revealed on desktop */}
-            <div className="mt-3 md:mt-0 md:h-0 md:opacity-0 md:group-hover:h-10 md:group-hover:opacity-100 md:group-hover:mt-3 transition-all duration-300 overflow-hidden">
+            <div className="mt-2.5 md:mt-0 md:h-0 md:opacity-0 md:group-hover:h-10 md:group-hover:opacity-100 md:group-hover:mt-3 transition-all duration-300 overflow-hidden">
               <button
                 onClick={handleAddToCart}
                 disabled={!inStock || cartLoading}

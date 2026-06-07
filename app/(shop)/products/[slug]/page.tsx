@@ -75,7 +75,7 @@ export default async function ProductPage({ params }: PageProps) {
   const tags = product.tags?.map((t) => t.toLowerCase()) || [];
   if (tags.includes('books') || tags.includes('islamic books') || tags.includes('book')) {
     redirect(`/books/${product.handle}`);
-  } else if (tags.includes('atar') || tags.includes('fragrance') || tags.includes('attar')) {
+  } else if (tags.includes('atar') || tags.includes('fragrance') || tags.includes('attar') || tags.includes('perfume') || tags.includes('perfumes')) {
     redirect(`/atar/${product.handle}`);
   }
 

@@ -37,6 +37,7 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-islamic-gold-text: var(--islamic-gold-text);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -79,14 +80,14 @@
   }
 
   a {
-    color: var(--islamic-gold);
+    color: var(--islamic-gold-text, #8F6826);
     text-decoration: none;
     transition: color 0.2s;
   }
 
   a:hover,
   a:focus {
-    color: var(--islamic-gold-dark);
+    color: var(--islamic-green, #2D5A4C);
     text-decoration: underline;
   }
 
@@ -112,6 +113,7 @@
     --islamic-green-dark: #1F3D33;
     --islamic-gold: #deb975;
     --islamic-gold-dark: #c5a05b;
+    --islamic-gold-text: #8F6826;
     --islamic-beige: #F8F6F3;
     --islamic-cream: #FDF9F3;
 

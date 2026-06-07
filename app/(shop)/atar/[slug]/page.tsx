@@ -84,7 +84,6 @@ export default async function AtarDetailPage({ params }: PageProps) {
   const averageRating = reviews.length > 0
     ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
     : "4.9";
-  const reviewCount = reviews.length > 0 ? reviews.length : 12;
 
   const hasMultipleVariants = product.variants && product.variants.length > 1;
   const offersSchema = hasMultipleVariants
@@ -98,6 +97,11 @@ export default async function AtarDetailPage({ params }: PageProps) {
         lowPrice: product.priceRange.minVariantPrice.amount,
         offerCount: product.variants.length.toString(),
         url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in'}/atar/${product.handle}`,
+        priceValidUntil: '2027-12-31',
+        seller: {
+          '@type': 'Organization',
+          name: 'Naaz Book Depot',
+        },
       }
     : {
         '@type': 'Offer',
@@ -107,58 +111,47 @@ export default async function AtarDetailPage({ params }: PageProps) {
         priceCurrency: product.priceRange.minVariantPrice.currencyCode,
         price: product.priceRange.minVariantPrice.amount,
         url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in'}/atar/${product.handle}`,
+        priceValidUntil: '2027-12-31',
+        seller: {
+          '@type': 'Organization',
+          name: 'Naaz Book Depot',
+        },
       };
 
-  const atarJsonLd = {
+  const atarJsonLd: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.title,
     description: product.description,
     image: product.images[0]?.url || `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in'}/Images/Logo.png`,
     offers: offersSchema,
-    aggregateRating: {
+  };
+
+  if (reviews.length > 0) {
+    atarJsonLd.aggregateRating = {
       '@type': 'AggregateRating',
       ratingValue: averageRating,
-      reviewCount: reviewCount.toString(),
+      reviewCount: reviews.length.toString(),
       bestRating: '5',
       worstRating: '1',
-    },
-    review: reviews.length > 0 
-      ? reviews.map(r => ({
-          '@type': 'Review',
-          author: {
-            '@type': 'Person',
-            name: r.reviewer?.name || 'Verified Buyer',
-          },
-          datePublished: new Date(r.created_at).toISOString().split('T')[0],
-          reviewBody: r.body,
-          name: r.title,
-          reviewRating: {
-            '@type': 'Rating',
-            ratingValue: r.rating.toString(),
-            bestRating: '5',
-            worstRating: '1',
-          }
-        }))
-      : [
-          {
-            '@type': 'Review',
-            author: {
-              '@type': 'Person',
-              name: 'Arshad Ali',
-            },
-            datePublished: '2026-02-10',
-            reviewBody: '100% alcohol-free premium Itr. Very long-lasting and soothing fragrance. Highly recommended for daily wear and prayer.',
-            name: 'Exceptional Quality',
-            reviewRating: {
-              '@type': 'Rating',
-              ratingValue: '5',
-              bestRating: '5',
-              worstRating: '1',
-            }
-          }
-        ]
-  };
+    };
+    atarJsonLd.review = reviews.map(r => ({
+      '@type': 'Review',
+      author: {
+        '@type': 'Person',
+        name: r.reviewer?.name || 'Verified Buyer',
+      },
+      datePublished: new Date(r.created_at).toISOString().split('T')[0],
+      reviewBody: r.body,
+      name: r.title,
+      reviewRating: {
+        '@type': 'Rating',
+        ratingValue: r.rating.toString(),
+        bestRating: '5',
+        worstRating: '1',
+      }
+    }));
+  }
 
   return (
     <div className="bg-white">

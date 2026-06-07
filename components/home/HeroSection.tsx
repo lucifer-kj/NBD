@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowRight, BookOpen, Heart, Shield, Truck, Users } from 'lucide-react';
 
 const HeroSection = () => {
@@ -52,14 +53,16 @@ const HeroSection = () => {
       `}} />
 
       {/* Background with CSS scroll-driven parallax effect */}
-      <div
-        className="absolute inset-0 z-0 hero-scroll-parallax"
-        style={{
-          backgroundImage: "url('/Images/Image+Background.jpg')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
-        }}
-      />
+      <div className="absolute inset-0 z-0 hero-scroll-parallax">
+        <Image
+          src="/Images/Image+Background.jpg"
+          alt="Naaz Book Depot Hero Background"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+      </div>
 
       {/* Semi-transparent overlay for better text contrast */}
       <div className="absolute inset-0 bg-gradient-to-br from-[var(--islamic-green-dark)]/90 via-[var(--islamic-green)]/70 to-[var(--islamic-green-dark)]/90 z-[1]"></div>
@@ -78,11 +81,12 @@ const HeroSection = () => {
 
           {/* Typewriter effect */}
           <div className="mb-6">
-            <p className="text-lg md:text-2xl text-white/90 font-headings italic min-h-[2rem] tracking-wide">
+            <p className="text-lg md:text-2xl text-white/90 font-headings italic min-h-[3.5rem] sm:min-h-[2rem] tracking-wide">
               &ldquo;{typewriterText}&rdquo;
               <span className="animate-pulse ml-1 text-[var(--islamic-gold)]">|</span>
             </p>
           </div>
+
 
           <p className="text-base md:text-lg text-white/80 mb-6 leading-relaxed max-w-xl font-light">
             Buy authentic Quran copies, Islamic literature, scholarly texts, and Quran stands — curated and published from Kolkata for Muslims across India and worldwide.

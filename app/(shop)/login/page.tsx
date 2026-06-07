@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { signIn, SignInResponse } from 'next-auth/react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, BookOpen, CheckCircle2, AlertTriangle, Sparkles, ShoppingCart, Library, ShieldCheck, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -40,19 +41,7 @@ function LoginFormContent() {
     }
   }, [searchParams]);
 
-  // Auto scroll/slide down to login form on mobile
-  useEffect(() => {
-    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    if (isMobile) {
-      const timer = setTimeout(() => {
-        const formElement = document.getElementById('login-form-section');
-        if (formElement) {
-          formElement.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, []);
+
 
   // Main login submit handler — uses NextAuth credentials provider
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -159,23 +148,7 @@ function LoginFormContent() {
   return (
     <div className="w-full min-h-screen flex flex-col md:flex-row bg-[#0a0a0a] text-white">
       {/* Left Panel */}
-      <div className="relative w-full md:w-1/2 flex flex-col justify-between p-8 md:p-16 bg-gradient-to-br from-[#042817] via-[#0b482a] to-[#042817] overflow-hidden">
-        {/* Mobile Go Back Button */}
-        <button
-          onClick={() => {
-            if (typeof window !== 'undefined') {
-              if (window.history.length > 1) {
-                window.history.back();
-              } else {
-                window.location.href = '/';
-              }
-            }
-          }}
-          className="absolute top-4 left-4 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-white text-xs font-semibold hover:bg-white/20 transition-all duration-300 md:hidden"
-        >
-          <ChevronLeft size={16} />
-          <span>Back</span>
-        </button>
+      <div className="hidden md:flex relative w-1/2 flex-col justify-between p-16 bg-gradient-to-br from-[#042817] via-[#0b482a] to-[#042817] overflow-hidden">
 
         {/* Subtle Islamic pattern overlay */}
         <div className="islamic-pattern opacity-10 absolute inset-0 z-0 mix-blend-overlay pointer-events-none"></div>
@@ -253,8 +226,49 @@ function LoginFormContent() {
       </div>
 
       {/* Right Panel */}
-      <div id="login-form-section" className="w-full md:w-1/2 flex items-center justify-center p-8 md:p-16 bg-[#0a0a0a]">
-        <div className="w-full max-w-md space-y-8">
+      <div id="login-form-section" className="w-full md:w-1/2 min-h-screen flex flex-col justify-center items-center p-6 sm:p-8 md:p-16 bg-[#0a0a0a]">
+        <div className="w-full max-w-md space-y-8 flex flex-col h-full justify-center">
+          {/* Mobile Header: Back Button & Logo/Title */}
+          <div className="w-full flex flex-col items-start md:hidden mb-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  if (window.history.length > 1) {
+                    window.history.back();
+                  } else {
+                    window.location.href = '/';
+                  }
+                }
+              }}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-white text-xs font-semibold transition-all duration-300 mb-6 cursor-pointer outline-none"
+            >
+              <ChevronLeft size={16} />
+              <span>Back</span>
+            </button>
+            
+            <div className="flex flex-col items-center w-full gap-2 mb-4">
+              <Link href="/" className="flex flex-col items-center gap-2 group outline-none">
+                <div className="relative w-14 h-14 shrink-0">
+                  <Image
+                    src="/Images/logo.png"
+                    alt="Naaz Book Depot Logo"
+                    fill
+                    sizes="56px"
+                    className="object-contain"
+                    priority
+                  />
+                </div>
+                <span
+                  className="font-headings font-bold text-2xl tracking-wide text-center"
+                  style={{ background: 'linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
+                >
+                  Naaz Book Depot
+                </span>
+              </Link>
+            </div>
+          </div>
+
           <div className="space-y-2 text-left">
             <h2 className="text-3xl font-headings font-bold tracking-tight text-white">
               {isRecoveryMode ? 'Reset Password' : 'Sign In Account'}

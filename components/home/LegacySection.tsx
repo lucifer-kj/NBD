@@ -119,7 +119,6 @@ export default function LegacySection() {
                 alt="Naaz Book Depot Legacy and Heritage"
                 fill
                 className="object-cover transition-transform duration-1000 group-hover:scale-105"
-                priority
               />
               <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/80 via-black/20 to-transparent" />
               

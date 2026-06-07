@@ -84,7 +84,6 @@ export default async function BookDetailPage({ params }: PageProps) {
   const averageRating = reviews.length > 0
     ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
     : "4.9";
-  const reviewCount = reviews.length > 0 ? reviews.length : 15;
 
   const hasMultipleVariants = product.variants && product.variants.length > 1;
   const offersSchema = hasMultipleVariants
@@ -98,6 +97,11 @@ export default async function BookDetailPage({ params }: PageProps) {
         lowPrice: product.priceRange.minVariantPrice.amount,
         offerCount: product.variants.length.toString(),
         url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in'}/books/${product.handle}`,
+        priceValidUntil: '2027-12-31',
+        seller: {
+          '@type': 'Organization',
+          name: 'Naaz Book Depot',
+        },
       }
     : {
         '@type': 'Offer',
@@ -107,9 +111,14 @@ export default async function BookDetailPage({ params }: PageProps) {
         priceCurrency: product.priceRange.minVariantPrice.currencyCode,
         price: product.priceRange.minVariantPrice.amount,
         url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in'}/books/${product.handle}`,
+        priceValidUntil: '2027-12-31',
+        seller: {
+          '@type': 'Organization',
+          name: 'Naaz Book Depot',
+        },
       };
 
-  const bookJsonLd = {
+  const bookJsonLd: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': ['Product', 'Book'],
     name: product.title,
@@ -117,49 +126,33 @@ export default async function BookDetailPage({ params }: PageProps) {
     image: product.images[0]?.url || `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in'}/Images/Logo.png`,
     isbn: product.tags?.find(t => t.toLowerCase().startsWith('isbn:'))?.split(':')[1] || '',
     offers: offersSchema,
-    aggregateRating: {
+  };
+
+  if (reviews.length > 0) {
+    bookJsonLd.aggregateRating = {
       '@type': 'AggregateRating',
       ratingValue: averageRating,
-      reviewCount: reviewCount.toString(),
+      reviewCount: reviews.length.toString(),
       bestRating: '5',
       worstRating: '1',
-    },
-    review: reviews.length > 0 
-      ? reviews.map(r => ({
-          '@type': 'Review',
-          author: {
-            '@type': 'Person',
-            name: r.reviewer?.name || 'Verified Buyer',
-          },
-          datePublished: new Date(r.created_at).toISOString().split('T')[0],
-          reviewBody: r.body,
-          name: r.title,
-          reviewRating: {
-            '@type': 'Rating',
-            ratingValue: r.rating.toString(),
-            bestRating: '5',
-            worstRating: '1',
-          }
-        }))
-      : [
-          {
-            '@type': 'Review',
-            author: {
-              '@type': 'Person',
-              name: 'Habib Rahman',
-            },
-            datePublished: '2026-01-15',
-            reviewBody: 'Excellent paper and print quality. Highly authentic translation and secure bubble packaging. A trusted publisher since 1967.',
-            name: 'Highly Recommended',
-            reviewRating: {
-              '@type': 'Rating',
-              ratingValue: '5',
-              bestRating: '5',
-              worstRating: '1',
-            }
-          }
-        ]
-  };
+    };
+    bookJsonLd.review = reviews.map(r => ({
+      '@type': 'Review',
+      author: {
+        '@type': 'Person',
+        name: r.reviewer?.name || 'Verified Buyer',
+      },
+      datePublished: new Date(r.created_at).toISOString().split('T')[0],
+      reviewBody: r.body,
+      name: r.title,
+      reviewRating: {
+        '@type': 'Rating',
+        ratingValue: r.rating.toString(),
+        bestRating: '5',
+        worstRating: '1',
+      }
+    }));
+  }
 
   return (
     <div className="bg-white">

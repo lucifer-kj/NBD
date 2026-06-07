@@ -229,26 +229,25 @@ export default function CartDrawer() {
                             </div>
                           )}
                           
-                          {/* unified elegant capsule quantity picker */}
-                          <div className="flex items-center bg-gray-50 rounded-lg border border-gray-205 p-0.5 w-fit">
+                          <div className="flex items-center bg-gray-50 rounded-lg border border-gray-250 p-0.5 w-fit">
                             <button 
                               onClick={() => updateItem(line.id, line.merchandise.id, line.quantity - 1)} 
                               disabled={line.quantity <= 1 || isLoading}
-                              className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white hover:shadow-sm text-gray-500 hover:text-black transition-all disabled:opacity-30 disabled:hover:bg-transparent"
+                              className="w-11 h-11 md:w-8 md:h-8 flex items-center justify-center rounded-md hover:bg-white hover:shadow-sm text-gray-500 hover:text-black transition-all disabled:opacity-30 disabled:hover:bg-transparent"
                               aria-label="Decrease quantity"
                             >
-                              <Minus className="w-3 h-3" />
+                              <Minus className="w-3.5 h-3.5 md:w-3 md:h-3" />
                             </button>
-                            <span className="px-2 font-semibold text-xs md:text-sm min-w-[1.75rem] text-center text-gray-800">
+                            <span className="px-2 font-semibold text-xs md:text-sm min-w-[2.25rem] md:min-w-[1.75rem] text-center text-gray-800">
                               {line.quantity}
                             </span>
                             <button 
                               onClick={() => updateItem(line.id, line.merchandise.id, line.quantity + 1)} 
                               disabled={isLoading}
-                              className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white hover:shadow-sm text-gray-500 hover:text-black transition-all disabled:opacity-30 disabled:hover:bg-transparent"
+                              className="w-11 h-11 md:w-8 md:h-8 flex items-center justify-center rounded-md hover:bg-white hover:shadow-sm text-gray-500 hover:text-black transition-all disabled:opacity-30 disabled:hover:bg-transparent"
                               aria-label="Increase quantity"
                             >
-                              <Plus className="w-3 h-3" />
+                              <Plus className="w-3.5 h-3.5 md:w-3 md:h-3" />
                             </button>
                           </div>
                         </div>

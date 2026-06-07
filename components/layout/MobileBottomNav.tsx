@@ -55,7 +55,7 @@ export default function MobileBottomNav() {
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-[var(--islamic-green-dark)] border-t border-[var(--islamic-gold)]/20 shadow-[0_-8px_24px_rgba(0,0,0,0.15)] select-none">
-      <div className="flex h-14 items-center justify-around px-2 pb-[env(safe-area-inset-bottom)]">
+      <div className="flex h-auto py-2 items-center justify-around px-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
         {navItems.map((item, index) => {
           const Icon = item.icon;
           const activeClass = item.isActive

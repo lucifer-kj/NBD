@@ -43,8 +43,8 @@ export default function StarRating({
           onClick={() => handleStarClick(i + 1)}
           disabled={!interactive}
           className={cn(
-            "focus:outline-none transition-colors",
-            interactive && "hover:scale-110",
+            "focus:outline-none transition-all",
+            interactive && "hover:scale-110 p-2.5 -m-2.5",
             !interactive && "cursor-default"
           )}
         >

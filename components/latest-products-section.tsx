@@ -121,15 +121,15 @@ export default function LatestProductsSection({ products, loading = false }: Lat
                   </div>
 
                   {/* Product Image Link */}
-                  <Link href={getProductUrl(featuredProduct)} className="relative aspect-[4/3] w-full my-6 overflow-hidden rounded-2xl shadow-inner border border-white/5 bg-white/5 flex items-center justify-center group/img">
+                  <Link href={getProductUrl(featuredProduct)} className="relative aspect-square sm:aspect-[4/3] w-full my-6 overflow-hidden rounded-2xl shadow-inner border border-[#e9e3d9]/40 bg-white flex items-center justify-center group/img">
                     <Image
                       src={featuredProduct.featuredImage?.url || "/Images/Logo.png"}
                       alt={featuredProduct.title}
                       fill
                       sizes="(max-width: 1024px) 90vw, 400px"
-                      className="object-cover transition-transform duration-1000 group-hover/img:scale-105"
+                      className="object-contain p-4 transition-transform duration-1000 group-hover/img:scale-105"
                     />
-                    <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/10 transition-colors" />
+                    <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/5 transition-colors" />
                     
                     {/* View Badge */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity duration-300">
@@ -223,13 +223,13 @@ export default function LatestProductsSection({ products, loading = false }: Lat
                       </button>
 
                       {/* Image Block */}
-                      <Link href={productUrl} className="relative aspect-square w-full bg-[#FCFAF7] border border-[#e9e3d9]/40 rounded-xl overflow-hidden mb-3.5 flex items-center justify-center group-hover:opacity-95 transition-opacity">
+                      <Link href={productUrl} className="relative aspect-square w-full bg-white border border-[#e9e3d9]/40 rounded-xl overflow-hidden mb-3.5 flex items-center justify-center group-hover:opacity-95 transition-opacity">
                         <Image
                           src={product.featuredImage?.url || "/Images/Logo.png"}
                           alt={product.title}
                           fill
                           sizes="(max-width: 640px) 150px, 200px"
-                          className="object-cover transition-transform duration-700 group-hover:scale-105"
+                          className="object-contain p-3 transition-transform duration-700 group-hover:scale-105"
                         />
                       </Link>
 
@@ -260,7 +260,7 @@ export default function LatestProductsSection({ products, loading = false }: Lat
                         </div>
 
                         {/* Price & Action Row */}
-                        <div className="flex flex-col mt-auto pt-2 border-t border-[#e9e3d9]/30">
+                        <div className="flex flex-col mt-auto pt-1.5 border-t border-[#e9e3d9]/30">
                           <div className="flex items-center justify-between">
                             <span className="text-[10px] text-gray-400 font-medium">Price</span>
                             <span className="font-black text-[14px] md:text-[15px] text-[var(--islamic-green)]">
@@ -269,7 +269,7 @@ export default function LatestProductsSection({ products, loading = false }: Lat
                           </div>
 
                           {/* Add to Cart Button - always visible on mobile, hover-revealed on desktop */}
-                          <div className="mt-3 md:mt-0 md:h-0 md:opacity-0 md:group-hover:h-8 md:group-hover:opacity-100 md:group-hover:mt-3 transition-all duration-300 overflow-hidden">
+                          <div className="mt-2.5 md:mt-0 md:h-0 md:opacity-0 md:group-hover:h-8 md:group-hover:opacity-100 md:group-hover:mt-3 transition-all duration-300 overflow-hidden">
                             <button
                               onClick={(e) => handleAddToCart(product, e)}
                               disabled={!product.availableForSale || cartLoadingId === product.id}

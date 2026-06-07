@@ -164,8 +164,17 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="relative w-full h-full cursor-zoom-in"
+              className="relative w-full h-full cursor-zoom-in select-none touch-pan-y"
               onClick={() => setIsLightboxOpen(true)}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              onDragEnd={(e, info) => {
+                if (info.offset.x < -50) {
+                  setSelectedImage((prev) => (prev + 1) % images.length);
+                } else if (info.offset.x > 50) {
+                  setSelectedImage((prev) => (prev - 1 + images.length) % images.length);
+                }
+              }}
             >
               <Image
                 src={images[selectedImage].url}
@@ -180,6 +189,31 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
               </div>
             </motion.div>
           </AnimatePresence>
+
+          {images.length > 1 && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedImage((prev) => (prev - 1 + images.length) % images.length);
+                }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 p-2.5 bg-white/90 hover:bg-white border border-gray-100 rounded-full text-gray-700 shadow-md md:hidden z-10 active:scale-90 transition-transform"
+                aria-label="Previous image"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedImage((prev) => (prev + 1) % images.length);
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-2.5 bg-white/90 hover:bg-white border border-gray-100 rounded-full text-gray-700 shadow-md md:hidden z-10 active:scale-90 transition-transform"
+                aria-label="Next image"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </>
+          )}
           
           {product.availableForSale === false && (
             <div className="absolute top-4 left-4">
@@ -295,7 +329,7 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
                       <button
                         key={value}
                         onClick={() => handleOptionChange(option.name, value)}
-                        className={`px-4 py-2 rounded-lg border-2 text-sm font-medium transition-all ${
+                        className={`px-4 py-2.5 max-md:py-3 rounded-lg border-2 text-sm font-medium transition-all ${
                           isActive 
                             ? 'border-[var(--islamic-green)] bg-[var(--islamic-green)] text-white' 
                             : 'border-gray-100 bg-gray-50 text-gray-600 hover:border-gray-200'
@@ -361,7 +395,7 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
             <div className="flex items-center border-2 border-gray-100 rounded-xl bg-gray-50">
               <button 
                 onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                className="p-3 hover:text-[var(--islamic-gold)] transition-colors"
+                className="p-3.5 max-md:p-4 hover:text-[var(--islamic-gold)] transition-colors"
                 disabled={quantity <= 1}
               >
                 <Minus size={18} />
@@ -369,7 +403,7 @@ export default function ProductDetailsClient({ product }: ProductDetailsClientPr
               <span className="w-12 text-center font-bold text-lg">{quantity}</span>
               <button 
                 onClick={() => setQuantity(q => q + 1)}
-                className="p-3 hover:text-[var(--islamic-gold)] transition-colors"
+                className="p-3.5 max-md:p-4 hover:text-[var(--islamic-gold)] transition-colors"
               >
                 <Plus size={18} />
               </button>
