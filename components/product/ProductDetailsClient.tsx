@@ -32,7 +32,7 @@ import { useToast } from '@/components/ui/toast';
 interface ProductDetailsClientProps {
   product: ReshapedProduct;
   initialWishlisted?: boolean;
-  reviews?: any[];
+  reviews?: { rating: number }[];
 }
 
 export default function ProductDetailsClient({ product, reviews }: ProductDetailsClientProps) {
@@ -144,7 +144,7 @@ export default function ProductDetailsClient({ product, reviews }: ProductDetail
 
   // Extract rating from reviews or metafields
   const reviewsRating = reviews && reviews.length > 0
-    ? parseFloat((reviews.reduce((acc: number, r: any) => acc + r.rating, 0) / reviews.length).toFixed(1))
+    ? parseFloat((reviews.reduce((acc: number, r: { rating: number }) => acc + r.rating, 0) / reviews.length).toFixed(1))
     : null;
 
   const ratingMeta = product.metafields?.find(m => m && m.namespace === 'reviews' && m.key === 'rating');
