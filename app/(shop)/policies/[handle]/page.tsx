@@ -58,6 +58,9 @@ export async function generateMetadata({ params }: PolicyPageProps) {
     metadataBase: new URL(siteUrl),
     title: `${policy.title} | Naaz Book Depot`,
     description: `Read the official ${policy.title} of Naaz Book Depot, established 1967.`,
+    alternates: {
+      canonical: `/policies/${handle}`,
+    },
   };
 }
 

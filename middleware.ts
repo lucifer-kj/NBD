@@ -12,7 +12,9 @@ export async function middleware(request: NextRequest) {
     const canonicalBase = process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in';
     const canonicalUrlObj = new URL(canonicalBase);
     
-    if (host !== canonicalUrlObj.host || proto !== canonicalUrlObj.protocol.replace(':', '')) {
+    const isLocalhost = host.startsWith('localhost:') || host === 'localhost' || host.startsWith('127.0.0.1:') || host === '127.0.0.1';
+    
+    if (!isLocalhost && (host !== canonicalUrlObj.host || proto !== canonicalUrlObj.protocol.replace(':', ''))) {
       const targetUrl = new URL(request.nextUrl.pathname + request.nextUrl.search, canonicalBase);
       return NextResponse.redirect(targetUrl, 301);
     }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, Suspense } from "react";
+import { useEffect, Suspense, useRef } from "react";
 import Link from "next/link";
 import { useCartStore } from "@/store/cart-store";
 
@@ -11,9 +11,11 @@ function SuccessContent() {
   const { cart, clearCart } = useCartStore();
   const searchParams = useSearchParams();
   const orderId = searchParams.get("order_id") || searchParams.get("id");
+  const hasTracked = useRef(false);
 
   useEffect(() => {
-    if (orderId && cart) {
+    // If we have an order, a cart to read from, and haven't tracked yet
+    if (orderId && cart && !hasTracked.current) {
       trackPurchase({
         transaction_id: orderId,
         value: parseFloat(cart.cost.totalAmount.amount),
@@ -25,9 +27,16 @@ function SuccessContent() {
           quantity: line.quantity
         }))
       });
+      
+      hasTracked.current = true;
+      // Clear the cart *after* tracking the purchase
+      clearCart();
+    } else if (!orderId || !cart) {
+      // If there's no orderId or the cart is already empty/null, ensure cart is cleared
+      if (cart) {
+        clearCart();
+      }
     }
-    // Clear the cart after tracking the purchase
-    clearCart();
   }, [orderId, clearCart, cart]);
 
   return (

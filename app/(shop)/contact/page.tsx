@@ -10,6 +10,9 @@ import {
 export const metadata = {
   title: 'Frequently Asked Questions (FAQ) | Naaz Book Depot',
   description: 'Find answers to common questions about ordering Islamic books, Qur\'an, stands, shipping, returns, and more at Naaz Book Depot.',
+  alternates: {
+    canonical: '/contact',
+  },
 };
 
 const faqs = [

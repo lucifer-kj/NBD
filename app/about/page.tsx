@@ -5,6 +5,9 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: "About Us | Naaz Book Depot Kolkata",
   description: "Learn about Naaz Book Depot, India's trusted publisher of authentic Islamic books, Qurans, and stands since 1967. Led by MD Irfan with 60+ years of dedication.",
+  alternates: {
+    canonical: "/about",
+  },
 }
 
 export default function AboutPage() {

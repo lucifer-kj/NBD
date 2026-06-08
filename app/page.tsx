@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import HeroSection from "@/components/home/HeroSection"
 import NewsletterSection from "@/components/newsletter-section"
 import LatestProductsSection from "@/components/latest-products-section"
@@ -9,6 +10,12 @@ import ContactInfoStrip from "@/components/home/ContactInfoStrip"
 import { getProducts } from "@/lib/shopify"
 import { ReshapedProduct } from "@/types/shopify"
 import { Heart } from "lucide-react"
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+  },
+};
 
 export default async function HomePage() {
   let products: ReshapedProduct[] = [];

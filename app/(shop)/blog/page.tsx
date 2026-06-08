@@ -6,6 +6,9 @@ import { BlogGrid } from '@/components/ui/blog-grid';
 export const metadata = {
   title: 'Islamic Insights & Spiritual Articles | Naaz Book Depot Blog',
   description: 'Read articles on Islamic spirituality, Quranic guidance, book reviews, and Muslim lifestyle — curated by the team at Naaz Book Depot since 1967.',
+  alternates: {
+    canonical: '/blog',
+  },
 };
 
 export const revalidate = 3600;
