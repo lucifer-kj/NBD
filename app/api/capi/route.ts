@@ -15,7 +15,8 @@ export async function POST(req: NextRequest) {
   const accessToken = process.env.META_ACCESS_TOKEN;
 
   if (!pixelId || !accessToken) {
-    return NextResponse.json({ success: false, error: 'Meta configuration missing' }, { status: 500 });
+    console.error('[Meta CAPI Configuration Error] META_PIXEL_ID or META_ACCESS_TOKEN not configured.');
+    return NextResponse.json({ success: false, error: 'Meta configuration missing' }, { status: 200 });
   }
 
   try {
@@ -78,12 +79,12 @@ export async function POST(req: NextRequest) {
 
     if (!response.ok) {
       console.error('Meta CAPI error response:', resData);
-      return NextResponse.json({ success: false, error: resData.error || 'Meta API error' }, { status: response.status });
+      return NextResponse.json({ success: false, error: resData.error || 'Meta API error' }, { status: 200 });
     }
 
     return NextResponse.json({ success: true, data: resData });
   } catch (error) {
     console.error('Meta CAPI internal error:', error);
-    return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 200 });
   }
 }

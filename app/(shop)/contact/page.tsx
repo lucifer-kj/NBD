@@ -184,6 +184,7 @@ export default function FAQPage() {
                 style={{ border: 0 }}
                 allowFullScreen
                 loading="lazy"
+                allow="geolocation; accelerometer; gyroscope; magnetometer"
                 referrerPolicy="no-referrer-when-downgrade"
                 className="w-full"
                 title="Naaz Book Depot Google Maps Embed"

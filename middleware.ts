@@ -90,7 +90,7 @@ export async function middleware(request: NextRequest) {
     img-src 'self' blob: data: https://cdn.shopify.com https://*.shopifycdn.com https://v.fastly.net https://www.google-analytics.com https://www.googletagmanager.com https://google-analytics.com https://*.googleusercontent.com https://*.google.com https://*.razorpay.com https://www.facebook.com;
     font-src 'self' https://fonts.gstatic.com;
     connect-src 'self' https://*.shopify.com https://*.google-analytics.com https://vitals.vercel-insights.com https://account.naazbook.in https://3xbr00-f7.myshopify.com https://accounts.google.com https://api.razorpay.com https://*.razorpay.com https://www.facebook.com https://*.facebook.com;
-    frame-src 'self' https://www.googletagmanager.com https://*.shopify.com https://accounts.google.com https://api.razorpay.com https://checkout.razorpay.com;
+    frame-src 'self' https://*.google.com https://www.googletagmanager.com https://*.shopify.com https://accounts.google.com https://api.razorpay.com https://checkout.razorpay.com;
     object-src 'none';
     base-uri 'self';
     form-action 'self' https://*.shopify.com https://account.naazbook.in https://accounts.google.com https://api.razorpay.com;

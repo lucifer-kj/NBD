@@ -125,7 +125,7 @@ export default function AboutPage() {
       <section className="container mx-auto px-4 py-12 border-t border-[#e9e3d9]/40 mt-12">
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-5 space-y-4 text-center lg:text-left">
-            <span className="text-xs font-bold uppercase tracking-wider text-[var(--islamic-gold-text)] bg-[#0D2E21]/5 px-3 py-1.5 rounded-full border border-[var(--islamic-gold-text)]/20">
+            <span className="inline-block text-xs font-bold uppercase tracking-wider text-[var(--islamic-gold-text)] bg-[#0D2E21]/5 mb-6 px-3 py-1.5 rounded-full border border-[var(--islamic-gold-text)]/20">
               Visit Our Bookstore
             </span>
             <h2 className="text-3xl md:text-4xl font-headings font-bold text-[var(--islamic-green)]">
@@ -165,6 +165,7 @@ export default function AboutPage() {
               style={{ border: 0 }}
               allowFullScreen
               loading="lazy"
+              allow="geolocation; accelerometer; gyroscope; magnetometer"
               referrerPolicy="no-referrer-when-downgrade"
               className="w-full rounded-xl"
               title="Naaz Book Depot Location Map"
