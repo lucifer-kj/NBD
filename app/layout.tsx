@@ -112,13 +112,13 @@ export default function RootLayout({
               "contactPoint": [
                 {
                   "@type": "ContactPoint",
-                  "telephone": "+91-91634-31395",
+                  "telephone": "+91-90510-85118",
                   "contactType": "customer service",
                   "availableLanguage": ["English", "Urdu", "Bengali", "Hindi"]
                 }
               ],
               "sameAs": [
-                "https://wa.me/919163431395",
+                "https://wa.me/919051085118",
                 "https://www.facebook.com/people/Naaz-Book-Depot-Kolkata/61590875242073/",
                 "https://www.instagram.com/naazbookkolkata/",
                 "https://www.threads.net/@naazbookkolkata",
@@ -152,8 +152,8 @@ export default function RootLayout({
               },
               "geo": {
                 "@type": "GeoCoordinates",
-                "latitude": 22.5726,
-                "longitude": 88.3639
+                "latitude": 22.5770121,
+                "longitude": 88.3542592
               },
               "openingHoursSpecification": {
                 "@type": "OpeningHoursSpecification",
@@ -163,8 +163,17 @@ export default function RootLayout({
               },
               "priceRange": "₹₹",
               "currenciesAccepted": "INR",
-              "paymentAccepted": "Cash, UPI, Bank Transfer",
-              "hasMap": "https://maps.google.com/?q=1+Ismail+Madani+Lane+Kolkata"
+              "paymentAccepted": "Cash, Credit Card, Debit Card, Net Banking, UPI, Bank Transfer",
+              "hasMap": "https://maps.app.goo.gl/KyfnubwL4x5korfD7",
+              "sameAs": [
+                "https://wa.me/919051085118",
+                "https://www.facebook.com/people/Naaz-Book-Depot-Kolkata/61590875242073/",
+                "https://www.instagram.com/naazbookkolkata/",
+                "https://www.threads.net/@naazbookkolkata",
+                "https://x.com/nbd_kolkata",
+                "https://medium.com/@nbddigi",
+                "https://in.pinterest.com/nbddigi/"
+              ]
             })
           }}
         />

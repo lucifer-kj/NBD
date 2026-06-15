@@ -4,8 +4,10 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, BookOpen, Heart, Shield, Truck, Users } from 'lucide-react';
+import { useDonationStore } from "@/store/donation-store";
 
 const HeroSection = () => {
+  const openDonation = useDonationStore((state) => state.open);
   const [typewriterText, setTypewriterText] = useState('');
   const [typewriterIndex, setTypewriterIndex] = useState(0);
 
@@ -162,11 +164,9 @@ const HeroSection = () => {
               <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[var(--islamic-green-dark)]"></div>
             </div>
 
-            <a
-              href="https://pages.razorpay.com/pl_SrYn1lmplsHeX0"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="premium-donation-btn flex items-center justify-between w-full p-4 rounded-xl bg-[#0D2E21] border border-[var(--islamic-gold)]/35 hover:border-[var(--islamic-gold)] hover:bg-[#133F2E] text-white hover:shadow-[0_8px_24px_rgba(212,168,83,0.15)] transition-all duration-300"
+            <button
+              onClick={openDonation}
+              className="premium-donation-btn flex items-center justify-between w-full p-4 rounded-xl bg-[#0D2E21] border border-[var(--islamic-gold)]/35 hover:border-[var(--islamic-gold)] hover:bg-[#133F2E] text-white hover:shadow-[0_8px_24px_rgba(212,168,83,0.15)] transition-all duration-300 cursor-pointer"
             >
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[var(--islamic-gold)] group-hover:scale-110 transition-transform">
@@ -184,7 +184,7 @@ const HeroSection = () => {
                 </svg>
                 <span className="text-[9px] text-white font-bold tracking-tight ml-1">Razorpay</span>
               </div>
-            </a>
+            </button>
           </div>
         </div>
       </div>

@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 
 export const metadata = {
-  title: 'Frequently Asked Questions (FAQ) | Naaz Book Depot',
+  title: 'Contact Us & Frequently Asked Questions (FAQ) | Naaz Book Depot',
   description: 'Find answers to common questions about ordering Islamic books, Qur\'an, stands, shipping, returns, and more at Naaz Book Depot.',
   alternates: {
     canonical: '/contact',
@@ -18,7 +18,7 @@ export const metadata = {
 const faqs = [
   {
     category: "Orders & Shipping",
-    icon: <Truck className="text-[var(--islamic-gold)]" size={24} />,
+    icon: <Truck className="text-[var(--islamic-gold-text)]" size={24} />,
     items: [
       {
         question: "How long does shipping take within India?",
@@ -36,17 +36,17 @@ const faqs = [
   },
   {
     category: "Product Authenticity",
-    icon: <ShieldCheck className="text-[var(--islamic-gold)]" size={24} />,
+    icon: <ShieldCheck className="text-[var(--islamic-gold-text)]" size={24} />,
     items: [
       {
         question: "Are the books and Qur'ans authentic?",
         answer: "Absolutely. Naaz Book Depot has been a trusted publisher since 1967. We specialize in authentic Islamic literature and Qur'ans that undergo rigorous proofreading and quality checks."
       },
-]
+    ]
   },
   {
     category: "Payments & Security",
-    icon: <CreditCard className="text-[var(--islamic-gold)]" size={24} />,
+    icon: <CreditCard className="text-[var(--islamic-gold-text)]" size={24} />,
     items: [
       {
         question: "What payment methods do you accept?",
@@ -60,7 +60,7 @@ const faqs = [
   },
   {
     category: "Returns & Exchanges",
-    icon: <RotateCcw className="text-[var(--islamic-gold)]" size={24} />,
+    icon: <RotateCcw className="text-[var(--islamic-gold-text)]" size={24} />,
     items: [
       {
         question: "What is your return policy?",
@@ -96,36 +96,22 @@ export default function FAQPage() {
         "@type": "ContactPage",
         "@id": `${baseSiteUrl}/contact#webpage`,
         "url": `${baseSiteUrl}/contact`,
-        "name": "Contact & FAQ | Naaz Book Depot",
+        "name": "Contact Us & Frequently Asked Questions (FAQ) | Naaz Book Depot",
         "description": "Find answers to common questions about ordering Islamic books, Qur'an, Atar, shipping, returns, and more at Naaz Book Depot.",
         "isPartOf": {
           "@type": "WebSite",
           "@id": `${baseSiteUrl}/#website`,
           "url": baseSiteUrl,
           "name": "Naaz Book Depot"
+        },
+        "publisher": {
+          "@id": "https://www.naazbook.in/#localbusiness"
         }
       },
       {
         "@type": "FAQPage",
         "@id": `${baseSiteUrl}/contact#faq`,
         "mainEntity": faqList
-      },
-      {
-        "@type": "LocalBusiness",
-        "@id": `${baseSiteUrl}/#localbusiness`,
-        "name": "Naaz Book Depot",
-        "image": `${baseSiteUrl}/Images/Logo.png`,
-        "telephone": "+91-033-2235-0051",
-        "email": "naazgroupofficial@gmail.com",
-        "address": {
-          "@type": "PostalAddress",
-          "streetAddress": "1, Ismail Madani Lane",
-          "addressLocality": "Kolkata",
-          "addressRegion": "West Bengal",
-          "postalCode": "700073",
-          "addressCountry": "IN"
-        },
-        "url": baseSiteUrl
       }
     ]
   };
@@ -170,7 +156,7 @@ export default function FAQPage() {
                     className="bg-white border border-gray-100 rounded-2xl p-6 md:p-8 shadow-sm hover:shadow-md transition-shadow"
                   >
                     <h3 className="text-lg md:text-xl font-bold text-[var(--islamic-green)] mb-3 flex items-start gap-3">
-                      <HelpCircle className="text-[var(--islamic-gold)] shrink-0 mt-1" size={20} />
+                      <HelpCircle className="text-[var(--islamic-gold-text)] shrink-0 mt-1" size={20} />
                       {item.question}
                     </h3>
                     <p className="text-gray-600 leading-relaxed pl-8">
@@ -205,7 +191,7 @@ export default function FAQPage() {
             </div>
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-gray-500 font-medium">
               <p>📍 <strong>Address:</strong> 1, Ismail Madani Lane, Kolkata, West Bengal, 700073</p>
-              <p>📞 <strong>Phone:</strong> 033 22350051 / +91 91634 31395</p>
+              <p>📞 <strong>Phone:</strong> 033 22350051 / +91 90510 85118</p>
               <p>⏰ <strong>Hours:</strong> Mon – Sat: 9:00 AM – 8:00 PM</p>
             </div>
           </div>
@@ -221,13 +207,16 @@ export default function FAQPage() {
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <a 
                 href="https://wa.me/919051085118" 
-                className="bg-[#25D366] text-white px-8 py-4 rounded-xl font-bold hover:bg-[#128C7E] transition-all flex items-center justify-center gap-2"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Chat on WhatsApp (opens in a new tab)"
+                className="bg-[#25D366] text-white px-8 py-4 rounded-xl font-bold hover:bg-[#128C7E] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2 transition-all flex items-center justify-center gap-2"
               >
                 Chat on WhatsApp
               </a>
               <a 
                 href="mailto:naazgroupofficial@gmail.com" 
-                className="bg-[var(--islamic-green)] text-white px-8 py-4 rounded-xl font-bold hover:bg-[var(--islamic-green-dark)] transition-all flex items-center justify-center gap-2"
+                className="bg-[var(--islamic-green)] text-white px-8 py-4 rounded-xl font-bold hover:bg-[var(--islamic-green-dark)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--islamic-green)] focus-visible:ring-offset-2 transition-all flex items-center justify-center gap-2"
               >
                 Email Support
               </a>
