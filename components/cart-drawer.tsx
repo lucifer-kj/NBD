@@ -121,20 +121,11 @@ export default function CartDrawer() {
       </Drawer.Trigger>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 bg-black/45 backdrop-blur-sm z-[1000] transition-opacity duration-300" onClick={closeCartDrawer} />
-        <AnimatePresence>
-          {isCartDrawerOpen && (
-            <Drawer.Content asChild>
-              <motion.aside
-                key="cart-drawer"
-                initial="hidden"
-                animate="show"
-                exit="exit"
-                variants={reduced ? undefined : cartSlideIn}
-                className="fixed top-0 bottom-0 right-0 w-[calc(100%-48px)] sm:max-w-md md:max-w-3xl bg-white shadow-2xl z-[1010] flex flex-col border-l border-gray-100 outline-none"
-              >
-                <Drawer.Title asChild>
-                  <VisuallyHidden>Cart</VisuallyHidden>
-                </Drawer.Title>
+        <Drawer.Content className="fixed top-0 bottom-0 right-0 w-[calc(100%-48px)] sm:max-w-md md:max-w-3xl bg-white shadow-2xl z-[1010] flex flex-col border-l border-gray-100 outline-none">
+          <Drawer.Title asChild>
+            <VisuallyHidden>Cart</VisuallyHidden>
+          </Drawer.Title>
+          <Drawer.Description className="sr-only">Shopping Cart contents</Drawer.Description>
               
               {/* Header */}
               <div className="flex items-center justify-between p-5 md:p-6 border-b border-gray-100">
@@ -388,10 +379,7 @@ export default function CartDrawer() {
                   </div>
                 </div>
               </div>
-            </motion.aside>
-          </Drawer.Content>
-          )}
-        </AnimatePresence>
+        </Drawer.Content>
       </Drawer.Portal>
     </Drawer.Root>
   )

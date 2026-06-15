@@ -18,7 +18,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
   const isProductDetailPage = cleanPath.includes("/products/") || cleanPath.includes("/books/") || cleanPath.includes("/atar/");
 
   React.useEffect(() => {
-    console.log("[StoreLayout] Rendered path:", pathname, "Normalized:", cleanPath, "isAuthPage:", isAuthPage, "isProductDetailPage:", isProductDetailPage);
+    // Logging removed to clean up console
   }, [pathname, cleanPath, isAuthPage, isProductDetailPage]);
 
   if (isAuthPage) {
