@@ -80,6 +80,8 @@ export default function RootLayout({
       <head>
         {/* Yandex Webmaster Verification */}
         <meta name="yandex-verification" content="1ef3d4fdf8182b6d" />
+        {/* Google Merchant Center Verification */}
+        <meta name="google-site-verification" content="A3Xrrf1bFgQ3RJtLLLTKthEbZweKlVzE8NNbzhO4ymQ" />
         {/* Preconnect to important domains for faster loading */}
         <link rel="preconnect" href="https://cdn.shopify.com" />
 
@@ -116,7 +118,13 @@ export default function RootLayout({
                 }
               ],
               "sameAs": [
-                "https://wa.me/919163431395"
+                "https://wa.me/919163431395",
+                "https://www.facebook.com/people/Naaz-Book-Depot-Kolkata/61590875242073/",
+                "https://www.instagram.com/naazbookkolkata/",
+                "https://www.threads.net/@naazbookkolkata",
+                "https://x.com/nbd_kolkata",
+                "https://medium.com/@nbddigi",
+                "https://in.pinterest.com/nbddigi/"
               ]
             })
           }}

@@ -7,6 +7,7 @@ import LegacySection from "@/components/home/LegacySection"
 import FAQSection from "@/components/home/FAQSection"
 import BlogSection from "@/components/home/BlogSection"
 import ContactInfoStrip from "@/components/home/ContactInfoStrip"
+import SocialFollowSection from "@/components/home/SocialFollowSection"
 import { getProducts } from "@/lib/shopify"
 import { ReshapedProduct } from "@/types/shopify"
 import { Heart } from "lucide-react"
@@ -77,6 +78,9 @@ export default async function HomePage() {
 
       {/* Blog Section */}
       <BlogSection />
+
+      {/* Social Follow Section */}
+      <SocialFollowSection />
 
       {/* Newsletter Section */}
       <NewsletterSection />

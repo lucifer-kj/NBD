@@ -120,6 +120,57 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+
+      {/* Google Maps / Bookstore Location Section */}
+      <section className="container mx-auto px-4 py-12 border-t border-[#e9e3d9]/40 mt-12">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+          <div className="lg:col-span-5 space-y-4 text-center lg:text-left">
+            <span className="text-xs font-bold uppercase tracking-wider text-[var(--islamic-gold)] bg-[#0D2E21]/5 px-3 py-1.5 rounded-full border border-[var(--islamic-gold)]/10">
+              Visit Our Bookstore
+            </span>
+            <h2 className="text-3xl md:text-4xl font-headings font-bold text-[var(--islamic-green)]">
+              Our Kolkata Depot
+            </h2>
+            <p className="text-gray-600 text-sm md:text-base leading-relaxed">
+              Step into a sanctuary of Islamic literature. Located in the historic book districts of Kolkata, Naaz Book Depot welcomes you to browse our vast physical catalog of over 2,000 titles.
+            </p>
+            <div className="space-y-2 pt-2 text-sm text-[var(--charcoal)]/80 font-medium">
+              <p className="flex items-center justify-center lg:justify-start gap-2.5">
+                <span className="font-bold text-[var(--islamic-green)]">Address:</span> 1, Ismail Madani Lane, Kolkata, West Bengal, 700073
+              </p>
+              <p className="flex items-center justify-center lg:justify-start gap-2.5">
+                <span className="font-bold text-[var(--islamic-green)]">Phone:</span> 033 22350051 / +91 91634 31395
+              </p>
+              <p className="flex items-center justify-center lg:justify-start gap-2.5">
+                <span className="font-bold text-[var(--islamic-green)]">Hours:</span> Monday – Saturday: 9:00 AM – 8:00 PM
+              </p>
+            </div>
+            <div className="pt-4 flex justify-center lg:justify-start">
+              <a
+                href="https://maps.app.goo.gl/KyfnubwL4x5korfD7"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-[var(--islamic-green)] text-white hover:bg-[var(--islamic-gold)] hover:text-[var(--islamic-green)] px-6 py-3.5 rounded-xl font-bold text-sm transition-all shadow-sm hover:shadow-md"
+              >
+                Open in Google Maps
+              </a>
+            </div>
+          </div>
+          <div className="lg:col-span-7 rounded-2xl overflow-hidden shadow-lg border border-[#e9e3d9]/40 bg-white p-2.5 w-full">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3684.055910032411!2d88.35425927405956!3d22.577012132810985!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a0277b1e9cd2689%3A0x9917b3cc5955014d!2sNaaz%20Book%20Depot!5e0!3m2!1sen!2sin!4v1781560248075!5m2!1sen!2sin"
+              width="100%"
+              height="380"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="w-full rounded-xl"
+              title="Naaz Book Depot Location Map"
+            />
+          </div>
+        </div>
+      </section>
     </div>
   );
 } 

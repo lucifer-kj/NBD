@@ -207,6 +207,51 @@ function BlogGridContent({ posts }: BlogGridProps) {
         </section>
       )}
 
+      {/* Medium Integration Callout Banner */}
+      <section className="max-w-6xl mx-auto px-4 my-8">
+        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#0F0F0F] via-[#1C1C1C] to-[#2A2A2A] p-8 md:p-12 text-white shadow-xl border border-white/10 group">
+          {/* Subtle light glow effect */}
+          <div className="absolute -top-32 -right-32 w-96 h-96 bg-[var(--islamic-gold)]/10 rounded-full blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-700" />
+          <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-[var(--islamic-green)]/15 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-8 space-y-4">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 border border-white/10 text-xs font-bold uppercase tracking-wider text-[var(--islamic-gold)]">
+                <span className="w-2 h-2 rounded-full bg-[var(--islamic-gold)] animate-pulse" />
+                Featured Publication
+              </div>
+              <h2 className="text-2xl md:text-4xl font-headings font-bold tracking-tight">
+                Read our deeper research on <span className="text-[var(--islamic-gold)] font-serif">Medium</span>
+              </h2>
+              <p className="text-gray-300 text-sm md:text-base leading-relaxed max-w-2xl">
+                We regularly post comprehensive articles on Islamic history, manuscript conservation, and spiritual insights on our official Medium channel. Follow <span className="font-semibold text-white">@nbddigi</span> to get notified about our long-form essays, or navigate back here to shop authentic editions.
+              </p>
+            </div>
+            <div className="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-4 justify-end">
+              <a
+                href="https://medium.com/@nbddigi"
+                target="_blank"
+                rel="noopener noreferrer me"
+                className="inline-flex items-center justify-center gap-2.5 bg-white text-black hover:bg-[var(--islamic-gold)] hover:text-[var(--islamic-green-dark)] hover:border-[var(--islamic-gold)] px-8 py-4 rounded-2xl font-extrabold text-sm shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg text-center"
+              >
+                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                  <path d="M13.54 12a6.8 6.8 0 01-6.77 6.82A6.8 6.8 0 010 12a6.8 6.8 0 016.77-6.82A6.8 6.8 0 0113.54 12zM20.96 12c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42zM24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z"/>
+                </svg>
+                Follow @nbddigi on Medium
+              </a>
+              <a
+                href="https://wa.me/919163431395"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl border border-white/20 bg-white/5 text-white hover:bg-white/10 hover:border-white/30 text-sm font-bold transition-all text-center"
+              >
+                Share Article Feedback
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Grid of Remaining Posts */}
       <section className="max-w-6xl mx-auto px-4">
         {filteredPosts.length === 0 ? (

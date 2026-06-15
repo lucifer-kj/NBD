@@ -182,6 +182,34 @@ export default function FAQPage() {
             </div>
           ))}
 
+          {/* Bookstore Location Map */}
+          <div className="mb-16 bg-white rounded-3xl border border-gray-100 p-6 md:p-8 shadow-sm">
+            <h2 className="text-2xl md:text-3xl font-headings font-bold text-[var(--islamic-green)] mb-3 flex items-center gap-3">
+              Visit Our Physical Store
+            </h2>
+            <p className="text-gray-600 text-sm md:text-base leading-relaxed mb-6">
+              Come browse our collections in person at our Kolkata bookstore. Use the interactive map below to find directions.
+            </p>
+            <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-inner w-full">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3684.055910032411!2d88.35425927405956!3d22.577012132810985!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a0277b1e9cd2689%3A0x9917b3cc5955014d!2sNaaz%20Book%20Depot!5e0!3m2!1sen!2sin!4v1781560248075!5m2!1sen!2sin"
+                width="100%"
+                height="400"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="w-full"
+                title="Naaz Book Depot Google Maps Embed"
+              />
+            </div>
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-gray-500 font-medium">
+              <p>📍 <strong>Address:</strong> 1, Ismail Madani Lane, Kolkata, West Bengal, 700073</p>
+              <p>📞 <strong>Phone:</strong> 033 22350051 / +91 91634 31395</p>
+              <p>⏰ <strong>Hours:</strong> Mon – Sat: 9:00 AM – 8:00 PM</p>
+            </div>
+          </div>
+
           {/* Still have questions? */}
           <div className="mt-20 p-10 rounded-3xl bg-[var(--islamic-beige)] border-2 border-dashed border-[var(--islamic-gold)]/30 text-center">
             <h2 className="text-2xl font-headings font-bold text-[var(--islamic-green-dark)] mb-4">
