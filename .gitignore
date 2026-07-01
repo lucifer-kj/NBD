@@ -43,3 +43,6 @@ yarn-error.log*
 .idea/
 
 /article-page
+
+# internal
+/internal-pipeline
