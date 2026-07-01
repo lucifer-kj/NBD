@@ -9,7 +9,6 @@ const nextConfig: NextConfig = {
     },
     viewTransition: true,
   },
-  optimizeFonts: false,
   images: {
     remotePatterns: [
       {
