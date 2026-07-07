@@ -9,14 +9,27 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const host = "www.naazbook.in";
-    const key = "9fcff651c9d445c78d6b33f383895514";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    let host = "";
+    if (appUrl) {
+      try {
+        host = new URL(appUrl).host;
+      } catch {
+        // ignore
+      }
+    }
+    if (!host) {
+      host = req.headers.get("host") || "www.naazbook.in";
+    }
+    host = host.split(":")[0];
+
+    const key = process.env.INDEXNOW_KEY || "9fcff651c9d445c78d6b33f383895514";
     const keyLocation = `https://${host}/${key}.txt`;
 
     const primaryPaths = [
       `https://${host}/`,
       `https://${host}/books`,
-`https://${host}/products`,
+      `https://${host}/products`,
       `https://${host}/blog`,
     ];
 
@@ -30,13 +43,20 @@ export async function GET(req: NextRequest) {
       });
       if (sitemapRes.ok) {
         const xmlText = await sitemapRes.text();
-        const matches = xmlText.match(/<loc>(https:\/\/[^<]+)<\/loc>/g);
+        const matches = xmlText.match(/<loc>(https?:\/\/[^<]+)<\/loc>/g);
         if (matches) {
           const sitemapUrls = matches.map(m => m.replace(/<\/?loc>/g, '').trim());
           // Merge with primary paths, ensuring uniqueness and correct host
           const allUrls = new Set([...primaryPaths, ...sitemapUrls]);
           // Filter to make sure URLs belong to the same host
-          urlsToSubmit = Array.from(allUrls).filter(url => url.startsWith(`https://${host}`));
+          urlsToSubmit = Array.from(allUrls).filter(url => {
+            try {
+              const u = new URL(url);
+              return u.hostname === host;
+            } catch {
+              return false;
+            }
+          });
         }
       }
     } catch (sitemapError) {

@@ -11,7 +11,7 @@ export default function WhatsAppButton() {
   // Hide on product pages for mobile devices to avoid overlap with sticky Buy Now bar
   const cleanPath = pathname ? pathname.toLowerCase().replace(/\/$/, "") : "";
   const isAuthPage = cleanPath === "/login" || cleanPath === "/signup";
-  const isProductPage = cleanPath.includes('/products/') || cleanPath.includes('/books/') || cleanPath.includes('/atar/');
+  const isProductPage = cleanPath.includes('/products/') || cleanPath.includes('/books/');
 
   if (isAuthPage || isProductPage) return null;
 

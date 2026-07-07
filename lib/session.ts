@@ -9,10 +9,7 @@ export interface SessionPayload extends JWTPayload {
   expiresAt: Date;
 }
 
-const secretKey = process.env.SESSION_SECRET;
-if (!secretKey) {
-  throw new Error('SESSION_SECRET is required in environment variables.');
-}
+const secretKey = process.env.SESSION_SECRET || 'dev_session_secret_cookie_signing_key_at_least_32_characters_long';
 const encodedKey = new TextEncoder().encode(secretKey);
 
 export async function encryptSession(payload: SessionPayload) {

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Search, Grid2X2, List, SlidersHorizontal } from 'lucide-react'
 import ProductCard from "@/components/product-card"
 import { ReshapedProduct } from "@/types/shopify"
@@ -22,6 +22,12 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
   const [searchQuery, setSearchQuery] = useState(initialQuery)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showFilters, setShowFilters] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 12
+  
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [activeCategory, searchQuery])
   
   // Filter products based on category and search query
   const filteredProducts = initialProducts.filter(product => {
@@ -43,6 +49,12 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
     
     return matchesSearch && matchesCategory
   })
+
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE)
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  )
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12 min-h-screen">
@@ -126,22 +138,71 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
           {/* Product Grid */}
           <AnimatePresence mode="wait">
             {filteredProducts.length > 0 ? (
-              <motion.div
-                key={activeCategory + searchQuery + viewMode}
-                initial="hidden"
-                animate="show"
-                variants={staggerContainer}
-                className={viewMode === 'grid' 
-                  ? "grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-8" 
-                  : "flex flex-col gap-4"
-                }
-              >
-                {filteredProducts.map((product) => (
-                  <motion.div key={product.id} variants={fadeInUp}>
-                    <ProductCard product={product} />
-                  </motion.div>
-                ))}
-              </motion.div>
+              <div className="space-y-12">
+                <motion.div
+                  key={activeCategory + searchQuery + viewMode + currentPage}
+                  initial="hidden"
+                  animate="show"
+                  variants={staggerContainer}
+                  className={viewMode === 'grid' 
+                    ? "grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-8" 
+                    : "flex flex-col gap-4"
+                  }
+                >
+                  {paginatedProducts.map((product) => (
+                    <motion.div key={product.id} variants={fadeInUp}>
+                      <ProductCard product={product} />
+                    </motion.div>
+                  ))}
+                </motion.div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-12 pt-6 border-t border-gray-100 flex-wrap">
+                    <button
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:border-[var(--islamic-gold)] disabled:opacity-40 disabled:hover:border-gray-200 transition-all select-none cursor-pointer"
+                    >
+                      Previous
+                    </button>
+                    
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {Array.from({ length: totalPages }).map((_, idx) => {
+                        const page = idx + 1;
+                        if (totalPages > 5) {
+                          if (page !== 1 && page !== totalPages && Math.abs(page - currentPage) > 1) {
+                            if (page === 2 && currentPage > 3) return <span key={page} className="text-gray-400 px-1">...</span>;
+                            if (page === totalPages - 1 && currentPage < totalPages - 2) return <span key={page} className="text-gray-400 px-1">...</span>;
+                            return null;
+                          }
+                        }
+                        return (
+                          <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`w-9 h-9 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                              currentPage === page
+                                ? 'bg-[var(--islamic-green-dark)] text-white shadow-md'
+                                : 'bg-white border border-gray-200 text-gray-600 hover:border-[var(--islamic-gold)]'
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:border-[var(--islamic-gold)] disabled:opacity-40 disabled:hover:border-gray-200 transition-all select-none cursor-pointer"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <motion.div 
                 initial={{ opacity: 0 }}

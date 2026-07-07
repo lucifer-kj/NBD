@@ -1,6 +1,10 @@
 import NextAuth from 'next-auth';
-import authOptions from '@/lib/nextauth-config';
+import { getAuthOptions } from '@/lib/nextauth-config';
+import { NextRequest } from 'next/server';
 
-const handler = NextAuth(authOptions);
+const handler = async (req: NextRequest, ctx: any) => {
+  const options = await getAuthOptions();
+  return await NextAuth(req, ctx, options);
+};
 
 export { handler as GET, handler as POST, handler as PUT, handler as DELETE, handler as PATCH };

@@ -101,20 +101,20 @@ const categories = [
     colSpan: "col-span-1 md:col-span-1",
   },
   {
-    name: "Children's Books",
-    href: "/books?search=kids",
-    icon: KidsIcon,
-    description: "Nurture young hearts with beautifully illustrated stories of the Prophets and educational books.",
-    isLarge: true,
-    colSpan: "col-span-2 md:col-span-2",
-  },
-  {
     name: "Accessories",
     href: "/products?search=accessory",
     icon: TasbihIcon,
     description: "Premium tasbihs, prayer mats, and Islamic lifestyle accessories.",
     isLarge: false,
     colSpan: "col-span-1 md:col-span-1",
+  },
+  {
+    name: "Children's Books",
+    href: "/books?search=kids",
+    icon: KidsIcon,
+    description: "Nurture young hearts with beautifully illustrated stories of the Prophets and educational books.",
+    isLarge: true,
+    colSpan: "col-span-2 md:col-span-2",
   },
 ]
 

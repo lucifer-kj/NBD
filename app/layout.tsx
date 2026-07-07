@@ -26,10 +26,7 @@ const geistMono = Geist_Mono({
   display: "swap", // Optimize font loading
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL;
-if (!SITE_URL) {
-  throw new Error('NEXT_PUBLIC_APP_URL is required and must be set in environment variables.');
-}
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

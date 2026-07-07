@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Calendar, User, ChevronRight, Search, Tag, BookOpen, Sparkles, Clock } from 'lucide-react';
 import { BlogPost } from '@/lib/blog';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Suspense, useEffect } from 'react';
+import { Suspense } from 'react';
 
 interface BlogGridProps {
   posts: BlogPost[];
@@ -92,6 +92,19 @@ function BlogGridContent({ posts }: BlogGridProps) {
     }
     return filteredPosts;
   }, [filteredPosts, featuredPost]);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const BLOGS_PER_PAGE = 6;
+  
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedTag]);
+
+  const totalPages = Math.ceil(gridPosts.length / BLOGS_PER_PAGE);
+
+  const paginatedGridPosts = useMemo(() => {
+    return gridPosts.slice((currentPage - 1) * BLOGS_PER_PAGE, currentPage * BLOGS_PER_PAGE);
+  }, [gridPosts, currentPage]);
 
   return (
     <div className="space-y-12">
@@ -274,8 +287,9 @@ function BlogGridContent({ posts }: BlogGridProps) {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {gridPosts.map((post: BlogPost) => {
+          <div className="space-y-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {paginatedGridPosts.map((post: BlogPost) => {
               const wordCount = post.content ? post.content.split(/\s+/).filter(Boolean).length : 0;
               const readingTime = Math.ceil(wordCount / 200) || 1;
 
@@ -343,6 +357,54 @@ function BlogGridContent({ posts }: BlogGridProps) {
                 </article>
               );
             })}
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-12 pt-6 border-t border-gray-100 flex-wrap">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:border-[var(--islamic-gold)] disabled:opacity-40 disabled:hover:border-gray-200 transition-all select-none cursor-pointer"
+                >
+                  Previous
+                </button>
+                
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {Array.from({ length: totalPages }).map((_, idx) => {
+                    const page = idx + 1;
+                    if (totalPages > 5) {
+                      if (page !== 1 && page !== totalPages && Math.abs(page - currentPage) > 1) {
+                        if (page === 2 && currentPage > 3) return <span key={page} className="text-gray-400 px-1">...</span>;
+                        if (page === totalPages - 1 && currentPage < totalPages - 2) return <span key={page} className="text-gray-400 px-1">...</span>;
+                        return null;
+                      }
+                    }
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`w-9 h-9 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          currentPage === page
+                            ? 'bg-[var(--islamic-green-dark)] text-white shadow-md'
+                            : 'bg-white border border-gray-200 text-gray-600 hover:border-[var(--islamic-gold)]'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:border-[var(--islamic-gold)] disabled:opacity-40 disabled:hover:border-gray-200 transition-all select-none cursor-pointer"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         )}
       </section>

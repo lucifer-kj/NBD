@@ -6,15 +6,11 @@ import { getProductUrl } from '@/lib/url-helper';
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
-  if (!baseUrl) {
-    throw new Error('NEXT_PUBLIC_APP_URL is required to generate the sitemap');
-  }
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in';
   const staticRoutes = [
     '',
     '/about',
     '/books',
-    '/atar',
     '/blog',
     '/contact',
   ].map((route) => ({
@@ -45,24 +41,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   // 2. Dynamic Product Routes
-  const productRoutes = products.map((product) => ({
-    url: `${baseUrl}${getProductUrl(product)}`,
-    lastModified: product.updatedAt 
-      ? new Date(product.updatedAt).toISOString() 
-      : new Date().toISOString(),
-    changeFrequency: 'weekly' as const,
-    priority: 0.7,
-  }));
+  const productRoutes = products
+    .filter((product) => {
+      const tags = product.tags?.map((t) => t.toLowerCase()) || [];
+      return !(tags.includes('atar') || tags.includes('fragrance') || tags.includes('attar') || tags.includes('perfume') || tags.includes('perfumes'));
+    })
+    .map((product) => ({
+      url: `${baseUrl}${getProductUrl(product)}`,
+      lastModified: product.updatedAt 
+        ? new Date(product.updatedAt).toISOString() 
+        : new Date().toISOString(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    }));
 
   // 3. Dynamic Collection Routes
-  const collectionRoutes = collections.map((collection) => ({
-    url: `${baseUrl}/collections/${collection.handle}`,
-    lastModified: collection.updatedAt
-      ? new Date(collection.updatedAt).toISOString()
-      : new Date().toISOString(),
-    changeFrequency: 'weekly' as const,
-    priority: 0.6,
-  }));
+  const collectionRoutes = collections
+    .filter((collection) => {
+      const handle = collection.handle.toLowerCase();
+      return !(handle === 'atar' || handle === 'fragrance' || handle === 'attar' || handle === 'perfume' || handle === 'perfumes');
+    })
+    .map((collection) => ({
+      url: `${baseUrl}/collections/${collection.handle}`,
+      lastModified: collection.updatedAt
+        ? new Date(collection.updatedAt).toISOString()
+        : new Date().toISOString(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.6,
+    }));
 
   // 4. Dynamic Policy Routes
   const policyRoutes = policies.map((policy) => ({

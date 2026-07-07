@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Search, Loader2, X } from 'lucide-react';
 import { trackSearch } from '@/lib/analytics';
 
@@ -18,6 +19,15 @@ export default function PredictiveSearch() {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim()) {
+      setIsOpen(false);
+      router.push(`/products?search=${encodeURIComponent(query)}`);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -58,7 +68,7 @@ export default function PredictiveSearch() {
 
   return (
     <div className="relative w-full max-w-lg" ref={dropdownRef}>
-      <div className="relative group">
+      <form onSubmit={handleSearchSubmit} className="relative group">
         <input
           type="text"
           placeholder="Search for books, authors, or collections..."
@@ -71,13 +81,14 @@ export default function PredictiveSearch() {
         
         {query && (
           <button 
+            type="button"
             onClick={() => { setQuery(''); setResults(null); }}
             className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-200 rounded-full transition-colors"
           >
             <X className="w-4 h-4 text-gray-400" />
           </button>
         )}
-      </div>
+      </form>
 
       {isOpen && ((results?.products?.length ?? 0) > 0 || (results?.collections?.length ?? 0) > 0 || (results?.articles?.length ?? 0) > 0 || isLoading) && (
         <div className="absolute top-full left-0 w-full mt-3 bg-white border border-gray-100 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] z-[100] overflow-hidden animate-in fade-in zoom-in-95 duration-200 backdrop-blur-xl bg-white/95">
@@ -158,9 +169,13 @@ export default function PredictiveSearch() {
               )}
               
               <div className="p-3 bg-gray-50 rounded-b-2xl text-center">
-                 <button className="text-xs font-bold text-primary hover:underline">
+                 <Link
+                   href={`/products?search=${encodeURIComponent(query)}`}
+                   className="text-xs font-bold text-primary hover:underline block w-full"
+                   onClick={() => setIsOpen(false)}
+                 >
                     View all results for &quot;{query}&quot;
-                 </button>
+                 </Link>
               </div>
             </div>
           ) : null}

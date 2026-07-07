@@ -3,19 +3,22 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, BookOpen, Search, ShoppingCart, User } from "lucide-react";
-import { useCartStore } from "@/store/cart-store";
+import { Home, BookOpen, Search, User } from "lucide-react";
+
+interface NavItem {
+  name: string;
+  href: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  isActive: boolean;
+  badge?: number | null;
+  showDot?: boolean;
+}
 
 export default function MobileBottomNav() {
   const pathname = usePathname();
-  const { cart, openCartDrawer } = useCartStore();
-
-  const lines = cart?.lines || [];
-  const itemCount = lines.reduce((acc, line) => acc + line.quantity, 0);
-
   const cleanPath = pathname ? pathname.toLowerCase().replace(/\/$/, "") : "";
 
-  const navItems = [
+  const navItems: NavItem[] = [
     {
       name: "Home",
       href: "/",
@@ -35,17 +38,6 @@ export default function MobileBottomNav() {
       isActive: cleanPath.startsWith("/search"),
     },
     {
-      name: "Cart",
-      href: "#",
-      icon: ShoppingCart,
-      isActive: false,
-      onClick: (e: React.MouseEvent) => {
-        e.preventDefault();
-        openCartDrawer();
-      },
-      badge: itemCount > 0 ? itemCount : null,
-    },
-    {
       name: "Account",
       href: "/account",
       icon: User,
@@ -62,41 +54,28 @@ export default function MobileBottomNav() {
             ? "text-[var(--islamic-gold)] scale-105"
             : "text-white/60 hover:text-white";
 
-          const content = (
-            <div className={`flex flex-col items-center justify-center py-1 transition-all duration-300 ${activeClass}`}>
-              <div className="relative">
-                <Icon size={20} className="transition-transform duration-200" />
-                {item.badge !== null && (
-                  <span className="absolute -top-1.5 -right-2.5 bg-[#c19a4e] text-white text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center border border-[var(--islamic-green-dark)] shadow-sm">
-                    {item.badge}
-                  </span>
-                )}
-              </div>
-              <span className="text-[10px] font-sans font-medium mt-0.5 tracking-wide">
-                {item.name}
-              </span>
-            </div>
-          );
-
-          if (item.onClick) {
-            return (
-              <button
-                key={index}
-                onClick={item.onClick}
-                className="flex-1 focus:outline-none flex justify-center items-center h-full active:scale-95 transition-transform duration-100"
-              >
-                {content}
-              </button>
-            );
-          }
-
           return (
             <Link
               key={index}
               href={item.href}
               className="flex-1 flex justify-center items-center h-full active:scale-95 transition-transform duration-100"
             >
-              {content}
+              <div className={`flex flex-col items-center justify-center py-1 transition-all duration-300 ${activeClass}`}>
+                <div className="relative">
+                  <Icon size={20} className="transition-transform duration-200" />
+                  {item.badge !== undefined && item.badge !== null && (
+                    <span className="absolute -top-1.5 -right-2.5 bg-[#c19a4e] text-white text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center border border-[var(--islamic-green-dark)] shadow-sm">
+                      {item.badge}
+                    </span>
+                  )}
+                  {item.showDot && (
+                    <span className="absolute -top-0.5 -right-0.5 bg-[#c19a4e] h-2 w-2 rounded-full border border-[var(--islamic-green-dark)] shadow-sm" />
+                  )}
+                </div>
+                <span className="text-[10px] font-sans font-medium mt-0.5 tracking-wide">
+                  {item.name}
+                </span>
+              </div>
             </Link>
           );
         })}

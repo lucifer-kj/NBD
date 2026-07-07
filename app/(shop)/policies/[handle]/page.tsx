@@ -49,10 +49,7 @@ export async function generateMetadata({ params }: PolicyPageProps) {
   
   if (!policy) return { title: 'Policy Not Found' };
 
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL;
-  if (!siteUrl) {
-    throw new Error('NEXT_PUBLIC_APP_URL is required to generate policy metadata');
-  }
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in';
 
   return {
     metadataBase: new URL(siteUrl),
@@ -82,10 +79,7 @@ export default async function PolicyPage({ params }: PolicyPageProps) {
     notFound();
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL;
-  if (!siteUrl) {
-    throw new Error('NEXT_PUBLIC_APP_URL is required for policy schema generation');
-  }
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.naazbook.in';
 
   const jsonLd = {
     "@context": "https://schema.org",

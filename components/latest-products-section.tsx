@@ -26,6 +26,19 @@ const skeletonArray = Array.from({ length: 6 });
 export default function LatestProductsSection({ products, loading = false }: LatestProductsSectionProps) {
   const reduced = useReducedMotion();
   const [ref, inView] = useScrollReveal();
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const [activeDot, setActiveDot] = useState(0);
+
+  const handleScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, clientWidth, scrollWidth } = scrollRef.current;
+      const maxScroll = scrollWidth - clientWidth;
+      if (maxScroll <= 0) return;
+      const pct = scrollLeft / maxScroll;
+      const index = Math.min(5, Math.max(0, Math.round(pct * 5)));
+      setActiveDot(index);
+    }
+  };
   
   // Cart & Wishlist hooks
   const addToCart = useCartStore((state) => state.addItem);
@@ -69,6 +82,15 @@ export default function LatestProductsSection({ products, loading = false }: Lat
 
   return (
     <section className="py-16 md:py-24 bg-white">
+      <style dangerouslySetInnerHTML={{ __html: `
+        .scrollbar-none::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-none {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      ` }} />
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         {/* Section Header */}
         <motion.div
@@ -214,8 +236,12 @@ export default function LatestProductsSection({ products, loading = false }: Lat
               </motion.div>
             )}
 
-            {/* RIGHT COLUMN: Grid of 6 smaller products in a 2-column mobile layout */}
-            <div className="lg:col-span-3 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+            {/* RIGHT COLUMN: Horizontal scroll on mobile, grid on desktop */}
+            <div 
+              ref={scrollRef}
+              onScroll={handleScroll}
+              className="lg:col-span-3 flex overflow-x-auto lg:grid lg:grid-cols-3 gap-4 md:gap-6 pb-4 lg:pb-0 snap-x snap-mandatory scrollbar-none scroll-smooth -mx-4 px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0"
+            >
               {gridProducts.map((product) => {
                 const productUrl = getProductUrl(product);
                 const isItemInWishlist = isInWishlist(product.id);
@@ -230,7 +256,7 @@ export default function LatestProductsSection({ products, loading = false }: Lat
                     whileInView="show"
                     viewport={{ once: true, margin: "-40px" }}
                     variants={reduced ? undefined : fadeInUp}
-                    className="flex flex-col h-full"
+                    className="flex flex-col h-full shrink-0 w-[200px] sm:w-[240px] lg:w-auto snap-start"
                   >
                     <div className="flex flex-col bg-white border border-[#e9e3d9] rounded-2xl p-4 hover:shadow-[0_8px_24px_rgba(0,0,0,0.05)] transition-all duration-300 relative group h-full justify-between">
                       
@@ -332,6 +358,18 @@ export default function LatestProductsSection({ products, loading = false }: Lat
                   </motion.div>
                 );
               })}
+            </div>
+            
+            {/* Pagination Dots (Mobile Only) */}
+            <div className="flex lg:hidden justify-center items-center gap-1.5 mt-4">
+              {gridProducts.map((_, dotIdx) => (
+                <div
+                  key={dotIdx}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    activeDot === dotIdx ? 'w-4 bg-[#c19a4e]' : 'w-1.5 bg-gray-200'
+                  }`}
+                />
+              ))}
             </div>
           </div>
         )}

@@ -13,10 +13,6 @@ export function getProductUrl(product: ProductUrlInput): string {
     return `/books/${product.handle}`;
   }
   
-  if (tags.includes('atar') || tags.includes('fragrance') || tags.includes('attar') || tags.includes('perfume') || tags.includes('perfumes')) {
-    return `/atar/${product.handle}`;
-  }
-  
   return `/products/${product.handle}`;
 }
 

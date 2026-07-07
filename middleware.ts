@@ -28,34 +28,36 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 301);
   }
 
-  // Redirect old /perfumes, /perfume, or /categories/perfumes paths to /atar (Phase 2 SEO scoring fix)
-  if (pathname === '/perfumes' || pathname === '/perfume' || pathname === '/categories/perfumes' || pathname === '/categories/perfume') {
+  // Redirect old /atar, /perfumes, /perfume, or /categories/perfumes paths to /products or /products/[slug] (301 redirects)
+  const isAtarOrPerfumeExact =
+    pathname === '/atar' ||
+    pathname === '/perfumes' ||
+    pathname === '/perfume' ||
+    pathname === '/categories/perfumes' ||
+    pathname === '/categories/perfume';
+
+  if (isAtarOrPerfumeExact) {
     const url = request.nextUrl.clone();
-    url.pathname = '/atar';
+    url.pathname = '/products';
     return NextResponse.redirect(url, 301);
   }
-  if (pathname.startsWith('/perfumes/')) {
-    const targetPathname = pathname.replace(/^\/perfumes\//, '/atar/');
-    const url = request.nextUrl.clone();
-    url.pathname = targetPathname;
-    return NextResponse.redirect(url, 301);
+
+  let atarOrPerfumeTarget: string | null = null;
+  if (pathname.startsWith('/atar/')) {
+    atarOrPerfumeTarget = pathname.replace(/^\/atar\//, '/products/');
+  } else if (pathname.startsWith('/perfumes/')) {
+    atarOrPerfumeTarget = pathname.replace(/^\/perfumes\//, '/products/');
+  } else if (pathname.startsWith('/perfume/')) {
+    atarOrPerfumeTarget = pathname.replace(/^\/perfume\//, '/products/');
+  } else if (pathname.startsWith('/categories/perfumes/')) {
+    atarOrPerfumeTarget = pathname.replace(/^\/categories\/perfumes\//, '/products/');
+  } else if (pathname.startsWith('/categories/perfume/')) {
+    atarOrPerfumeTarget = pathname.replace(/^\/categories\/perfume\//, '/products/');
   }
-  if (pathname.startsWith('/perfume/')) {
-    const targetPathname = pathname.replace(/^\/perfume\//, '/atar/');
+
+  if (atarOrPerfumeTarget) {
     const url = request.nextUrl.clone();
-    url.pathname = targetPathname;
-    return NextResponse.redirect(url, 301);
-  }
-  if (pathname.startsWith('/categories/perfumes/')) {
-    const targetPathname = pathname.replace(/^\/categories\/perfumes\//, '/atar/');
-    const url = request.nextUrl.clone();
-    url.pathname = targetPathname;
-    return NextResponse.redirect(url, 301);
-  }
-  if (pathname.startsWith('/categories/perfume/')) {
-    const targetPathname = pathname.replace(/^\/categories\/perfume\//, '/atar/');
-    const url = request.nextUrl.clone();
-    url.pathname = targetPathname;
+    url.pathname = atarOrPerfumeTarget;
     return NextResponse.redirect(url, 301);
   }
 
@@ -82,6 +84,9 @@ export async function middleware(request: NextRequest) {
   // Prepare standard response
   const response = NextResponse.next();
 
+  const shopifyStoreDomain = process.env.SHOPIFY_STORE_DOMAIN || '3xbr00-f7.myshopify.com';
+  const shopifyHost = shopifyStoreDomain.replace(/^https?:\/\//, '');
+
   // Security: Content Security Policy & Security Headers
   const cspHeader = `
     default-src 'self';
@@ -89,7 +94,7 @@ export async function middleware(request: NextRequest) {
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com;
     img-src 'self' blob: data: https://cdn.shopify.com https://*.shopifycdn.com https://v.fastly.net https://www.google-analytics.com https://www.googletagmanager.com https://google-analytics.com https://*.googleusercontent.com https://*.google.com https://*.razorpay.com https://www.facebook.com;
     font-src 'self' https://fonts.gstatic.com;
-    connect-src 'self' https://*.shopify.com https://*.google-analytics.com https://vitals.vercel-insights.com https://account.naazbook.in https://3xbr00-f7.myshopify.com https://accounts.google.com https://api.razorpay.com https://*.razorpay.com https://www.facebook.com https://*.facebook.com;
+    connect-src 'self' https://*.shopify.com https://*.google-analytics.com https://vitals.vercel-insights.com https://account.naazbook.in https://${shopifyHost} https://accounts.google.com https://api.razorpay.com https://*.razorpay.com https://www.facebook.com https://*.facebook.com;
     frame-src 'self' https://*.google.com https://www.googletagmanager.com https://*.shopify.com https://accounts.google.com https://api.razorpay.com https://checkout.razorpay.com;
     object-src 'none';
     base-uri 'self';

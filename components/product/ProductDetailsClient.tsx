@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShoppingCart, 
@@ -281,13 +282,34 @@ export default function ProductDetailsClient({ product, reviews }: ProductDetail
         </div>
 
         {/* Breadcrumbs */}
-        <div className="hidden md:flex items-center gap-2 text-sm text-gray-500 mb-6">
-          <span>Home</span>
-          <ChevronRight size={14} />
-          <span>Products</span>
-          <ChevronRight size={14} />
-          <span className="text-[var(--islamic-green)] font-medium truncate">{product.title}</span>
-        </div>
+        {(() => {
+          const tags = product.tags?.map((t) => t.toLowerCase()) || [];
+          const isBook = tags.includes('books') || tags.includes('islamic books') || tags.includes('book');
+          const isAtar = tags.includes('atar') || tags.includes('fragrance') || tags.includes('attar') || tags.includes('perfume') || tags.includes('perfumes');
+
+          let categoryName = "Products";
+          let categoryUrl = "/products";
+
+          if (isBook) {
+            categoryName = "Books";
+            categoryUrl = "/books";
+          } else if (isAtar) {
+            categoryName = "Atars & Fragrances";
+            categoryUrl = "/atar";
+          }
+
+          return (
+            <div className="hidden md:flex items-center gap-2 text-sm text-gray-500 mb-6 select-none">
+              <Link href="/" className="hover:text-[var(--islamic-gold)] transition-colors">Home</Link>
+              <ChevronRight size={14} className="text-gray-400" />
+              <Link href={categoryUrl} className="hover:text-[var(--islamic-gold)] transition-colors">{categoryName}</Link>
+              <ChevronRight size={14} className="text-gray-400" />
+              <span className="text-[var(--islamic-green)] font-medium truncate max-w-[300px]" title={product.title}>
+                {product.title}
+              </span>
+            </div>
+          );
+        })()}
 
         <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-headings font-bold text-[var(--islamic-green)] leading-tight mb-2">
           {product.title}

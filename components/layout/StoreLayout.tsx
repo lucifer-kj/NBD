@@ -15,7 +15,7 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
   // Normalize pathname to handle trailing slashes and case sensitivity robustly
   const cleanPath = pathname ? pathname.toLowerCase().replace(/\/$/, "") : "";
   const isAuthPage = cleanPath === "/login" || cleanPath === "/signup";
-  const isProductDetailPage = cleanPath.includes("/products/") || cleanPath.includes("/books/") || cleanPath.includes("/atar/");
+  const isProductDetailPage = cleanPath.includes("/products/") || cleanPath.includes("/books/");
 
   React.useEffect(() => {
     // Logging removed to clean up console

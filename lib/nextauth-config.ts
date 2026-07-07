@@ -7,6 +7,7 @@ import { createDebug } from './auth-debug';
 import { OAuth2Client } from 'google-auth-library';
 import { rateLimit } from '@/lib/rate-limit';
 import { headers } from 'next/headers';
+import { getCookieDomain } from './session';
 
 type AppAuthUser = User & {
   shopifyToken?: string | null;
@@ -347,5 +348,27 @@ export const authOptions: NextAuthOptions = {
 
   secret: process.env.NEXTAUTH_SECRET || process.env.SESSION_SECRET,
 };
+
+export async function getAuthOptions(): Promise<NextAuthOptions> {
+  const domain = await getCookieDomain();
+  return {
+    ...authOptions,
+    cookies: {
+      ...authOptions.cookies,
+      sessionToken: {
+        name: process.env.NODE_ENV === 'production' 
+          ? '__Secure-next-auth.session-token' 
+          : 'next-auth.session-token',
+        options: {
+          httpOnly: true,
+          sameSite: 'lax',
+          path: '/',
+          secure: process.env.NODE_ENV === 'production',
+          domain: process.env.NODE_ENV === 'production' ? domain : undefined,
+        }
+      }
+    }
+  };
+}
 
 export default authOptions;

@@ -314,10 +314,11 @@ export const reshapeCart = (cart: Cart): ReshapedCart => {
 };
 
 export async function getProduct(handle: string): Promise<ReshapedProduct | undefined> {
+  const decodedHandle = decodeURIComponent(handle);
   const res = await shopifyFetch<{ data: { product: Product } }>({
     query: getProductQuery,
-    tags: ['products', `product-${handle}`],
-    variables: { handle }
+    tags: ['products', `product-${decodedHandle}`],
+    variables: { handle: decodedHandle }
   });
 
   return reshapeProduct(res.body.data.product);

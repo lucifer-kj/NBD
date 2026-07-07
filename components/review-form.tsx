@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardTitle } from "@/components/ui/card"
 import StarRating from "./star-rating"
+import { useToast } from "@/components/ui/toast"
 
 interface ReviewFormProps {
   onSubmit: (review: { name: string; email: string; rating: number; title: string; comment: string }) => void
@@ -13,6 +14,7 @@ interface ReviewFormProps {
 }
 
 export default function ReviewForm({ onSubmit, isSubmitting = false }: ReviewFormProps) {
+  const { showToast } = useToast()
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [rating, setRating] = useState(0)
@@ -22,24 +24,24 @@ export default function ReviewForm({ onSubmit, isSubmitting = false }: ReviewFor
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (rating === 0) {
-      alert("Please select a rating")
+      showToast("Please select a rating", "error")
       return
     }
     if (!title.trim()) {
-      alert("Please enter a review title")
+      showToast("Please enter a review title", "error")
       return
     }
     if (!comment.trim()) {
-      alert("Please enter a review comment")
+      showToast("Please enter a review comment", "error")
       return
     }
     
     if (!name.trim()) {
-      alert("Please enter your name")
+      showToast("Please enter your name", "error")
       return
     }
     if (!email.trim() || !email.includes('@')) {
-      alert("Please enter a valid email")
+      showToast("Please enter a valid email", "error")
       return
     }
     

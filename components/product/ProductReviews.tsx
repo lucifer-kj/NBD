@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import ReviewForm from '../review-form';
 import StarRating from '../star-rating';
 import { Star, CheckCircle, User } from 'lucide-react';
+import { useToast } from '@/components/ui/toast';
 
 interface Review {
   id: string;
@@ -22,6 +23,7 @@ interface ProductReviewsProps {
 }
 
 export default function ProductReviews({ productId, productTitle }: ProductReviewsProps) {
+  const { showToast } = useToast();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,7 +64,7 @@ export default function ProductReviews({ productId, productTitle }: ProductRevie
       });
 
       if (res.ok) {
-        alert('Review submitted successfully! It will appear after moderation.');
+        showToast('Review submitted successfully! It will appear after moderation.', 'success');
         fetchReviews();
       } else {
         const errorData = await res.json();
@@ -70,7 +72,7 @@ export default function ProductReviews({ productId, productTitle }: ProductRevie
       }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Error submitting review. Please try again.';
-      alert(message);
+      showToast(message, 'error');
     } finally {
       setIsSubmitting(false);
     }
