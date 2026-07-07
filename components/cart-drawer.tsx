@@ -5,11 +5,9 @@ import { Button } from "@/components/ui/button"
 import { Drawer } from "vaul"
 import Image from "next/image"
 import Link from "next/link"
-import { X, ShoppingCart, Trash2, Minus, Plus } from "lucide-react"
+import { X, ShoppingCart, Trash2, Minus, Plus, Heart } from "lucide-react"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
-import { AnimatePresence, motion } from "framer-motion";
-import { cartSlideIn } from "@/lib/motion.config";
-import { useReducedMotion } from "@/lib/useReducedMotion";
+import { useDonationStore } from "@/store/donation-store"
 import { EmptyState } from "@/components/ui/empty-state";
 import { useMounted } from "@/hooks/use-mounted";
 import { formatPrice } from "@/lib/utils";
@@ -37,8 +35,8 @@ export default function CartDrawer() {
     clearDiscountError,
     addItem
   } = useCartStore()
-  const reduced = useReducedMotion();
   const mounted = useMounted();
+  const openDonation = useDonationStore((state) => state.open);
 
   const lines = cart?.lines || []
   const count = lines.reduce((acc, line) => acc + line.quantity, 0)
@@ -316,18 +314,73 @@ export default function CartDrawer() {
                       </div>
                     </div>
                   )}
+                  
+                  {/* Mobile Only: Promo Code and Sadqa Nudge */}
+                  {lines.length > 0 && (
+                    <div className="md:hidden mt-6 space-y-6">
+                      {/* Promo Code Input */}
+                      <div className="space-y-2.5">
+                        <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider font-semibold">
+                          Promo Code
+                        </h4>
+                        <DiscountCodeInput />
+                      </div>
+
+                      {/* Sadqa-e-Jariyah micro-nudge */}
+                      <div className="rounded-xl border border-[var(--islamic-gold)]/20 bg-[var(--islamic-cream)] p-3 mb-4 flex items-center justify-between gap-3 shadow-xs">
+                        <div className="flex items-center gap-2">
+                          <Heart size={14} className="text-[#8F6826] shrink-0 heart-pulse" fill="currentColor" />
+                          <div className="text-left">
+                            <p className="text-xs font-bold text-[var(--islamic-green-dark)]">Sadqa-e-Jariyah</p>
+                            <p className="text-[10px] text-gray-500 font-medium leading-tight">Sponsor Quran printing (₹50+)</p>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => {
+                            closeCartDrawer();
+                            openDonation();
+                          }}
+                          className="px-2.5 py-1.5 text-[10px] font-extrabold text-[var(--islamic-green)] bg-white border border-[var(--islamic-green)] hover:bg-[var(--islamic-green)] hover:text-white rounded-lg transition-all cursor-pointer"
+                        >
+                          Add Support
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Right Column: Checkout Summary & Coupon Section */}
-                <div className="w-full md:w-[340px] flex-shrink-0 bg-white p-5 md:p-6 flex flex-col justify-between border-t md:border-t-0 md:border-l border-gray-100 overflow-y-auto">
+                <div className="w-full md:w-[340px] flex-shrink-0 bg-white p-5 md:p-6 flex flex-col justify-between border-t md:border-t-0 md:border-l border-gray-100 sticky bottom-0 md:static z-20 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:shadow-none md:overflow-y-auto">
                   <div className="space-y-6">
-                    {/* Promo Code Input */}
-                    <div className="space-y-2.5">
+                    {/* Promo Code Input (Desktop Only) */}
+                    <div className="hidden md:block space-y-2.5">
                       <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider font-semibold">
                         Promo Code
                       </h4>
                       <DiscountCodeInput />
                     </div>
+
+                    {/* Sadqa-e-Jariyah micro-nudge (Desktop Only) */}
+                    {lines.length > 0 && (
+                      <div className="hidden md:flex rounded-xl border border-[var(--islamic-gold)]/20 bg-[var(--islamic-cream)] p-3 mb-4 items-center justify-between gap-3 shadow-xs">
+                        <div className="flex items-center gap-2">
+                          <Heart size={14} className="text-[#8F6826] shrink-0 heart-pulse" fill="currentColor" />
+                          <div className="text-left">
+                            <p className="text-xs font-bold text-[var(--islamic-green-dark)]">Sadqa-e-Jariyah</p>
+                            <p className="text-[10px] text-gray-500 font-medium leading-tight">Sponsor Quran printing (₹50+)</p>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => {
+                            closeCartDrawer();
+                            openDonation();
+                          }}
+                          className="px-2.5 py-1.5 text-[10px] font-extrabold text-[var(--islamic-green)] bg-white border border-[var(--islamic-green)] hover:bg-[var(--islamic-green)] hover:text-white rounded-lg transition-all cursor-pointer"
+                        >
+                          Add Support
+                        </button>
+                      </div>
+                    )}
 
                     {/* Pricing Summary Card */}
                     <div className="rounded-xl border border-gray-100 bg-[#FAFAFA] p-4 mb-5 shadow-sm">

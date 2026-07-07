@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { ArrowRight, BookOpen, Heart, Shield, Truck, Users } from 'lucide-react';
 import { useDonationStore } from "@/store/donation-store";
+import HeroSlideshow from './HeroSlideshow';
 
 const HeroSection = () => {
   const openDonation = useDonationStore((state) => state.open);
@@ -25,12 +25,24 @@ const HeroSection = () => {
   }, [typewriterIndex]);
 
   return (
-    <section className="relative h-[85vh] overflow-hidden flex items-center">
+    <section className="relative min-h-[85vh] h-auto py-12 md:py-0 md:h-[85vh] overflow-hidden flex items-center">
       {/* Premium glow and shimmer CSS */}
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes pulseGlow {
           0%, 100% { box-shadow: 0 0 0 0 rgba(212, 168, 83, 0.4); }
           50% { box-shadow: 0 0 16px 4px rgba(212, 168, 83, 0.2); }
+        }
+        @keyframes heartPulse {
+          0%, 100% { transform: scale(1); }
+          14% { transform: scale(1.18); }
+          28% { transform: scale(1); }
+          42% { transform: scale(1.18); }
+          70% { transform: scale(1); }
+        }
+        .heart-pulse {
+          animation: heartPulse 2.5s infinite ease-in-out;
+          display: inline-block;
+          transform-origin: center;
         }
         .premium-donation-btn {
           position: relative;
@@ -56,14 +68,7 @@ const HeroSection = () => {
 
       {/* Background with CSS scroll-driven parallax effect */}
       <div className="absolute inset-0 z-0 hero-scroll-parallax">
-        <Image
-          src="/Images/Image+Background.jpg"
-          alt="Naaz Book Depot Hero Background"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-center"
-        />
+        <HeroSlideshow />
       </div>
 
       {/* Semi-transparent overlay for better text contrast */}
@@ -95,7 +100,7 @@ const HeroSection = () => {
           </p>
 
           {/* Trust Signals Row */}
-          <div className="flex flex-wrap gap-3 mb-8">
+          <div className="flex flex-nowrap overflow-x-auto gap-3 mb-8 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-w-full shrink-0">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm text-white/90 text-xs transition-colors duration-300 hover:bg-white/10">
               <Shield size={14} className="text-[var(--islamic-gold)]" />
               <span>Est. 1967</span>
@@ -159,18 +164,20 @@ const HeroSection = () => {
           {/* Premium Desktop Donation Redirect Button */}
           <div className="relative group w-full">
             {/* Tooltip */}
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3.5 w-52 p-2 bg-[var(--islamic-green-dark)] border border-[var(--islamic-gold)]/40 text-[9px] text-white/90 rounded-lg shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-300 z-50 text-center leading-normal">
-              Your donations support printing classical Islamic books and translation efforts.
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3.5 w-64 p-3 bg-[var(--islamic-green-dark)] border border-[var(--islamic-gold)]/40 text-[10px] text-white/90 rounded-xl shadow-2xl opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-300 z-50 text-center leading-relaxed">
+              <span className="block italic text-[var(--islamic-gold)] mb-1 font-headings">&ldquo;When a person dies, their deeds end except for three: Sadaqah Jariyah (continuous charity), beneficial knowledge...&rdquo;</span>
+              <span className="block text-[8px] opacity-60 text-right">— Hadith (Sahih Muslim)</span>
               <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[var(--islamic-green-dark)]"></div>
             </div>
 
             <button
               onClick={openDonation}
+              onMouseEnter={openDonation}
               className="premium-donation-btn flex items-center justify-between w-full p-4 rounded-xl bg-[#0D2E21] border border-[var(--islamic-gold)]/35 hover:border-[var(--islamic-gold)] hover:bg-[#133F2E] text-white hover:shadow-[0_8px_24px_rgba(212,168,83,0.15)] transition-all duration-300 cursor-pointer"
             >
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[var(--islamic-gold)] group-hover:scale-110 transition-transform">
-                  <Heart size={14} fill="currentColor" className="text-[var(--islamic-gold)]" />
+                  <Heart size={14} fill="currentColor" className="text-[var(--islamic-gold)] heart-pulse" />
                 </div>
                 <div className="text-left">
                   <div className="text-xs font-bold tracking-wide">Sadqa-e-Jariyah</div>

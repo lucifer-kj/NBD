@@ -81,7 +81,7 @@ export default function GoogleOneTap() {
             // Ignored
           }
         });
-      } catch (e) {
+      } catch {
         // console.debug("Error initializing Google One Tap:", e);
         promptAttempted.current = false;
       }

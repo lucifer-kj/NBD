@@ -237,24 +237,24 @@ export function MobileMenu() {
       </button>
 
       {mounted && isOpen && (
-        <div className="fixed inset-0 z-40 bg-white pt-20 px-4 mt-[72px] animate-in fade-in slide-in-from-bottom-4 duration-300 overflow-y-auto pb-32">
-          <form onSubmit={handleSearch} className="flex items-center bg-white rounded-lg shadow-sm border border-gray-200 px-3 py-2 mb-6">
+        <div className="fixed inset-0 z-40 bg-white pt-24 px-6 animate-in fade-in slide-in-from-bottom-4 duration-300 overflow-y-auto pb-32">
+          <form onSubmit={handleSearch} className="flex items-center bg-white rounded-lg shadow-sm border border-gray-200 px-3 py-2.5 mb-6">
             <Search className="text-gray-400 mr-2" size={18} />
             <input 
               type="text" 
               placeholder="Search Islamic books..." 
-              className="flex-1 outline-none text-sm text-black" 
+              className="flex-1 outline-none text-base md:text-sm text-black" 
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
           </form>
-          <div className="flex flex-col space-y-4">
-            <Link href="/" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-xl border-b border-gray-50 pb-2" onClick={() => setIsOpen(false)}>Home</Link>
-            <Link href="/books" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-xl border-b border-gray-50 pb-2" onClick={() => setIsOpen(false)}>Islamic Books</Link>
-            <Link href="/products" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-xl border-b border-gray-50 pb-2" onClick={() => setIsOpen(false)}>All Products</Link>
-            <Link href="/blog" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-xl border-b border-gray-50 pb-2" onClick={() => setIsOpen(false)}>Spiritual Insights</Link>
-            <Link href="/about" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-xl border-b border-gray-50 pb-2" onClick={() => setIsOpen(false)}>About Our Journey</Link>
-            <Link href="/contact" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-xl border-b border-gray-50 pb-2" onClick={() => setIsOpen(false)}>FAQs & Support</Link>
+          <div className="flex flex-col space-y-2">
+            <Link href="/" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-lg border-b border-gray-100 py-3.5" onClick={() => setIsOpen(false)}>Home</Link>
+            <Link href="/books" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-lg border-b border-gray-100 py-3.5" onClick={() => setIsOpen(false)}>Islamic Books</Link>
+            <Link href="/products" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-lg border-b border-gray-100 py-3.5" onClick={() => setIsOpen(false)}>All Products</Link>
+            <Link href="/blog" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-lg border-b border-gray-100 py-3.5" onClick={() => setIsOpen(false)}>Spiritual Insights</Link>
+            <Link href="/about" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-lg border-b border-gray-100 py-3.5" onClick={() => setIsOpen(false)}>About Our Journey</Link>
+            <Link href="/contact" className="text-[var(--islamic-green)] hover:text-[var(--islamic-gold)] transition-colors font-bold text-lg border-b border-gray-100 py-3.5" onClick={() => setIsOpen(false)}>FAQs & Support</Link>
           </div>
         </div>
       )}

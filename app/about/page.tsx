@@ -1,6 +1,7 @@
 import { Heart, Book, Users, CheckCircle } from "lucide-react";
 import Image from "next/image";
 import type { Metadata } from 'next';
+import SadaqahTrigger from "@/components/about/SadaqahTrigger";
 
 export const metadata: Metadata = {
   title: "About Us | Naaz Book Depot Kolkata",
@@ -108,6 +109,7 @@ export default function AboutPage() {
                   <span className="italic text-[var(--charcoal)]/90 text-sm md:text-base">“Your work in publishing Qur’ans and Islamic books is a true form of Sadaqah Jariyah (continuous charity), benefiting generations to come.”</span>
                 </div>
               </div>
+              <SadaqahTrigger />
               {/* Highlight Card */}
               <div className="bg-[#F6F1E7] rounded-lg flex items-center gap-3 px-4 py-3 mt-2">
                 <CheckCircle className="w-6 h-6 text-[var(--islamic-green)] flex-shrink-0" />

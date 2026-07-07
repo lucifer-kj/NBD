@@ -38,9 +38,9 @@ const Navbar = () => {
               <Image
                 src="/Images/logo.png"
                 alt="Naaz Book Depot Logo"
-                width={56}
-                height={56}
-                className={`transition-all duration-300 ${isScrolled ? "w-8 h-8 md:w-10 md:h-10" : "w-10 h-10 md:w-12 md:h-12"} object-contain`}
+                width={64}
+                height={64}
+                className={`transition-all duration-300 ${isScrolled ? "w-8 h-8 md:w-12 md:h-12" : "w-10 h-10 md:w-14 md:h-14"} object-contain`}
                 priority
               />
             </div>

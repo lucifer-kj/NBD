@@ -106,7 +106,7 @@ const categories = [
     icon: KidsIcon,
     description: "Nurture young hearts with beautifully illustrated stories of the Prophets and educational books.",
     isLarge: true,
-    colSpan: "col-span-1 md:col-span-2",
+    colSpan: "col-span-2 md:col-span-2",
   },
   {
     name: "Accessories",
@@ -114,7 +114,7 @@ const categories = [
     icon: TasbihIcon,
     description: "Premium tasbihs, prayer mats, and Islamic lifestyle accessories.",
     isLarge: false,
-    colSpan: "col-span-2 md:col-span-1",
+    colSpan: "col-span-1 md:col-span-1",
   },
 ]
 
