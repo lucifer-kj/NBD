@@ -46,3 +46,9 @@ yarn-error.log*
 
 # internal
 /internal-pipeline
+
+# reels workflow and prompts
+/.reels/
+
+.vercel
+.env*
