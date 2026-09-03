@@ -30,6 +30,7 @@ export default function MobileBottomNav() {
           {/* 1. Home Tab */}
           <Link
             href="/"
+            onClick={(e) => (e.currentTarget as HTMLElement).blur()}
             aria-label="Home"
             className="flex-1 flex justify-center items-center h-full min-h-[48px] active:scale-95 transition-transform duration-100"
           >
@@ -51,6 +52,7 @@ export default function MobileBottomNav() {
           {/* 2. Search Tab */}
           <Link
             href="/search"
+            onClick={(e) => (e.currentTarget as HTMLElement).blur()}
             aria-label="Search"
             className="flex-1 flex justify-center items-center h-full min-h-[48px] active:scale-95 transition-transform duration-100"
           >
@@ -72,7 +74,10 @@ export default function MobileBottomNav() {
           {/* 3. Categories Tab (Opens Slide-up Sheet) */}
           <button
             type="button"
-            onClick={() => setIsCategoriesOpen(true)}
+            onClick={(e) => {
+              (e.currentTarget as HTMLButtonElement).blur();
+              setIsCategoriesOpen(true);
+            }}
             aria-label="Categories"
             className="flex-1 flex justify-center items-center h-full min-h-[48px] active:scale-95 transition-transform duration-100 cursor-pointer"
           >
@@ -94,7 +99,10 @@ export default function MobileBottomNav() {
           {/* 4. Cart Tab (Triggers Cart Drawer Directly) */}
           <button
             type="button"
-            onClick={openCartDrawer}
+            onClick={(e) => {
+              (e.currentTarget as HTMLButtonElement).blur();
+              openCartDrawer();
+            }}
             aria-label={`Shopping Cart with ${cartCount} items`}
             className="flex-1 flex justify-center items-center h-full min-h-[48px] active:scale-95 transition-transform duration-100 cursor-pointer"
           >

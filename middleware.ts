@@ -90,15 +90,15 @@ export async function middleware(request: NextRequest) {
   // Security: Content Security Policy & Security Headers
   const cspHeader = `
     default-src 'self';
-    script-src 'self' 'unsafe-inline' https://cdn.shopify.com https://vitals.vercel-insights.com https://www.googletagmanager.com https://www.google-analytics.com https://ssl.google-analytics.com https://accounts.google.com https://checkout.razorpay.com https://connect.facebook.net https://*.facebook.net;
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.shopify.com https://vitals.vercel-insights.com https://*.vercel-insights.com https://www.googletagmanager.com https://*.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://ssl.google-analytics.com https://accounts.google.com https://apis.google.com https://*.google.com https://checkout.razorpay.com https://*.razorpay.com https://connect.facebook.net https://*.facebook.net https://*.facebook.com;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com;
-    img-src 'self' blob: data: https://cdn.shopify.com https://*.shopifycdn.com https://v.fastly.net https://www.google-analytics.com https://www.googletagmanager.com https://google-analytics.com https://*.googleusercontent.com https://*.google.com https://*.razorpay.com https://www.facebook.com;
+    img-src 'self' blob: data: https://cdn.shopify.com https://*.shopifycdn.com https://v.fastly.net https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://*.googletagmanager.com https://*.googleusercontent.com https://*.google.com https://*.google.* https://*.doubleclick.net https://*.googleadservices.com https://*.razorpay.com https://www.facebook.com https://*.facebook.com https://*.facebook.net;
     font-src 'self' https://fonts.gstatic.com;
-    connect-src 'self' https://*.shopify.com https://*.google-analytics.com https://vitals.vercel-insights.com https://account.naazbook.in https://${shopifyHost} https://accounts.google.com https://api.razorpay.com https://*.razorpay.com https://www.facebook.com https://*.facebook.com;
-    frame-src 'self' https://*.google.com https://www.googletagmanager.com https://*.shopify.com https://accounts.google.com https://api.razorpay.com https://checkout.razorpay.com;
+    connect-src 'self' https://*.shopify.com https://*.google-analytics.com https://analytics.google.com https://*.google.com https://*.google.* https://stats.g.doubleclick.net https://*.doubleclick.net https://www.googletagmanager.com https://*.googletagmanager.com https://vitals.vercel-insights.com https://*.vercel-insights.com https://account.naazbook.in https://${shopifyHost} https://accounts.google.com https://api.razorpay.com https://*.razorpay.com https://www.facebook.com https://*.facebook.com https://*.facebook.net;
+    frame-src 'self' https://*.google.com https://www.google.com https://maps.google.com https://www.googletagmanager.com https://*.googletagmanager.com https://*.shopify.com https://accounts.google.com https://api.razorpay.com https://checkout.razorpay.com https://*.razorpay.com;
     object-src 'none';
     base-uri 'self';
-    form-action 'self' https://*.shopify.com https://account.naazbook.in https://accounts.google.com https://api.razorpay.com;
+    form-action 'self' https://*.shopify.com https://account.naazbook.in https://accounts.google.com https://api.razorpay.com https://*.razorpay.com;
     frame-ancestors 'self';
     upgrade-insecure-requests;
   `.replace(/\s{2,}/g, ' ').trim();

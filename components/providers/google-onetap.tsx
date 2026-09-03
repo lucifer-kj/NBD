@@ -21,6 +21,8 @@ declare global {
   }
 }
 
+let isGoogleAccountsInitialized = false;
+
 export default function GoogleOneTap() {
   const pathname = usePathname();
   const { status } = useSession();
@@ -35,13 +37,12 @@ export default function GoogleOneTap() {
     }
 
     const initializeAndPrompt = () => {
-      if (!window.google || status !== "unauthenticated" || promptAttempted.current) {
+      if (!window.google?.accounts?.id || status !== "unauthenticated" || promptAttempted.current) {
         return;
       }
 
       const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
       if (!clientId) {
-        // console.warn("NEXT_PUBLIC_GOOGLE_CLIENT_ID is not defined in environment variables.");
         return;
       }
 
@@ -52,37 +53,30 @@ export default function GoogleOneTap() {
 
       try {
         promptAttempted.current = true;
-        window.google.accounts.id.initialize({
-          client_id: clientId,
-          callback: async (response: any) => {
-            // console.debug("Google One Tap (FedCM) credential received.");
-            const result = await signIn("google-onetap", {
-              credential: response.credential,
-              redirect: false,
-            });
-            if (result?.error) {
-              // console.debug("NextAuth Google One Tap sign-in error:", result.error);
-              promptAttempted.current = false; // Reset to allow retry
-            } else {
-              // console.debug("NextAuth Google One Tap sign-in succeeded.");
-              window.location.href = "/account";
-            }
-          },
-          fedcm_support: !isLocalhost, // Enforce browser-native FedCM flow on production only
-          cancel_on_tap_outside: false,
-        });
 
-        window.google.accounts.id.prompt((notification) => {
-          if (notification.isNotDisplayed()) {
-            promptAttempted.current = false;
-          } else if (notification.isSkippedMoment()) {
-            promptAttempted.current = false;
-          } else if (notification.isDismissedMoment()) {
-            // Ignored
-          }
-        });
+        if (!isGoogleAccountsInitialized) {
+          window.google.accounts.id.initialize({
+            client_id: clientId,
+            callback: async (response: any) => {
+              const result = await signIn("google-onetap", {
+                credential: response.credential,
+                redirect: false,
+              });
+              if (result?.error) {
+                promptAttempted.current = false;
+              } else {
+                window.location.href = "/account";
+              }
+            },
+            fedcm_support: !isLocalhost,
+            cancel_on_tap_outside: false,
+          });
+          isGoogleAccountsInitialized = true;
+        }
+
+        // Compliant with FedCM requirements (omits deprecated isNotDisplayed/isSkippedMoment)
+        window.google.accounts.id.prompt();
       } catch {
-        // console.debug("Error initializing Google One Tap:", e);
         promptAttempted.current = false;
       }
     };
