@@ -6,6 +6,7 @@ import {
   RotateCcw, 
   CreditCard
 } from 'lucide-react';
+import ContactSupportActions from '@/components/feedback/ContactSupportActions';
 
 export const metadata = {
   title: 'Contact Us & Frequently Asked Questions (FAQ) | Naaz Book Depot',
@@ -205,23 +206,7 @@ export default function FAQPage() {
             <p className="text-gray-600 mb-8 max-w-lg mx-auto">
               Our support team is available from 10:00 AM to 7:00 PM IST to help you with any queries.
             </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <a 
-                href="https://wa.me/919051085118" 
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Chat on WhatsApp (opens in a new tab)"
-                className="bg-[#25D366] text-white px-8 py-4 rounded-xl font-bold hover:bg-[#128C7E] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#25D366] focus-visible:ring-offset-2 transition-all flex items-center justify-center gap-2"
-              >
-                Chat on WhatsApp
-              </a>
-              <a 
-                href="mailto:naazgroupofficial@gmail.com" 
-                className="bg-[var(--islamic-green)] text-white px-8 py-4 rounded-xl font-bold hover:bg-[var(--islamic-green-dark)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--islamic-green)] focus-visible:ring-offset-2 transition-all flex items-center justify-center gap-2"
-              >
-                Email Support
-              </a>
-            </div>
+            <ContactSupportActions />
           </div>
         </div>
       </div>

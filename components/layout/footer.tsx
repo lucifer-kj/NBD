@@ -1,8 +1,12 @@
-import React from 'react';
+"use client";
+
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Phone, Mail, MapPin, MessageCircle, Facebook, Instagram } from 'lucide-react';
+import BugReportModal from '@/components/feedback/BugReportModal';
 
 const Footer = () => {
+  const [isBugModalOpen, setIsBugModalOpen] = useState(false);
   return (
     <footer className="bg-[var(--islamic-green-dark)] text-white/90 pt-16 pb-8 relative overflow-hidden">
       {/* Gold gradient accent line at top */}
@@ -151,6 +155,15 @@ const Footer = () => {
                   Shipping Policy
                 </Link>
               </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => setIsBugModalOpen(true)}
+                  className="text-white/70 hover:text-[var(--islamic-gold)] transition-colors duration-300 text-sm font-medium inline-flex items-center gap-1.5 cursor-pointer"
+                >
+                  Report an Issue / Bug
+                </button>
+              </li>
             </ul>
           </div>
 
@@ -277,6 +290,13 @@ const Footer = () => {
             <Link href="/policies/terms-of-service" className="hover:text-[var(--islamic-gold)] transition-colors">Terms</Link>
             <Link href="/policies/refund-policy" className="hover:text-[var(--islamic-gold)] transition-colors">Refunds</Link>
             <Link href="/policies/shipping-policy" className="hover:text-[var(--islamic-gold)] transition-colors">Shipping</Link>
+            <button
+              type="button"
+              onClick={() => setIsBugModalOpen(true)}
+              className="hover:text-[var(--islamic-gold)] transition-colors cursor-pointer"
+            >
+              Report Issue
+            </button>
           </div>
 
           {/* Quick Contact Info */}
@@ -332,6 +352,12 @@ const Footer = () => {
           </div>
         </div>
       </div>
+
+      {/* Bug & Issue Reporting Modal */}
+      <BugReportModal
+        isOpen={isBugModalOpen}
+        onClose={() => setIsBugModalOpen(false)}
+      />
     </footer>
   );
 };

@@ -173,18 +173,18 @@ export default function ProductCard({
               </span>
             </div>
             
-            {/* Add to Cart Button - always visible on mobile, hover-revealed on desktop */}
-            <div className="mt-2.5 md:mt-0 md:h-0 md:opacity-0 md:group-hover:h-10 md:group-hover:opacity-100 md:group-hover:mt-3 transition-all duration-300 overflow-hidden">
+            {/* Add to Cart Button - full-width block button on mobile, hover-revealed on desktop */}
+            <div className="mt-3 md:mt-0 md:h-0 md:opacity-0 md:group-hover:h-10 md:group-hover:opacity-100 md:group-hover:mt-3 transition-all duration-300">
               <button
                 onClick={handleAddToCart}
                 disabled={!inStock || cartLoading}
-                className="w-full py-2 px-4 rounded-xl bg-[var(--islamic-gold)] text-[var(--islamic-green-dark)] hover:bg-[var(--islamic-gold-dark)] hover:text-white font-bold text-xs md:text-sm flex items-center justify-center gap-2 shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:hover:scale-100"
+                className="w-full h-11 min-h-[44px] py-2.5 px-4 rounded-xl bg-[var(--islamic-gold)] text-[var(--islamic-green-dark)] hover:bg-[var(--islamic-gold-dark)] hover:text-white font-bold text-xs md:text-sm flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] transition-all duration-200 disabled:opacity-50 cursor-pointer"
               >
                 {cartLoading ? (
                   <span className="w-4 h-4 border-2 border-[var(--islamic-green-dark)] border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
-                    <ShoppingCart size={13} />
+                    <ShoppingCart size={15} />
                     <span>Add to Cart</span>
                   </>
                 )}

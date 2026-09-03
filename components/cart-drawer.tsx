@@ -227,21 +227,21 @@ export default function CartDrawer() {
                                 <button 
                                   onClick={() => updateItem(line.id, line.merchandise.id, line.quantity - 1)} 
                                   disabled={line.quantity <= 1 || isLoading}
-                                  className="w-11 h-11 md:w-8 md:h-8 flex items-center justify-center rounded-md hover:bg-white hover:shadow-sm text-gray-500 hover:text-black transition-all disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer"
+                                  className="w-11 h-11 min-w-[44px] min-h-[44px] md:w-8 md:h-8 md:min-w-0 md:min-h-0 flex items-center justify-center rounded-md hover:bg-white hover:shadow-sm text-gray-500 hover:text-black transition-all disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer active:scale-95"
                                   aria-label="Decrease quantity"
                                 >
-                                  <Minus className="w-3.5 h-3.5 md:w-3 md:h-3" />
+                                  <Minus className="w-4 h-4 md:w-3 md:h-3" />
                                 </button>
-                                <span className="px-2 font-semibold text-xs md:text-sm min-w-[2.25rem] md:min-w-[1.75rem] text-center text-gray-800">
+                                <span className="px-2 font-semibold text-sm md:text-sm min-w-[2.25rem] md:min-w-[1.75rem] text-center text-gray-800">
                                   {line.quantity}
                                 </span>
                                 <button 
                                   onClick={() => updateItem(line.id, line.merchandise.id, line.quantity + 1)} 
                                   disabled={isLoading}
-                                  className="w-11 h-11 md:w-8 md:h-8 flex items-center justify-center rounded-md hover:bg-white hover:shadow-sm text-gray-500 hover:text-black transition-all disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer"
+                                  className="w-11 h-11 min-w-[44px] min-h-[44px] md:w-8 md:h-8 md:min-w-0 md:min-h-0 flex items-center justify-center rounded-md hover:bg-white hover:shadow-sm text-gray-500 hover:text-black transition-all disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer active:scale-95"
                                   aria-label="Increase quantity"
                                 >
-                                  <Plus className="w-3.5 h-3.5 md:w-3 md:h-3" />
+                                  <Plus className="w-4 h-4 md:w-3 md:h-3" />
                                 </button>
                               </div>
                             </div>
@@ -349,9 +349,9 @@ export default function CartDrawer() {
                   )}
                 </div>
 
-                {/* Right Column: Checkout Summary & Coupon Section */}
-                <div className="w-full md:w-[340px] flex-shrink-0 bg-white p-5 md:p-6 flex flex-col justify-between border-t md:border-t-0 md:border-l border-gray-100 sticky bottom-0 md:static z-20 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] md:shadow-none md:overflow-y-auto">
-                  <div className="space-y-6">
+                {/* Right Column: Permanently Anchored Checkout Summary on Mobile, Sidebar on Desktop */}
+                <div className="w-full md:w-[340px] flex-shrink-0 bg-white p-4 md:p-6 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-6 flex flex-col justify-between border-t md:border-t-0 md:border-l border-gray-100 sticky bottom-0 md:static z-20 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] md:shadow-none md:overflow-y-auto">
+                  <div className="space-y-4 md:space-y-6">
                     {/* Promo Code Input (Desktop Only) */}
                     <div className="hidden md:block space-y-2.5">
                       <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider font-semibold">
@@ -383,20 +383,20 @@ export default function CartDrawer() {
                     )}
 
                     {/* Pricing Summary Card */}
-                    <div className="rounded-xl border border-gray-100 bg-[#FAFAFA] p-4 mb-5 shadow-sm">
-                      <div className="flex items-center justify-between text-sm md:text-base font-semibold mb-2 text-gray-700">
+                    <div className="rounded-xl border border-gray-100 bg-[#FAFAFA] p-3.5 md:p-4 mb-2 md:mb-5 shadow-xs">
+                      <div className="flex items-center justify-between text-xs md:text-base font-medium mb-1.5 text-gray-600">
                         <span>Subtotal</span>
                         <span>{formatPrice(totalAmount)}</span>
                       </div>
                       {cart?.discountCodes?.some(d => d.applicable) && (
-                        <div className="flex items-center justify-between text-sm text-[var(--islamic-green)] font-semibold mb-2">
+                        <div className="flex items-center justify-between text-xs md:text-sm text-[var(--islamic-green)] font-semibold mb-1.5">
                           <span>Discount applied</span>
                           <span>- {formatPrice(
                             Number(cart.cost.subtotalAmount.amount) - Number(totalAmount)
                           )}</span>
                         </div>
                       )}
-                      <div className="flex items-center justify-between text-xs md:text-sm text-gray-500 border-b border-dashed pb-3 mb-3 border-gray-200">
+                      <div className="flex items-center justify-between text-[11px] md:text-sm text-gray-400 border-b border-dashed pb-2 mb-2 border-gray-200">
                         <span>Shipping</span>
                         <span>Calculated at checkout</span>
                       </div>
@@ -407,16 +407,16 @@ export default function CartDrawer() {
                     </div>
                   </div>
 
-                  <div className="space-y-3 mt-6">
+                  <div className="space-y-2.5 mt-3 md:mt-6">
                     {unavailableItems.length > 0 && (
-                      <p className="text-xs text-red-600 text-center mb-2 font-semibold animate-pulse">
+                      <p className="text-xs text-red-600 text-center mb-1 font-semibold animate-pulse">
                         Please remove out-of-stock items to proceed
                       </p>
                     )}
                     <Button 
                       onClick={handleCheckout}
                       disabled={isCheckoutDisabled} 
-                      className="w-full bg-[var(--islamic-green)] hover:bg-[var(--islamic-green)]/90 text-white text-sm md:text-base font-bold py-3.5 rounded-xl shadow-md transition-all duration-205 hover:shadow-lg active:scale-[0.98] cursor-pointer"
+                      className="w-full bg-[var(--islamic-green)] hover:bg-[var(--islamic-green-dark)] text-white text-sm md:text-base font-bold py-3.5 h-12 min-h-[48px] rounded-xl shadow-md transition-all duration-205 hover:shadow-lg active:scale-[0.98] cursor-pointer"
                     >
                       {isLoading ? "Validating..." : "Checkout on Shopify"}
                     </Button>
@@ -424,7 +424,7 @@ export default function CartDrawer() {
                       <button 
                         onClick={clearCart} 
                         disabled={isLoading}
-                        className="w-full text-sm md:text-base font-semibold text-gray-500 hover:text-red-500 border border-gray-200 hover:bg-red-50/30 py-2.5 rounded-xl transition-all duration-205 active:scale-[0.98] cursor-pointer"
+                        className="w-full text-xs md:text-base font-semibold text-gray-400 hover:text-red-500 py-1.5 rounded-lg transition-all active:scale-[0.98] cursor-pointer"
                       >
                         Clear Cart
                       </button>

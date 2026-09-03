@@ -3,7 +3,8 @@ import { getRedisClient } from './redis';
 export async function rateLimit(
   ip: string,
   limit: number = 5,
-  durationSeconds: number = 60
+  durationSeconds: number = 60,
+  prefix: string = 'login'
 ): Promise<{ success: boolean; remaining: number }> {
   const redis = getRedisClient();
   if (!redis) {
@@ -11,7 +12,7 @@ export async function rateLimit(
     return { success: true, remaining: limit };
   }
 
-  const key = `ratelimit:login:${ip}`;
+  const key = `ratelimit:${prefix}:${ip}`;
   try {
     const current = await redis.incr(key);
     if (current === 1) {

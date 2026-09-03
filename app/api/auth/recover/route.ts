@@ -1,10 +1,21 @@
 import { NextResponse } from 'next/server';
 import { recoverCustomerPassword } from '@/lib/shopify';
+import { rateLimit } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
+    // Rate limit password recovery attempts (max 5 per minute per IP)
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || '127.0.0.1';
+    const limitRes = await rateLimit(ip, 5, 60, 'recover');
+    if (!limitRes.success) {
+      return NextResponse.json(
+        { error: 'Too many recovery requests. Please wait a minute before trying again.' },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
     const { email } = body;
 

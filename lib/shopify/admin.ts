@@ -151,6 +151,10 @@ export async function shopifyAdminFetch<T>({
   query: string;
   variables?: Record<string, unknown>;
 }): Promise<{ status: number; body: T } | never> {
+  if (!endpoint) {
+    throw new Error('SHOPIFY_STORE_DOMAIN is missing');
+  }
+
   const token = await getAdminAccessToken();
 
   if (!token) {

@@ -102,7 +102,7 @@ export default function FAQSection() {
                 >
                   <button
                     onClick={() => setActiveIndex(isOpen ? null : originalIndex)}
-                    className="w-full px-6 py-5 flex items-center justify-between text-left gap-4 outline-none"
+                    className="w-full px-6 py-5 min-h-[48px] flex items-center justify-between text-left gap-4 outline-none"
                   >
                     <span className={`font-headings font-bold text-base transition-colors duration-300 ${
                       isOpen ? "text-[var(--islamic-green)]" : "text-gray-800"
@@ -122,7 +122,7 @@ export default function FAQSection() {
                     isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
                   }`}>
                     <div className="overflow-hidden">
-                      <div className="px-6 pb-6 text-gray-600 leading-relaxed text-sm md:text-[15px] font-sans border-t border-gray-50 pt-4">
+                      <div className="px-6 pb-6 text-gray-700 leading-relaxed text-base md:text-[15px] font-sans border-t border-gray-50 pt-4">
                         {faq.answer}
                       </div>
                     </div>
@@ -153,7 +153,7 @@ export default function FAQSection() {
                 >
                   <button
                     onClick={() => setActiveIndex(isOpen ? null : originalIndex)}
-                    className="w-full px-6 py-5 flex items-center justify-between text-left gap-4 outline-none"
+                    className="w-full px-6 py-5 min-h-[48px] flex items-center justify-between text-left gap-4 outline-none"
                   >
                     <span className={`font-headings font-bold text-base transition-colors duration-300 ${
                       isOpen ? "text-[var(--islamic-green)]" : "text-gray-800"
@@ -173,7 +173,7 @@ export default function FAQSection() {
                     isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
                   }`}>
                     <div className="overflow-hidden">
-                      <div className="px-6 pb-6 text-gray-600 leading-relaxed text-sm md:text-[15px] font-sans border-t border-gray-50 pt-4">
+                      <div className="px-6 pb-6 text-gray-700 leading-relaxed text-base md:text-[15px] font-sans border-t border-gray-50 pt-4">
                         {faq.answer}
                       </div>
                     </div>

@@ -152,8 +152,6 @@ export default function BooksClient({ initialBooks }: BooksClientProps) {
     return result
   }, [initialBooks, categoryParam, urlSearchQuery, sortBy])
 
-  const activeCategoryName = CATEGORIES.find(c => c.value === categoryParam)?.name || 'All Books'
-
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="mb-10 text-center">
@@ -168,35 +166,30 @@ export default function BooksClient({ initialBooks }: BooksClientProps) {
       <div className="flex flex-col md:flex-row gap-8">
         {/* Sidebar */}
         <div className="w-full md:w-64 flex-shrink-0">
-          {/* Mobile Collapsible Accordion */}
-          <details className="group md:hidden bg-[#F8F6F3] p-4 rounded-2xl border border-gray-100 select-none">
-            <summary className="font-headings font-bold text-base text-[var(--islamic-green)] cursor-pointer flex items-center justify-between outline-none">
-              <span>Filter by Category: {activeCategoryName}</span>
-              <span className="text-[var(--islamic-gold)] text-xs transition-transform duration-300 group-open:rotate-180">▼</span>
-            </summary>
-            <ul className="mt-4 space-y-3 text-[var(--charcoal)]/80 text-sm">
-              {CATEGORIES.map((cat) => {
-                const isActive = categoryParam === cat.value
-                return (
-                  <li 
-                    key={cat.value}
-                    onClick={() => handleCategoryClick(cat.value)}
-                    className="flex items-center justify-between hover:text-[var(--islamic-gold)] cursor-pointer transition-colors py-1"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full transition-all ${isActive ? 'bg-[var(--islamic-gold)] scale-110' : 'bg-gray-300'}`} />
-                      <span className={isActive ? 'font-bold text-[var(--islamic-green)]' : ''}>
-                        {cat.name}
-                      </span>
-                    </div>
-                    <span className="text-xs text-gray-400 font-normal">
-                      ({categoryCounts[cat.value] || 0})
-                    </span>
-                  </li>
-                )
-              })}
-            </ul>
-          </details>
+          {/* Mobile Horizontal Category Pill Carousel */}
+          <div className="md:hidden flex overflow-x-auto gap-2 pb-2 mb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4">
+            {CATEGORIES.map((cat) => {
+              const isActive = categoryParam === cat.value;
+              return (
+                <button
+                  key={cat.value}
+                  onClick={() => handleCategoryClick(cat.value)}
+                  className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all min-h-[40px] flex items-center gap-1.5 cursor-pointer active:scale-95 ${
+                    isActive
+                      ? 'bg-[var(--islamic-green)] text-white shadow-sm'
+                      : 'bg-[#F8F6F3] border border-gray-200 text-gray-700 active:bg-gray-100'
+                  }`}
+                >
+                  <span>{cat.name}</span>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                    isActive ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600'
+                  }`}>
+                    {categoryCounts[cat.value] || 0}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
 
           {/* Desktop Static Sidebar */}
           <div className="hidden md:block bg-[#F8F6F3] p-6 rounded-2xl sticky top-24 border border-gray-100">

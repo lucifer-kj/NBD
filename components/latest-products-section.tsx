@@ -14,14 +14,13 @@ import { useWishlist } from "@/hooks/use-wishlist";
 import { formatPrice } from "@/lib/utils";
 import { getProductUrl } from "@/lib/url-helper";
 import { trackAddToCart } from "@/lib/analytics";
+import LatestProductsSkeleton from "@/components/skeletons/LatestProductsSkeleton";
 
 interface LatestProductsSectionProps {
   products: ReshapedProduct[];
   loading?: boolean;
   onViewAll?: () => void;
 }
-
-const skeletonArray = Array.from({ length: 6 });
 
 export default function LatestProductsSection({ products, loading = false }: LatestProductsSectionProps) {
   const reduced = useReducedMotion();
@@ -70,7 +69,10 @@ export default function LatestProductsSection({ products, loading = false }: Lat
     toggleWishlist(productId);
   };
 
-  // If loading or we don't have enough products, show standard skeleton.
+  if (loading) {
+    return <LatestProductsSkeleton />;
+  }
+
   // We want to slice products: 
   // index 0 -> Deal of the Week (Featured)
   // index 1-6 -> 6 smaller products for the grid
@@ -106,17 +108,7 @@ export default function LatestProductsSection({ products, loading = false }: Lat
           <motion.div variants={fadeInUp} className="w-16 h-0.5 bg-[#c19a4e] mx-auto" />
         </motion.div>
 
-        {loading ? (
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 animate-pulse">
-            <div className="lg:col-span-2 h-[450px] bg-gray-100 rounded-3xl" />
-            <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {skeletonArray.map((_, i) => (
-                <div key={i} className="h-[200px] bg-gray-100 rounded-2xl" />
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
             {/* LEFT COLUMN: Deal of the Week (Featured) */}
             {featuredProduct && (
               <motion.div
@@ -335,18 +327,18 @@ export default function LatestProductsSection({ products, loading = false }: Lat
                             </span>
                           </div>
 
-                          {/* Add to Cart Button - always visible on mobile, hover-revealed on desktop */}
-                          <div className="mt-2.5 md:mt-0 md:h-0 md:opacity-0 md:group-hover:h-8 md:group-hover:opacity-100 md:group-hover:mt-3 transition-all duration-300 overflow-hidden">
+                          {/* Add to Cart Button - full-width block button on mobile, hover-revealed on desktop */}
+                          <div className="mt-3 md:mt-0 md:h-0 md:opacity-0 md:group-hover:h-8 md:group-hover:opacity-100 md:group-hover:mt-3 transition-all duration-300">
                             <button
                               onClick={(e) => handleAddToCart(product, e)}
                               disabled={!product.availableForSale || cartLoadingId === product.id}
-                              className="w-full py-1.5 rounded-lg bg-[var(--islamic-gold)] text-[var(--islamic-green-dark)] hover:bg-[var(--islamic-gold-dark)] hover:text-white font-bold text-[11px] md:text-xs flex items-center justify-center gap-1 md:gap-1.5 shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:hover:scale-100"
+                              className="w-full h-11 md:h-8 py-2 md:py-1.5 rounded-xl md:rounded-lg bg-[var(--islamic-gold)] text-[var(--islamic-green-dark)] hover:bg-[var(--islamic-gold-dark)] hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98] transition-all duration-200 disabled:opacity-50 cursor-pointer"
                             >
                               {cartLoadingId === product.id ? (
-                                <span className="w-3.5 h-3.5 border-2 border-[var(--islamic-green-dark)] border-t-transparent rounded-full animate-spin" />
+                                <span className="w-4 h-4 border-2 border-[var(--islamic-green-dark)] border-t-transparent rounded-full animate-spin" />
                               ) : (
                                 <>
-                                  <ShoppingCart size={11} />
+                                  <ShoppingCart size={14} />
                                   <span>Add to Cart</span>
                                 </>
                               )}
@@ -372,7 +364,6 @@ export default function LatestProductsSection({ products, loading = false }: Lat
               ))}
             </div>
           </div>
-        )}
       </div>
     </section>
   );

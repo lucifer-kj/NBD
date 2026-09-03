@@ -62,9 +62,9 @@ export default function DiscountCodeInput() {
 
   return (
     <div className="space-y-2">
-      <form onSubmit={handleApply} className="flex gap-2">
+      <form onSubmit={handleApply} className="flex flex-col sm:flex-row gap-2.5 sm:gap-2">
         <div className="relative flex-1">
-          <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <Input 
             placeholder="Discount code" 
             value={code}
@@ -72,14 +72,14 @@ export default function DiscountCodeInput() {
               setCode(e.target.value);
               if (discountError) clearDiscountError();
             }}
-            className="pl-9 h-11 border-gray-200 focus:border-[var(--islamic-gold)] rounded-xl text-sm"
+            className="pl-10 h-11 min-h-[44px] border-gray-200 focus:border-[var(--islamic-gold)] rounded-xl text-base sm:text-sm"
             disabled={isLoading}
           />
         </div>
         <Button 
           type="submit" 
           disabled={!code.trim() || isLoading}
-          className="h-11 px-6 bg-[var(--islamic-green)] hover:bg-[var(--islamic-green-dark)] text-white font-bold rounded-xl shadow-sm transition-all active:scale-95"
+          className="w-full sm:w-auto h-11 min-h-[44px] px-6 bg-[var(--islamic-green)] hover:bg-[var(--islamic-green-dark)] text-white font-bold rounded-xl shadow-sm transition-all active:scale-95 cursor-pointer"
         >
           {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Apply"}
         </Button>

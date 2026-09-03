@@ -8,6 +8,8 @@ import { ChevronLeft } from 'lucide-react';
 import AddressBook from '@/components/account/address-book';
 import RetryButton from '../retry-button';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Address Book | Naaz Book Depot',
   description: 'Manage your shipping and billing addresses.',

@@ -61,8 +61,8 @@ export default function CookieConsent() {
   if (!showBanner) return null;
 
   return (
-    <div className="fixed bottom-6 left-6 right-6 md:left-auto md:right-6 md:max-w-md z-50 animate-in slide-in-from-bottom-10 duration-500">
-      <div className="glass-card bg-white/90 backdrop-blur-xl border border-gray-100 p-6 shadow-2xl rounded-3xl relative overflow-hidden">
+    <div className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] md:bottom-6 left-4 right-4 md:left-auto md:right-6 md:max-w-md z-[60] animate-in slide-in-from-bottom-10 duration-500">
+      <div className="glass-card bg-white/95 backdrop-blur-xl border border-gray-100 p-5 md:p-6 shadow-2xl rounded-3xl relative overflow-hidden">
         {/* Glow Bar highlight */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[var(--islamic-green)] to-[var(--islamic-gold)]"></div>
 

@@ -29,6 +29,7 @@ import { useWishlist } from '@/hooks/use-wishlist';
 import { trackViewItem, trackAddToCart } from '@/lib/analytics';
 import { useEffect } from 'react';
 import { useToast } from '@/components/ui/toast';
+import { Drawer } from 'vaul';
 
 interface ProductDetailsClientProps {
   product: ReshapedProduct;
@@ -41,6 +42,7 @@ export default function ProductDetailsClient({ product, reviews }: ProductDetail
   const [quantity, setQuantity] = useState(1);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [activeModalSheet, setActiveModalSheet] = useState<'specs' | 'care' | null>(null);
   
   // Initialize selected options with the first variant's options
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(
@@ -382,20 +384,53 @@ export default function ProductDetailsClient({ product, reviews }: ProductDetail
 
         {/* Metafields Info */}
         {(careInstructions || techSpecs) && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-            {careInstructions && (
-              <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-100/50">
-                <p className="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-1">Care Instructions</p>
-                <p className="text-sm text-amber-900/80">{careInstructions}</p>
-              </div>
-            )}
-            {techSpecs && (
-              <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100/50">
-                <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-1">Technical Specs</p>
-                <p className="text-sm text-blue-900/80">{techSpecs}</p>
-              </div>
-            )}
-          </div>
+          <>
+            {/* Mobile-Only Modal Sheet Triggers */}
+            <div className="flex md:hidden gap-2.5 mb-8">
+              {techSpecs && (
+                <button
+                  type="button"
+                  onClick={() => setActiveModalSheet('specs')}
+                  className="flex-1 p-3 rounded-xl bg-blue-50/80 border border-blue-200/60 flex items-center justify-between text-left active:scale-98 transition-all min-h-[48px]"
+                >
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-blue-700">Specifications</p>
+                    <p className="text-xs text-blue-950 font-semibold">View Details</p>
+                  </div>
+                  <ChevronRight size={16} className="text-blue-600" />
+                </button>
+              )}
+              {careInstructions && (
+                <button
+                  type="button"
+                  onClick={() => setActiveModalSheet('care')}
+                  className="flex-1 p-3 rounded-xl bg-amber-50/80 border border-amber-200/60 flex items-center justify-between text-left active:scale-98 transition-all min-h-[48px]"
+                >
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-amber-700">Care Guide</p>
+                    <p className="text-xs text-amber-950 font-semibold">View Details</p>
+                  </div>
+                  <ChevronRight size={16} className="text-amber-600" />
+                </button>
+              )}
+            </div>
+
+            {/* Desktop Inline Display */}
+            <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+              {careInstructions && (
+                <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-100/50">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-1">Care Instructions</p>
+                  <p className="text-sm text-amber-900/80">{careInstructions}</p>
+                </div>
+              )}
+              {techSpecs && (
+                <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100/50">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-1">Technical Specs</p>
+                  <p className="text-sm text-blue-900/80">{techSpecs}</p>
+                </div>
+              )}
+            </div>
+          </>
         )}
 
         {/* Short Description with Read More */}
@@ -430,15 +465,17 @@ export default function ProductDetailsClient({ product, reviews }: ProductDetail
             <div className="flex items-center border-2 border-gray-100 rounded-xl bg-gray-50">
               <button 
                 onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                className="p-3.5 max-md:p-4 hover:text-[var(--islamic-gold)] transition-colors"
+                className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center hover:text-[var(--islamic-gold)] transition-colors active:scale-95 cursor-pointer"
                 disabled={quantity <= 1}
+                aria-label="Decrease quantity"
               >
                 <Minus size={18} />
               </button>
               <span className="w-12 text-center font-bold text-lg">{quantity}</span>
               <button 
                 onClick={() => setQuantity(q => q + 1)}
-                className="p-3.5 max-md:p-4 hover:text-[var(--islamic-gold)] transition-colors"
+                className="w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center hover:text-[var(--islamic-gold)] transition-colors active:scale-95 cursor-pointer"
+                aria-label="Increase quantity"
               >
                 <Plus size={18} />
               </button>
@@ -541,25 +578,65 @@ export default function ProductDetailsClient({ product, reviews }: ProductDetail
         </div>
       </motion.div>
 
-      {/* Sticky Mobile Add to Cart */}
-      <div className="lg:hidden fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-gray-100 p-4 z-[100] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] animate-in slide-in-from-bottom duration-300">
-        <div className="flex items-center gap-4 max-w-xl mx-auto">
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-[var(--islamic-green)] truncate">{product.title}</p>
+      {/* Persistent Sticky Mobile Conversion Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-gray-100 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] z-[90] shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
+        <div className="flex flex-col gap-2 max-w-md mx-auto">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-bold text-[var(--islamic-green)] truncate max-w-[200px]">{product.title}</p>
             <p className="text-sm font-black text-gray-900">
               {formatPrice(selectedVariant?.price.amount || product.priceRange.minVariantPrice.amount, selectedVariant?.price.currencyCode || product.priceRange.minVariantPrice.currencyCode)}
             </p>
           </div>
-          <Button 
-            onClick={handleAddToCart}
-            disabled={!product.availableForSale || isLoading}
-            className="bg-[var(--islamic-green)] hover:bg-[var(--islamic-green-dark)] text-white h-12 px-6 rounded-xl text-sm font-bold gap-2 shadow-lg shadow-[var(--islamic-green)]/20"
-          >
-            <ShoppingCart size={18} />
-            {isLoading ? "..." : "Add"}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              onClick={handleAddToCart}
+              disabled={!product.availableForSale || isLoading}
+              className="flex-1 bg-[var(--islamic-gold)] text-[var(--islamic-green-dark)] hover:bg-[var(--islamic-gold-dark)] h-11 min-h-[44px] rounded-xl text-xs font-bold gap-1.5 shadow-sm active:scale-98 cursor-pointer"
+            >
+              <ShoppingCart size={15} />
+              {isLoading ? "..." : "Add to Cart"}
+            </Button>
+            <Button 
+              onClick={async () => {
+                if (selectedVariant?.id) {
+                  await addItem(selectedVariant.id, quantity);
+                  openCartDrawer();
+                }
+              }}
+              disabled={!selectedVariant?.availableForSale || isLoading}
+              className="flex-1 bg-[var(--islamic-green)] text-white hover:bg-[var(--islamic-green-dark)] h-11 min-h-[44px] rounded-xl text-xs font-bold gap-1.5 shadow-sm active:scale-98 cursor-pointer"
+            >
+              Buy Now
+              <ArrowRight size={15} />
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* Mobile Specification & Care Modal Sheet */}
+      <Drawer.Root open={!!activeModalSheet} onOpenChange={(open) => !open && setActiveModalSheet(null)}>
+        <Drawer.Portal>
+          <Drawer.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[1000] md:hidden transition-opacity duration-300" onClick={() => setActiveModalSheet(null)} />
+          <Drawer.Content className="fixed bottom-0 left-0 right-0 max-h-[75vh] bg-white rounded-t-3xl z-[1010] md:hidden flex flex-col outline-none shadow-2xl border-t border-gray-100">
+            <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-3 mb-2 shrink-0" />
+            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 shrink-0">
+              <h3 className="font-headings font-bold text-base text-[var(--islamic-green)]">
+                {activeModalSheet === 'specs' ? "Technical Specifications" : "Care Instructions"}
+              </h3>
+              <button 
+                onClick={() => setActiveModalSheet(null)} 
+                className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-gray-700"
+                aria-label="Close sheet"
+              >
+                <CloseIcon size={18} />
+              </button>
+            </div>
+            <div className="p-5 overflow-y-auto pb-[calc(2.5rem+env(safe-area-inset-bottom))] text-base text-gray-700 leading-relaxed font-sans">
+              {activeModalSheet === 'specs' ? techSpecs : careInstructions}
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
 
       {/* Image Lightbox */}
       <AnimatePresence>

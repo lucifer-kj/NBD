@@ -209,12 +209,48 @@ export default function BentoGrid() {
           <motion.div variants={fadeInUp} className="w-16 h-0.5 bg-[#c19a4e] mx-auto mb-4" />
         </motion.div>
 
-        {/* Elegant asymmetric Bento Grid layout */}
+        {/* Mobile-Only Horizontal Native Swipe Carousel */}
+        <div className="md:hidden">
+          <div className="flex overflow-x-auto snap-x snap-mandatory gap-3.5 pb-3 pt-1 -mx-4 px-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {categories.map((category, index) => {
+              const Icon = category.icon;
+              return (
+                <Link
+                  key={index}
+                  href={category.href}
+                  className="snap-start shrink-0 w-[240px] p-5 rounded-2xl bg-[#FAF7F0] border border-[#e9e3d9] active:scale-[0.98] transition-all flex flex-col justify-between shadow-xs"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-white border border-[#e9e3d9] flex items-center justify-center shadow-xs">
+                      <Icon />
+                    </div>
+                    <span className="text-[10px] font-bold text-[#c19a4e] uppercase tracking-wider bg-amber-50 border border-amber-200/60 px-2 py-0.5 rounded-full">
+                      Explore
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="font-headings font-bold text-gray-900 text-base leading-snug mb-1">
+                      {category.name}
+                    </h3>
+                    <p className="text-xs text-gray-500 font-light line-clamp-2 leading-relaxed">
+                      {category.description}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+          <p className="text-center text-[11px] text-gray-400 mt-2 font-medium">
+            Swipe horizontally to explore categories →
+          </p>
+        </div>
+
+        {/* Desktop-Only Elegant Asymmetric Bento Grid */}
         <motion.div 
           initial="hidden"
           animate={inView ? "show" : "hidden"}
           variants={reduced ? undefined : staggerContainerSlow}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"
+          className="hidden md:grid md:grid-cols-4 gap-6"
         >
           {categories.map((category, index) => {
             const Icon = category.icon

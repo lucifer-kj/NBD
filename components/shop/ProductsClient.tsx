@@ -1,12 +1,13 @@
 "use client"
 
 import React, { useState, useEffect } from 'react'
-import { Search, Grid2X2, List, SlidersHorizontal } from 'lucide-react'
+import { Search, Grid2X2, List, SlidersHorizontal, X } from 'lucide-react'
 import ProductCard from "@/components/product-card"
 import { ReshapedProduct } from "@/types/shopify"
 import { motion, AnimatePresence } from "framer-motion"
 import { fadeInUp, staggerContainer } from "@/lib/motion.config"
 import { useSearchParams } from 'next/navigation'
+import { Drawer } from 'vaul'
 
 const CATEGORIES = ['All Products', 'Books', 'Prayer Mats', 'Rehals', 'Newest']
 
@@ -84,6 +85,26 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
             <span>Filters</span>
           </button>
         </div>
+      </div>
+
+      {/* Horizontal Category Filter Pills (Mobile Only) */}
+      <div className="lg:hidden flex overflow-x-auto gap-2 pb-2 mb-6 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden -mx-4 px-4">
+        {CATEGORIES.map((category) => {
+          const isActive = activeCategory === category;
+          return (
+            <button
+              key={category}
+              onClick={() => setActiveCategory(category)}
+              className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all min-h-[40px] flex items-center justify-center ${
+                isActive
+                  ? 'bg-[var(--islamic-green)] text-white shadow-sm'
+                  : 'bg-white border border-gray-200 text-gray-700 active:bg-gray-100'
+              }`}
+            >
+              {category}
+            </button>
+          );
+        })}
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
@@ -228,6 +249,67 @@ export default function ProductsClient({ initialProducts }: ProductsClientProps)
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Mobile Filter Sheet */}
+      <Drawer.Root open={showFilters} onOpenChange={setShowFilters}>
+        <Drawer.Portal>
+          <Drawer.Overlay 
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[1000] lg:hidden transition-opacity duration-300" 
+            onClick={() => setShowFilters(false)} 
+          />
+          <Drawer.Content className="fixed bottom-0 left-0 right-0 max-h-[80vh] bg-white rounded-t-3xl z-[1010] lg:hidden flex flex-col outline-none shadow-2xl border-t border-gray-100">
+            <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mt-3 mb-2 shrink-0" />
+            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 shrink-0">
+              <h3 className="font-headings font-bold text-base text-[var(--islamic-green)]">
+                Filter Products
+              </h3>
+              <button 
+                onClick={() => setShowFilters(false)} 
+                className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-gray-700"
+                aria-label="Close filters"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-5 overflow-y-auto space-y-4 pb-[calc(2.5rem+env(safe-area-inset-bottom))]">
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Categories</h4>
+                <div className="grid grid-cols-1 gap-2">
+                  {CATEGORIES.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => {
+                        setActiveCategory(cat);
+                        setShowFilters(false);
+                      }}
+                      className={`w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all min-h-[48px] flex items-center justify-between ${
+                        activeCategory === cat
+                          ? 'bg-[var(--islamic-green)] text-white shadow-xs'
+                          : 'bg-gray-50 text-gray-700 active:bg-gray-100'
+                      }`}
+                    >
+                      <span>{cat}</span>
+                      {activeCategory === cat && <span className="text-sm font-bold">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="pt-2">
+                <button
+                  onClick={() => {
+                    setActiveCategory('All Products');
+                    setSearchQuery('');
+                    setShowFilters(false);
+                  }}
+                  className="w-full py-3.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 active:bg-gray-50 min-h-[48px]"
+                >
+                  Reset All Filters
+                </button>
+              </div>
+            </div>
+          </Drawer.Content>
+        </Drawer.Portal>
+      </Drawer.Root>
     </div>
   )
 }

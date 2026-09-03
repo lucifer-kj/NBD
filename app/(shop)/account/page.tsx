@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import LogoutButton from './logout-button';
 import RetryButton from './retry-button';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'My Account | Naaz Book Depot',
   description: 'Manage your profile and orders.',

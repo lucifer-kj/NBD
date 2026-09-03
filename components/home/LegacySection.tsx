@@ -59,43 +59,43 @@ export default function LegacySection() {
 
             {/* Editorial Trust Pillars */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-8 border-t border-emerald-100/60">
-              <div className="flex gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[var(--islamic-green)] flex-shrink-0">
-                  <Award size={18} />
+              <div className="flex gap-3.5 items-start">
+                <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[var(--islamic-green)] flex-shrink-0 mt-0.5">
+                  <Award size={20} />
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-emerald-950 font-headings">Original Print Guarantee</h4>
-                  <p className="text-xs text-gray-500 mt-1 leading-relaxed">Direct, certified print acquisitions straight from licensed publishers.</p>
+                  <h4 className="font-bold text-base sm:text-sm text-emerald-950 font-headings">Original Print Guarantee</h4>
+                  <p className="text-base sm:text-xs text-gray-600 mt-1 leading-relaxed">Direct, certified print acquisitions straight from licensed publishers.</p>
                 </div>
               </div>
 
-              <div className="flex gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-[var(--islamic-gold)] flex-shrink-0">
-                  <ShieldCheck size={18} />
+              <div className="flex gap-3.5 items-start">
+                <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-[var(--islamic-gold)] flex-shrink-0 mt-0.5">
+                  <ShieldCheck size={20} />
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-emerald-950 font-headings">Scholarly Verification</h4>
-                  <p className="text-xs text-gray-500 mt-1 leading-relaxed">We source editions with meticulous cross-referencing and exegesis.</p>
+                  <h4 className="font-bold text-base sm:text-sm text-emerald-950 font-headings">Scholarly Verification</h4>
+                  <p className="text-base sm:text-xs text-gray-600 mt-1 leading-relaxed">We source editions with meticulous cross-referencing and exegesis.</p>
                 </div>
               </div>
 
-              <div className="flex gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[var(--islamic-green)] flex-shrink-0">
-                  <BookOpen size={18} />
+              <div className="flex gap-3.5 items-start">
+                <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[var(--islamic-green)] flex-shrink-0 mt-0.5">
+                  <BookOpen size={20} />
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-emerald-950 font-headings">Kolkata Foundations</h4>
-                  <p className="text-xs text-gray-500 mt-1 leading-relaxed">Deep historic roots dating back to 1967, preserving classic Islamic publishing.</p>
+                  <h4 className="font-bold text-base sm:text-sm text-emerald-950 font-headings">Kolkata Foundations</h4>
+                  <p className="text-base sm:text-xs text-gray-600 mt-1 leading-relaxed">Deep historic roots dating back to 1967, preserving classic Islamic publishing.</p>
                 </div>
               </div>
 
-              <div className="flex gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-[var(--islamic-gold)] flex-shrink-0">
-                  <Compass size={18} />
+              <div className="flex gap-3.5 items-start">
+                <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-[var(--islamic-gold)] flex-shrink-0 mt-0.5">
+                  <Compass size={20} />
                 </div>
                 <div>
-                  <h4 className="font-bold text-sm text-emerald-950 font-headings">Global Distribution</h4>
-                  <p className="text-xs text-gray-500 mt-1 leading-relaxed">Supplying libraries, Masjids, Madrasas, and homes nationwide.</p>
+                  <h4 className="font-bold text-base sm:text-sm text-emerald-950 font-headings">Global Distribution</h4>
+                  <p className="text-base sm:text-xs text-gray-600 mt-1 leading-relaxed">Supplying libraries, Masjids, Madrasas, and homes nationwide.</p>
                 </div>
               </div>
             </div>

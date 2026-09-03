@@ -34,10 +34,10 @@ export default function HeroSlideshow() {
       <AnimatePresence mode="popLayout">
         <motion.div
           key={index}
-          initial={{ opacity: 0 }}
+          initial={{ opacity: index === 0 ? 1 : 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 1.5, ease: "easeInOut" }}
+          transition={{ duration: 1.2, ease: "easeInOut" }}
           className="absolute inset-0 w-full h-full"
         >
           {/* Ken Burns Zoom Effect */}
@@ -51,8 +51,9 @@ export default function HeroSlideshow() {
               src={SLIDES[index].src}
               alt={SLIDES[index].alt}
               fill
-              priority
-              sizes="100vw"
+              priority={index === 0}
+              fetchPriority={index === 0 ? "high" : "auto"}
+              sizes="(max-width: 768px) 100vw, 100vw"
               className="object-cover object-center"
             />
           </motion.div>

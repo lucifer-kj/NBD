@@ -618,3 +618,27 @@ select:focus-visible {
   animation-timeline: scroll(root);
   animation-range: 0px 800px;
 }
+
+/* High-Performance Hardware-Accelerated Shimmer for Skeletons */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    #f3f4f6 0%,
+    #e5e7eb 35%,
+    #f9fafb 50%,
+    #e5e7eb 65%,
+    #f3f4f6 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: background-position;
+}

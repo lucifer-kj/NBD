@@ -106,9 +106,8 @@ const Navbar = () => {
           </div>
 
           {/* Action Buttons - Mobile */}
-          <div className="md:hidden flex items-center space-x-4">
-            <AnimatedCartIcon />
-            <MobileMenu />
+          <div className="md:hidden flex items-center space-x-2">
+            <UserActions />
           </div>
         </div>
       </nav>

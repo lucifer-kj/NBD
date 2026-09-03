@@ -38,6 +38,45 @@ const nextConfig: NextConfig = {
     // number of pages that should be kept simultaneously without being disposed
     pagesBufferLength: 4,
   },
+  async redirects() {
+    return [
+      {
+        source: '/privacy',
+        destination: '/policies/privacy-policy',
+        permanent: true,
+      },
+      {
+        source: '/privacy-policy',
+        destination: '/policies/privacy-policy',
+        permanent: true,
+      },
+      {
+        source: '/terms',
+        destination: '/policies/terms-of-service',
+        permanent: true,
+      },
+      {
+        source: '/terms-of-service',
+        destination: '/policies/terms-of-service',
+        permanent: true,
+      },
+      {
+        source: '/terms-and-conditions',
+        destination: '/policies/terms-of-service',
+        permanent: true,
+      },
+      {
+        source: '/refund-policy',
+        destination: '/policies/refund-policy',
+        permanent: true,
+      },
+      {
+        source: '/shipping-policy',
+        destination: '/policies/shipping-policy',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
