@@ -73,15 +73,6 @@ export const productFragment = `
     }
     tags
     updatedAt
-    metafields(identifiers: [
-      { namespace: "custom", key: "care_instructions" },
-      { namespace: "custom", key: "technical_specs" },
-      { namespace: "reviews", key: "rating" }
-    ]) {
-      key
-      value
-      namespace
-    }
   }
 `;
 

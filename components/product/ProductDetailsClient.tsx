@@ -370,9 +370,14 @@ export default function ProductDetailsClient({ product, reviews }: ProductDetail
               {formatPrice(selectedVariant?.price.amount || product.priceRange.minVariantPrice.amount, selectedVariant?.price.currencyCode || product.priceRange.minVariantPrice.currencyCode)}
             </span>
             {parseFloat(selectedVariant?.compareAtPrice?.amount || "0") > parseFloat(selectedVariant?.price.amount || "0") && (
-              <span className="text-xl text-gray-400 line-through">
-                {formatPrice(selectedVariant!.compareAtPrice!.amount, selectedVariant!.compareAtPrice!.currencyCode)}
-              </span>
+              <>
+                <span className="text-xl text-gray-400 line-through">
+                  {formatPrice(selectedVariant!.compareAtPrice!.amount, selectedVariant!.compareAtPrice!.currencyCode)}
+                </span>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                  {Math.round(((parseFloat(selectedVariant!.compareAtPrice!.amount) - parseFloat(selectedVariant!.price.amount)) / parseFloat(selectedVariant!.compareAtPrice!.amount)) * 100)}% OFF
+                </span>
+              </>
             )}
           </div>
           <p className="text-sm text-gray-500 mt-1">Inclusive of all taxes</p>

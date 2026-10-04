@@ -2,7 +2,10 @@ import NextAuth from 'next-auth';
 import { getAuthOptions } from '@/lib/nextauth-config';
 import { NextRequest } from 'next/server';
 
-const handler = async (req: NextRequest, ctx: any) => {
+const handler = async (
+  req: NextRequest,
+  ctx: { params: Promise<{ nextauth: string[] }> }
+) => {
   const options = await getAuthOptions();
   return await NextAuth(req, ctx, options);
 };

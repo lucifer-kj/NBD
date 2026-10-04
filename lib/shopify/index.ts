@@ -149,13 +149,20 @@ export async function shopifyFetch<T>({
         'Shopify Storefront API endpoint is not configured. Ensure SHOPIFY_STORE_DOMAIN is set in your environment variables.'
       );
     }
+    const customHeaders = headers ? (headers as Record<string, string>) : {};
+    const storefrontHeaders: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...customHeaders
+    };
+
+    // Only supply Storefront Access Token if it is a real storefront token (not Admin shpat_ or placeholder)
+    if (key && !key.startsWith('shpat_') && !key.startsWith('your_')) {
+      storefrontHeaders['X-Shopify-Storefront-Access-Token'] = key;
+    }
+
     const fetchOptions: RequestInit = {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Shopify-Storefront-Access-Token': key,
-        ...headers
-      },
+      headers: storefrontHeaders,
       body: JSON.stringify({
         ...(query && { query }),
         ...(variables && { variables })
@@ -185,7 +192,6 @@ export async function shopifyFetch<T>({
     };
   } catch (e: unknown) {
     console.warn('[Shopify Fetch Resilient Fallback Activated]:', e instanceof Error ? e.message : String(e));
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return {
       status: 500,
       body: {
@@ -197,7 +203,7 @@ export async function shopifyFetch<T>({
           cart: null,
           cartCreate: { cart: null }
         }
-      } as any
+      } as unknown as T
     };
   }
 }
