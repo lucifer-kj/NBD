@@ -8,6 +8,7 @@ import ContactInfoStrip from "@/components/home/ContactInfoStrip";
 import MobileDonationBanner from "@/components/home/MobileDonationBanner";
 import LatestProductsSection from "@/components/latest-products-section";
 import LatestProductsSkeleton from "@/components/skeletons/LatestProductsSkeleton";
+import BestsellersSection from "@/components/home/BestsellersSection";
 import { getProducts } from "@/lib/shopify";
 import { ReshapedProduct } from "@/types/shopify";
 
@@ -26,6 +27,18 @@ export const metadata: Metadata = {
     canonical: "/",
   },
 };
+
+// Streamed async component for bestselling Quran publications
+async function HomeBestsellerProducts() {
+  let products: ReshapedProduct[] = [];
+  try {
+    products = await getProducts({ query: 'tag:bestseller', first: 6 });
+  } catch (error) {
+    console.error("Error fetching bestseller products:", error);
+  }
+
+  return <BestsellersSection products={products} />;
+}
 
 // Streamed async component for trending products
 async function HomeTrendingProducts() {
@@ -54,6 +67,11 @@ export default function HomePage() {
 
       {/* Shop By Category — Gapless Bento Grid */}
       <BentoGrid />
+
+      {/* Most Popular Publications — Bestsellers with Marketplace Price Benchmarks */}
+      <Suspense fallback={<div className="py-16 max-w-7xl mx-auto px-4"><div className="h-96 rounded-3xl animate-shimmer" /></div>}>
+        <HomeBestsellerProducts />
+      </Suspense>
 
       {/* Latest Products Section — Streamed via Suspense with Custom Shimmer Skeleton */}
       <Suspense fallback={<LatestProductsSkeleton />}>

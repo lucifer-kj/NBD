@@ -82,6 +82,11 @@ export default function LatestProductsSection({ products, loading = false }: Lat
   const featuredRatingMeta = featuredProduct?.metafields?.find(m => m && m.namespace === 'reviews' && m.key === 'rating');
   const featuredRatingValue = featuredRatingMeta ? parseFloat(JSON.parse(featuredRatingMeta.value).value) : null;
 
+  const featPrice = parseFloat(featuredProduct.priceRange.minVariantPrice.amount);
+  const featCompareAt = parseFloat(featuredProduct.variants[0]?.compareAtPrice?.amount || "0");
+  const featHasDiscount = featCompareAt > featPrice;
+  const featDiscountPct = featHasDiscount ? Math.round(((featCompareAt - featPrice) / featCompareAt) * 100) : 0;
+
   return (
     <section className="py-16 md:py-24 bg-white">
       <style dangerouslySetInnerHTML={{ __html: `
@@ -203,10 +208,24 @@ export default function LatestProductsSection({ products, loading = false }: Lat
 
                     <div className="flex items-center justify-between gap-4 mt-2">
                       <div className="flex flex-col">
-                        <span className="text-[10px] text-white/40 uppercase tracking-wider">Special Price</span>
-                        <span className="text-2xl md:text-3xl font-black text-white">
-                          {formatPrice(parseFloat(featuredProduct.priceRange.minVariantPrice.amount))}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-white/40 uppercase tracking-wider">Special Price</span>
+                          {featHasDiscount && (
+                            <span className="text-[9px] font-black text-[var(--islamic-green-dark)] bg-[var(--islamic-gold)] px-2 py-0.5 rounded-full uppercase tracking-wider">
+                              SAVE {featDiscountPct}%
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-2xl md:text-3xl font-black text-white">
+                            {formatPrice(featPrice)}
+                          </span>
+                          {featHasDiscount && (
+                            <span className="text-sm text-white/50 line-through">
+                              {formatPrice(featCompareAt)}
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       <button
@@ -320,26 +339,45 @@ export default function LatestProductsSection({ products, loading = false }: Lat
 
                         {/* Price & Action Row */}
                         <div className="flex flex-col mt-auto pt-1.5 border-t border-[#e9e3d9]/30">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] text-gray-400 font-medium">Price</span>
-                            <span className="font-black text-[14px] md:text-[15px] text-[var(--islamic-green)]">
-                              {formatPrice(parseFloat(product.priceRange.minVariantPrice.amount))}
-                            </span>
-                          </div>
+                          {(() => {
+                            const gridPrice = parseFloat(product.priceRange.minVariantPrice.amount);
+                            const gridCompareAt = parseFloat(product.variants[0]?.compareAtPrice?.amount || "0");
+                            const gridHasDiscount = gridCompareAt > gridPrice;
+                            const gridDiscountPct = gridHasDiscount ? Math.round(((gridCompareAt - gridPrice) / gridCompareAt) * 100) : 0;
+                            return (
+                              <div className="flex items-center justify-between gap-1">
+                                <div className="flex items-baseline gap-1.5 min-w-0">
+                                  <span className="font-black text-[14px] md:text-[15px] text-[var(--islamic-green)]">
+                                    {formatPrice(gridPrice)}
+                                  </span>
+                                  {gridHasDiscount && (
+                                    <span className="text-[10px] text-gray-400 line-through truncate">
+                                      {formatPrice(gridCompareAt)}
+                                    </span>
+                                  )}
+                                </div>
+                                {gridHasDiscount && (
+                                  <span className="text-[9px] font-extrabold text-rose-600 bg-rose-50 px-1 py-0.5 rounded border border-rose-100 shrink-0">
+                                    {gridDiscountPct}% OFF
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })()}
 
-                          {/* Add to Cart Button - full-width block button on mobile, hover-revealed on desktop */}
-                          <div className="mt-3 md:mt-0 md:h-0 md:opacity-0 md:group-hover:h-8 md:group-hover:opacity-100 md:group-hover:mt-3 transition-all duration-300">
+                          {/* Fixed-height Action Row (Zero Layout Shift) */}
+                          <div className="mt-2.5">
                             <button
                               onClick={(e) => handleAddToCart(product, e)}
                               disabled={!product.availableForSale || cartLoadingId === product.id}
-                              className="w-full h-11 md:h-8 py-2 md:py-1.5 rounded-xl md:rounded-lg bg-[var(--islamic-gold)] text-[var(--islamic-green-dark)] hover:bg-[var(--islamic-gold-dark)] hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98] transition-all duration-200 disabled:opacity-50 cursor-pointer"
+                              className="w-full h-10 md:h-8.5 py-1.5 px-2 rounded-xl md:rounded-lg bg-[var(--islamic-gold)] text-[var(--islamic-green-dark)] hover:bg-[var(--islamic-gold-dark)] hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs hover:shadow-md active:scale-[0.98] transition-all duration-200 disabled:opacity-50 cursor-pointer"
                             >
                               {cartLoadingId === product.id ? (
-                                <span className="w-4 h-4 border-2 border-[var(--islamic-green-dark)] border-t-transparent rounded-full animate-spin" />
+                                <span className="w-3.5 h-3.5 border-2 border-[var(--islamic-green-dark)] border-t-transparent rounded-full animate-spin" />
                               ) : (
                                 <>
-                                  <ShoppingCart size={14} />
-                                  <span>Add to Cart</span>
+                                  <ShoppingCart size={13} />
+                                  <span>{product.availableForSale ? "Add to Cart" : "Out of Stock"}</span>
                                 </>
                               )}
                             </button>

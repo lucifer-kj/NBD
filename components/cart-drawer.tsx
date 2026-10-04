@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Drawer } from "vaul"
 import Image from "next/image"
 import Link from "next/link"
-import { X, ShoppingCart, Trash2, Minus, Plus, Heart } from "lucide-react"
+import { X, ShoppingCart, Trash2, Minus, Plus, Heart, Tag } from "lucide-react"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import { useDonationStore } from "@/store/donation-store"
 import { EmptyState } from "@/components/ui/empty-state";
@@ -47,12 +47,11 @@ export default function CartDrawer() {
   const [addingVariantId, setAddingVariantId] = useState<string | null>(null);
 
   const subtotal = cart ? Number(cart.cost.subtotalAmount.amount) : 0;
-  const gap = 999 - subtotal;
 
   useEffect(() => {
     let active = true;
-    if (gap > 0 && subtotal > 0) {
-      getCartFillersAction(gap)
+    if (subtotal > 0) {
+      getCartFillersAction(50)
         .then((products) => {
           if (active) {
             setFillers(products.slice(0, 3));
@@ -67,7 +66,7 @@ export default function CartDrawer() {
     return () => {
       active = false;
     };
-  }, [gap, subtotal]);
+  }, [subtotal]);
 
   const handleAddFiller = async (variantId: string) => {
     setAddingVariantId(variantId);
@@ -259,11 +258,11 @@ export default function CartDrawer() {
                   )}
 
                   {/* Cart Fillers Suggestions */}
-                  {gap > 0 && subtotal > 0 && fillers.length > 0 && (
+                  {subtotal > 0 && fillers.length > 0 && (
                     <div className="mt-6 border-t border-dashed border-gray-250 pt-6 animate-in fade-in duration-500">
                       <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-1.5">
                         <span className="w-1.5 h-3.5 bg-[var(--islamic-green)] rounded-full"></span>
-                        Complete your order for Free Shipping!
+                        Popular Add-ons for Your Order
                       </h3>
                       <div className="space-y-3">
                         {fillers.map((product) => {
@@ -352,12 +351,25 @@ export default function CartDrawer() {
                 {/* Right Column: Permanently Anchored Checkout Summary on Mobile, Sidebar on Desktop */}
                 <div className="w-full md:w-[340px] flex-shrink-0 bg-white p-4 md:p-6 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-6 flex flex-col justify-between border-t md:border-t-0 md:border-l border-gray-100 sticky bottom-0 md:static z-20 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] md:shadow-none md:overflow-y-auto">
                   <div className="space-y-4 md:space-y-6">
-                    {/* Promo Code Input (Desktop Only) */}
-                    <div className="hidden md:block space-y-2.5">
-                      <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider font-semibold">
-                        Promo Code
-                      </h4>
-                      <DiscountCodeInput />
+                    {/* Promo Code Input - Collapsible on Mobile, Open on Desktop */}
+                    <div className="space-y-2">
+                      <details className="md:hidden group/promo">
+                        <summary className="text-xs font-bold text-gray-600 flex items-center justify-between cursor-pointer py-1 select-none">
+                          <span className="flex items-center gap-1.5 text-[var(--islamic-green)]">
+                            <Tag className="w-3.5 h-3.5" /> Have a discount code?
+                          </span>
+                          <span className="text-[10px] text-gray-400 group-open/promo:rotate-180 transition-transform">▼</span>
+                        </summary>
+                        <div className="pt-2">
+                          <DiscountCodeInput />
+                        </div>
+                      </details>
+                      <div className="hidden md:block space-y-2">
+                        <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                          Promo Code
+                        </h4>
+                        <DiscountCodeInput />
+                      </div>
                     </div>
 
                     {/* Sadqa-e-Jariyah micro-nudge (Desktop Only) */}
@@ -396,9 +408,15 @@ export default function CartDrawer() {
                           )}</span>
                         </div>
                       )}
-                      <div className="flex items-center justify-between text-[11px] md:text-sm text-gray-400 border-b border-dashed pb-2 mb-2 border-gray-200">
-                        <span>Shipping</span>
-                        <span>Calculated at checkout</span>
+                      <div className="flex items-center justify-between text-[11px] md:text-sm text-gray-500 border-b border-dashed pb-2 mb-2 border-gray-200">
+                        <div className="flex flex-col text-left">
+                          <span>Shipping</span>
+                          <span className="text-[10px] text-emerald-600 font-semibold">Prepaid saves up to ₹40</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-semibold text-gray-800">From ₹40</span>
+                          <span className="block text-[10px] text-gray-400">₹40 WB / ₹70 National</span>
+                        </div>
                       </div>
                       <div className="flex items-center justify-between text-base md:text-lg font-bold text-[var(--islamic-green-dark)]">
                         <span>Total</span>
@@ -408,6 +426,14 @@ export default function CartDrawer() {
                   </div>
 
                   <div className="space-y-2.5 mt-3 md:mt-6">
+                    {/* Prepaid savings tip */}
+                    <div className="p-2.5 rounded-xl bg-emerald-50/90 border border-emerald-200/80 text-[11px] text-emerald-900 flex items-center gap-2">
+                      <span className="text-sm shrink-0">⚡</span>
+                      <p className="leading-tight font-medium">
+                        Pay online at checkout to get discounted delivery starting at <strong>₹40</strong>!
+                      </p>
+                    </div>
+
                     {unavailableItems.length > 0 && (
                       <p className="text-xs text-red-600 text-center mb-1 font-semibold animate-pulse">
                         Please remove out-of-stock items to proceed
@@ -418,7 +444,7 @@ export default function CartDrawer() {
                       disabled={isCheckoutDisabled} 
                       className="w-full bg-[var(--islamic-green)] hover:bg-[var(--islamic-green-dark)] text-white text-sm md:text-base font-bold py-3.5 h-12 min-h-[48px] rounded-xl shadow-md transition-all duration-205 hover:shadow-lg active:scale-[0.98] cursor-pointer"
                     >
-                      {isLoading ? "Validating..." : "Checkout on Shopify"}
+                      {isLoading ? "Validating..." : "Proceed to Checkout"}
                     </Button>
                     {lines.length > 0 && (
                       <button 

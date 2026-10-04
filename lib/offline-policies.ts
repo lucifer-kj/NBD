@@ -84,11 +84,17 @@ export const OFFLINE_POLICIES: Record<string, OfflinePolicy> = {
       <h2>2. Shipping & Handling Time</h2>
       <ul>
         <li><strong>Processing Time:</strong> Orders are typically processed, verified, and dispatched within <strong>24 to 48 hours</strong> (excluding Sundays and public holidays).</li>
-        <li><strong>Delivery Time:</strong> Standard delivery takes <strong>3 to 5 business days</strong> for metro cities, and <strong>5 to 7 business days</strong> for other regions. Remote areas may take up to 10 days.</li>
+        <li><strong>Local Delivery (West Bengal):</strong> Fast delivery within <strong>1 to 2 business days</strong> via express courier.</li>
+        <li><strong>National Delivery (Rest of India):</strong> Express delivery within <strong>3 to 5 business days</strong> for metro cities and standard regional zones.</li>
       </ul>
 
-      <h2>3. Shipping Charges</h2>
-      <p>Shipping charges are calculated at checkout based on the total weight of the books and products in your cart and your delivery pincode. We offer <strong>free shipping on orders above ₹1,000</strong> across India.</p>
+      <h2>3. Shipping Charges & Payment Modes</h2>
+      <p>Shipping charges are determined by your delivery state and selected payment mode at checkout:</p>
+      <ul>
+        <li><strong>Local (West Bengal):</strong> ₹40 for Online Prepaid orders | ₹70 for Cash on Delivery (COD).</li>
+        <li><strong>Rest of India:</strong> ₹70 for Online Prepaid orders | ₹110 for Cash on Delivery (COD).</li>
+      </ul>
+      <p><em>Savings Tip: Pay online via UPI, Credit/Debit cards, or Net Banking at checkout to save up to ₹40 on courier handling and cash collection fees.</em></p>
 
       <h2>4. Tracking Your Order</h2>
       <p>Once your order is shipped, a shipping confirmation email containing your tracking ID and a tracking link will be sent to your registered email address or phone number. You can also track your order directly via WhatsApp support.</p>

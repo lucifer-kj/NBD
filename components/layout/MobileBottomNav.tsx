@@ -18,7 +18,10 @@ export default function MobileBottomNav() {
 
   const isHome = cleanPath === "";
   const isSearch = cleanPath.startsWith("/search");
-  const isShop = cleanPath.startsWith("/products") || cleanPath.startsWith("/books") || cleanPath.startsWith("/collections");
+  const isShop = cleanPath === "/products" || cleanPath === "/books" || cleanPath.startsWith("/collections");
+  const isPDP = /^\/(books|products)\/[^/]+$/.test(cleanPath);
+
+  if (isPDP) return null;
 
   return (
     <>

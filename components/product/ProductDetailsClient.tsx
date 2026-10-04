@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -43,6 +43,7 @@ export default function ProductDetailsClient({ product, reviews }: ProductDetail
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [activeModalSheet, setActiveModalSheet] = useState<'specs' | 'care' | null>(null);
+  const isDraggingRef = useRef(false);
   
   // Initialize selected options with the first variant's options
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(
@@ -177,13 +178,23 @@ export default function ProductDetailsClient({ product, reviews }: ProductDetail
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
               className="relative w-full h-full cursor-zoom-in select-none touch-pan-y"
-              onClick={() => setIsLightboxOpen(true)}
+              onClick={() => {
+                if (!isDraggingRef.current) {
+                  setIsLightboxOpen(true);
+                }
+              }}
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
+              onDragStart={() => {
+                isDraggingRef.current = true;
+              }}
               onDragEnd={(e, info) => {
-                if (info.offset.x < -50) {
+                setTimeout(() => {
+                  isDraggingRef.current = false;
+                }, 80);
+                if (info.offset.x < -40) {
                   setSelectedImage((prev) => (prev + 1) % images.length);
-                } else if (info.offset.x > 50) {
+                } else if (info.offset.x > 40) {
                   setSelectedImage((prev) => (prev - 1 + images.length) % images.length);
                 }
               }}
@@ -201,6 +212,20 @@ export default function ProductDetailsClient({ product, reviews }: ProductDetail
               </div>
             </motion.div>
           </AnimatePresence>
+
+          {/* Mobile Image Pagination Dots */}
+          {images.length > 1 && (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md md:hidden z-10 pointer-events-none">
+              {images.map((_, idx) => (
+                <span
+                  key={idx}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    selectedImage === idx ? 'w-4 bg-[var(--islamic-gold)]' : 'w-1.5 bg-white/60'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
 
           {images.length > 1 && (
             <>
@@ -570,8 +595,8 @@ export default function ProductDetailsClient({ product, reviews }: ProductDetail
                 <Truck size={18} className="text-[var(--islamic-green)]" />
               </div>
               <div className="text-xs">
-                <p className="font-bold text-emerald-950 font-headings mb-0.5">Fast Pan-India Shipping</p>
-                <p className="text-gray-500 leading-relaxed font-sans">Fully tracked premium logistics partners</p>
+                <p className="font-bold text-emerald-950 font-headings mb-0.5">Express Delivery via Shadowfax</p>
+                <p className="text-gray-500 leading-relaxed font-sans">1–2 days (West Bengal) • 3–5 days (Rest of India) | Save up to ₹40 on prepaid</p>
               </div>
             </div>
           </div>

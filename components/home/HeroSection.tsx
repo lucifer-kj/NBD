@@ -172,7 +172,6 @@ const HeroSection = () => {
 
             <button
               onClick={openDonation}
-              onMouseEnter={openDonation}
               className="premium-donation-btn flex items-center justify-between w-full p-4 rounded-xl bg-[#0D2E21] border border-[var(--islamic-gold)]/35 hover:border-[var(--islamic-gold)] hover:bg-[#133F2E] text-white hover:shadow-[0_8px_24px_rgba(212,168,83,0.15)] transition-all duration-300 cursor-pointer"
             >
               <div className="flex items-center gap-3">

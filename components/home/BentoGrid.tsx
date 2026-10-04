@@ -210,21 +210,21 @@ export default function BentoGrid() {
         </motion.div>
 
         {/* Mobile-Only Horizontal Native Swipe Carousel */}
-        <div className="md:hidden">
-          <div className="flex overflow-x-auto snap-x snap-mandatory gap-3.5 pb-3 pt-1 -mx-4 px-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="md:hidden relative">
+          <div className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth gap-3.5 pb-2 pt-1 -mx-4 px-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [-webkit-overflow-scrolling:touch]">
             {categories.map((category, index) => {
               const Icon = category.icon;
               return (
                 <Link
                   key={index}
                   href={category.href}
-                  className="snap-start shrink-0 w-[240px] p-5 rounded-2xl bg-[#FAF7F0] border border-[#e9e3d9] active:scale-[0.98] transition-all flex flex-col justify-between shadow-xs"
+                  className="snap-start shrink-0 w-[240px] p-5 rounded-2xl bg-[#FAF7F0] border border-[#e9e3d9] active:scale-[0.98] transition-all flex flex-col justify-between shadow-xs hover:border-[#c19a4e]/40"
                 >
                   <div className="flex items-center justify-between mb-4">
                     <div className="w-12 h-12 rounded-xl bg-white border border-[#e9e3d9] flex items-center justify-center shadow-xs">
                       <Icon />
                     </div>
-                    <span className="text-[10px] font-bold text-[#c19a4e] uppercase tracking-wider bg-amber-50 border border-amber-200/60 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-bold text-[#c19a4e] uppercase tracking-wider bg-amber-50 border border-amber-200/60 px-2.5 py-0.5 rounded-full">
                       Explore
                     </span>
                   </div>
@@ -240,9 +240,6 @@ export default function BentoGrid() {
               );
             })}
           </div>
-          <p className="text-center text-[11px] text-gray-400 mt-2 font-medium">
-            Swipe horizontally to explore categories →
-          </p>
         </div>
 
         {/* Desktop-Only Elegant Asymmetric Bento Grid */}

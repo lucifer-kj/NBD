@@ -63,9 +63,14 @@ export default function ProductCard({
 
   const imageAlt = product.title ? `${product.title} product image` : "Product image";
 
-  // Stock status
+  // Stock & Price status
   const inStock = product.availableForSale;
   const productUrl = getProductUrl(product);
+
+  const price = parseFloat(product.priceRange.minVariantPrice.amount);
+  const compareAt = parseFloat(product.variants[0]?.compareAtPrice?.amount || '0');
+  const hasDiscount = compareAt > price;
+  const discountPct = hasDiscount ? Math.round(((compareAt - price) / compareAt) * 100) : 0;
 
   const ratingMeta = product.metafields?.find(m => m && m.namespace === 'reviews' && m.key === 'rating');
   const ratingValue = ratingMeta ? parseFloat(JSON.parse(ratingMeta.value).value) : null;
@@ -84,6 +89,13 @@ export default function ProductCard({
         {/* Glow Effect */}
         <div className="absolute inset-0 bg-gradient-to-br from-[var(--islamic-gold)]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
         
+        {/* Discount Badge */}
+        {hasDiscount && (
+          <div className="absolute top-3 left-3 z-20 bg-[var(--islamic-gold)] text-[var(--islamic-green-dark)] text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full shadow-md border border-[var(--islamic-gold-dark)]/30 animate-in fade-in">
+            SAVE {discountPct}%
+          </div>
+        )}
+
         {/* Wishlist Button */}
         {showWishlist && (
           <Button
@@ -104,7 +116,7 @@ export default function ProductCard({
             src={product.featuredImage?.url || "/Images/Logo.png"}
             alt={imageAlt}
             fill
-            sizes="(max-width: 640px) 90vw, (max-width: 1024px) 40vw, 300px"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
             style={{ viewTransitionName: `product-image-${product.id}` } as React.CSSProperties}
             className="object-contain p-3.5 transition-transform duration-700 group-hover:scale-105"
             priority={false}
@@ -166,26 +178,37 @@ export default function ProductCard({
           </div>
 
           <div className="flex flex-col mt-2.5 pt-2.5 border-t border-[#e9e3d9]/30">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] text-gray-400 font-medium">Price</span>
-              <span className="text-lg md:text-xl font-black text-[var(--islamic-green)]">
-                {formatPrice(parseFloat(product.priceRange.minVariantPrice.amount))}
-              </span>
+            <div className="flex items-center justify-between gap-1">
+              <div className="flex items-baseline gap-1.5 min-w-0">
+                <span className="text-base sm:text-lg md:text-xl font-black text-[var(--islamic-green)]">
+                  {formatPrice(price)}
+                </span>
+                {hasDiscount && (
+                  <span className="text-[11px] sm:text-xs text-gray-400 line-through truncate">
+                    {formatPrice(compareAt)}
+                  </span>
+                )}
+              </div>
+              {hasDiscount && (
+                <span className="text-[9px] font-extrabold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-100 shrink-0">
+                  {discountPct}% OFF
+                </span>
+              )}
             </div>
             
-            {/* Add to Cart Button - full-width block button on mobile, hover-revealed on desktop */}
-            <div className="mt-3 md:mt-0 md:h-0 md:opacity-0 md:group-hover:h-10 md:group-hover:opacity-100 md:group-hover:mt-3 transition-all duration-300">
+            {/* Fixed-height Action Button (Zero Layout Shift) */}
+            <div className="mt-3">
               <button
                 onClick={handleAddToCart}
                 disabled={!inStock || cartLoading}
-                className="w-full h-11 min-h-[44px] py-2.5 px-4 rounded-xl bg-[var(--islamic-gold)] text-[var(--islamic-green-dark)] hover:bg-[var(--islamic-gold-dark)] hover:text-white font-bold text-xs md:text-sm flex items-center justify-center gap-2 shadow-sm active:scale-[0.98] transition-all duration-200 disabled:opacity-50 cursor-pointer"
+                className="w-full h-11 min-h-[44px] md:h-10 py-2 px-3 rounded-xl bg-[var(--islamic-gold)] text-[var(--islamic-green-dark)] hover:bg-[var(--islamic-gold-dark)] hover:text-white font-bold text-xs md:text-sm flex items-center justify-center gap-2 shadow-xs hover:shadow-md active:scale-[0.98] transition-all duration-200 disabled:opacity-50 cursor-pointer"
               >
                 {cartLoading ? (
                   <span className="w-4 h-4 border-2 border-[var(--islamic-green-dark)] border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
                     <ShoppingCart size={15} />
-                    <span>Add to Cart</span>
+                    <span>{inStock ? "Add to Cart" : "Out of Stock"}</span>
                   </>
                 )}
               </button>

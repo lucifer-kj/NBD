@@ -105,21 +105,61 @@ export function ProductsDropdown({ productCategories }: { productCategories: Pro
 // Search Box Client Component
 export function SearchBox() {
   const [isExpanded, setIsExpanded] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Global Cmd+K / Ctrl+K keyboard shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsExpanded((prev) => !prev);
+      } else if (e.key === 'Escape' && isExpanded) {
+        setIsExpanded(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isExpanded]);
+
+  // Click outside to collapse
+  useEffect(() => {
+    if (!isExpanded) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsExpanded(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isExpanded]);
 
   return (
-    <div className="hidden md:flex items-center">
+    <div ref={containerRef} className="hidden md:flex items-center">
       {isExpanded ? (
-        <div className="w-[400px] transition-all duration-300">
-           <PredictiveSearch />
+        <div className="w-[360px] lg:w-[420px] flex items-center gap-1.5 transition-all duration-300 animate-in fade-in zoom-in-95">
+          <div className="flex-1">
+            <PredictiveSearch />
+          </div>
+          <button
+            onClick={() => setIsExpanded(false)}
+            className="p-2 text-white/70 hover:text-white rounded-full hover:bg-white/10 transition-colors cursor-pointer"
+            aria-label="Close search"
+          >
+            <X size={18} />
+          </button>
         </div>
       ) : (
         <button 
           onClick={() => setIsExpanded(true)} 
-          className="text-white/90 hover:text-[var(--islamic-gold)] transition-colors p-2"
-          aria-label="Open search box"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/15 border border-white/10 text-white/80 hover:text-white transition-all duration-200 group cursor-pointer"
+          aria-label="Search store"
           aria-expanded={isExpanded}
         >
-          <Search size={24} />
+          <Search size={16} className="text-[var(--islamic-gold)] group-hover:scale-110 transition-transform" />
+          <span className="text-xs font-medium text-white/70">Search...</span>
+          <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono font-medium text-white/50 bg-black/20 rounded border border-white/10">
+            ⌘K
+          </kbd>
         </button>
       )}
     </div>
