@@ -323,8 +323,7 @@ export async function getProduct(handle: string): Promise<ReshapedProduct | unde
   const res = await shopifyFetch<{ data: { product: Product } }>({
     query: getProductQuery,
     tags: ['products', `product-${decodedHandle}`],
-    variables: { handle: decodedHandle },
-    cache: 'no-store'
+    variables: { handle: decodedHandle }
   });
 
   return reshapeProduct(res.body.data.product);
