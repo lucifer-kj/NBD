@@ -5,8 +5,59 @@ import { Redis } from '@upstash/redis';
 
 export const dynamic = 'force-dynamic';
 
+export async function GET(req: NextRequest) {
+  const secretParam = req.nextUrl.searchParams.get('secret');
+  const isAuthorized =
+    (process.env.REVALIDATION_SECRET && secretParam === process.env.REVALIDATION_SECRET) ||
+    (process.env.CRON_SECRET && secretParam === process.env.CRON_SECRET) ||
+    (process.env.SHOPIFY_TOKEN_ROTATION_SECRET && secretParam === process.env.SHOPIFY_TOKEN_ROTATION_SECRET);
+
+  if (!isAuthorized) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const tag = req.nextUrl.searchParams.get('tag');
+  const path = req.nextUrl.searchParams.get('path');
+
+  if (tag) {
+    revalidateTag(tag);
+  }
+  if (path) {
+    revalidatePath(path);
+  }
+
+  if (!tag && !path) {
+    revalidateTag('products');
+    revalidatePath('/books');
+    revalidatePath('/products');
+    revalidatePath('/');
+  }
+
+  return NextResponse.json({ revalidated: true, now: Date.now(), tag, path });
+}
+
 export async function POST(req: NextRequest) {
   try {
+    const secretParam = req.nextUrl.searchParams.get('secret');
+    const isSecretAuthorized =
+      (process.env.REVALIDATION_SECRET && secretParam === process.env.REVALIDATION_SECRET) ||
+      (process.env.CRON_SECRET && secretParam === process.env.CRON_SECRET) ||
+      (process.env.SHOPIFY_TOKEN_ROTATION_SECRET && secretParam === process.env.SHOPIFY_TOKEN_ROTATION_SECRET);
+
+    if (isSecretAuthorized) {
+      const tag = req.nextUrl.searchParams.get('tag');
+      const path = req.nextUrl.searchParams.get('path');
+      if (tag) revalidateTag(tag);
+      if (path) revalidatePath(path);
+      if (!tag && !path) {
+        revalidateTag('products');
+        revalidatePath('/books');
+        revalidatePath('/products');
+        revalidatePath('/');
+      }
+      return NextResponse.json({ revalidated: true, now: Date.now() });
+    }
+
     const hmacHeader = req.headers.get('x-shopify-hmac-sha256');
     const topic = req.headers.get('x-shopify-topic') || '';
     
@@ -106,20 +157,4 @@ export async function POST(req: NextRequest) {
     console.error('Revalidation error:', err);
     return NextResponse.json({ error: 'Error revalidating' }, { status: 500 });
   }
-}
-
-// Optional: Allow GET for manual testing during development (requires secret)
-export async function GET(req: NextRequest) {
-  const secret = req.nextUrl.searchParams.get('secret');
-  if (secret !== process.env.REVALIDATION_SECRET) {
-    return NextResponse.json({ error: 'Invalid secret' }, { status: 401 });
-  }
-  
-  const tag = req.nextUrl.searchParams.get('tag');
-  if (tag) {
-    revalidateTag(tag);
-    return NextResponse.json({ revalidated: true, tag });
-  }
-  
-  return NextResponse.json({ error: 'Missing tag' }, { status: 400 });
 }

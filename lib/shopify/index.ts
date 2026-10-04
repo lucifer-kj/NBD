@@ -32,7 +32,11 @@ import {
   CustomerAccessToken,
   ShopifyUserError,
   Collection,
-  Policy
+  Policy,
+  ProductOption,
+  Money,
+  Image as ShopifyImage,
+  SEO
 } from '../../types/shopify';
 
 const domain = process.env.SHOPIFY_STORE_DOMAIN
@@ -106,21 +110,60 @@ async function handleTokenFailure(failedToken: string): Promise<boolean> {
 }
 
 async function getAdminAccessToken(): Promise<string> {
-  // 1. Try to load from Redis dynamic vault first to support seamless key rotation
+  // 1. Try to load from Redis dynamic vault first (skip during static build to avoid DYNAMIC_SERVER_USAGE)
+  const isBuilding = process.env.NEXT_PHASE === 'phase-production-build';
+  if (!isBuilding) {
+    try {
+      const redis = getRedisClient();
+      if (redis) {
+        const dynamicToken = await redis.get<string>('shopify:admin_access_token');
+        if (dynamicToken) {
+          return dynamicToken;
+        }
+      }
+    } catch {
+      // ignore Redis retrieval error
+    }
+  }
+
+  // 2. Fall back to the environment variable if present and not a placeholder
+  const envToken = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN || '';
+  if (envToken && !envToken.startsWith('shpat_your_')) {
+    return envToken;
+  }
+
+  // 3. Fall back to OAuth client credentials from environment
   try {
-    const redis = getRedisClient();
-    if (redis) {
-      const dynamicToken = await redis.get<string>('shopify:admin_access_token');
-      if (dynamicToken) {
-        return dynamicToken;
+    const clientId = process.env.SHOPIFY_CLIENT_ID || process.env.SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_ID;
+    const clientSecret = process.env.SHOPIFY_CLIENT_SECRET || process.env.SHOPIFY_CUSTOMER_ACCOUNT_API_CLIENT_SECRET;
+    if (clientId && clientSecret && domain) {
+      const res = await fetch(`${domain}/admin/oauth/access_token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_id: clientId,
+          client_secret: clientSecret,
+          grant_type: 'client_credentials'
+        })
+      });
+      const data = await res.json();
+      if (data.access_token) {
+        try {
+          const redis = getRedisClient();
+          if (redis) {
+            await redis.set('shopify:admin_access_token', data.access_token, { ex: 86400 });
+          }
+        } catch {
+          // ignore redis cache errors
+        }
+        return data.access_token;
       }
     }
   } catch (e) {
-    console.error('Failed to retrieve dynamic Shopify Admin Access Token from Redis:', e);
+    console.error('Failed to obtain Shopify Admin Access Token via client credentials:', e);
   }
 
-  // 2. Fall back to the environment variable
-  return process.env.SHOPIFY_ADMIN_ACCESS_TOKEN || '';
+  return envToken;
 }
 
 const adminEndpoint = domain ? `${domain}/admin/api/${SHOPIFY_ADMIN_API_VERSION}/graphql.json` : '';
@@ -186,6 +229,30 @@ export async function shopifyFetch<T>({
       throw new Error(error.message || 'Shopify API Error', { cause: error });
     }
 
+    // If a storefront token was passed and Shopify returned null product or empty predictive search,
+    // the token is likely scoped to an older private app publication. Fall back to querying without the header.
+    const typedBody = body as { data?: { product?: unknown; predictiveSearch?: { products?: unknown[] } } };
+    const hadToken = !!storefrontHeaders['X-Shopify-Storefront-Access-Token'];
+    if (hadToken && (typedBody.data?.product === null || (typedBody.data?.predictiveSearch && typedBody.data.predictiveSearch.products?.length === 0))) {
+      try {
+        const fallbackHeaders = { ...storefrontHeaders };
+        delete fallbackHeaders['X-Shopify-Storefront-Access-Token'];
+        const fallbackRes = retries > 0
+          ? await fetchWithRetry(endpoint, { ...fetchOptions, headers: fallbackHeaders }, retries)
+          : await fetch(endpoint, { ...fetchOptions, headers: fallbackHeaders });
+        const fallbackBody = await fallbackRes.json();
+        const fallbackTyped = fallbackBody as { data?: { product?: unknown; predictiveSearch?: { products?: unknown[] } } };
+        if (fallbackTyped.data?.product || ((fallbackTyped.data?.predictiveSearch?.products?.length ?? 0) > 0)) {
+          return {
+            status: fallbackRes.status,
+            body: fallbackBody as T
+          };
+        }
+      } catch {
+        // Continue with original body if fallback fails
+      }
+    }
+
     return {
       status: result.status,
       body
@@ -211,11 +278,13 @@ export async function shopifyFetch<T>({
 export async function shopifyAdminFetch<T>({
   query,
   variables,
-  retries = 3
+  retries = 3,
+  cache = 'default'
 }: {
   query: string;
   variables?: Record<string, unknown>;
   retries?: number;
+  cache?: RequestCache;
 }): Promise<{ status: number; body: T } | never> {
   const token = await getAdminAccessToken();
 
@@ -234,7 +303,7 @@ export async function shopifyAdminFetch<T>({
         ...(query && { query }),
         ...(variables && { variables })
       }),
-      cache: 'no-store'
+      cache
     };
 
     const result = await fetchWithRetry(adminEndpoint, fetchOptions, retries);
@@ -318,6 +387,170 @@ export const reshapeCart = (cart: Cart): ReshapedCart => {
   };
 };
 
+async function getProductFromAdmin(handle: string): Promise<ReshapedProduct | undefined> {
+  try {
+    const query = `
+      query getProductByHandle($q: String!) {
+        products(first: 1, query: $q) {
+          edges {
+            node {
+              id
+              title
+              handle
+              description
+              descriptionHtml
+              vendor
+              tags
+              updatedAt
+              options {
+                id
+                name
+                values
+              }
+              priceRangeV2 {
+                maxVariantPrice {
+                  amount
+                  currencyCode
+                }
+                minVariantPrice {
+                  amount
+                  currencyCode
+                }
+              }
+              images(first: 20) {
+                edges {
+                  node {
+                    url
+                    altText
+                    width
+                    height
+                  }
+                }
+              }
+              variants(first: 250) {
+                edges {
+                  node {
+                    id
+                    title
+                    sku
+                    barcode
+                    availableForSale
+                    selectedOptions {
+                      name
+                      value
+                    }
+                    price
+                    compareAtPrice
+                    image {
+                      url
+                      altText
+                      width
+                      height
+                    }
+                  }
+                }
+              }
+              seo {
+                title
+                description
+              }
+            }
+          }
+        }
+      }
+    `;
+    const res = await shopifyAdminFetch<{
+      data?: {
+        products?: {
+          edges?: {
+            node?: {
+              id: string;
+              title: string;
+              handle: string;
+              description?: string;
+              descriptionHtml?: string;
+              vendor?: string;
+              tags?: string[];
+              updatedAt?: string;
+              options?: ProductOption[];
+              priceRangeV2?: {
+                maxVariantPrice: Money;
+                minVariantPrice: Money;
+              };
+              images?: {
+                edges: { node: ShopifyImage }[];
+              };
+              variants?: {
+                edges: {
+                  node: {
+                    id: string;
+                    title: string;
+                    sku?: string;
+                    barcode?: string;
+                    availableForSale?: boolean;
+                    selectedOptions: { name: string; value: string }[];
+                    price: string;
+                    compareAtPrice?: string | null;
+                    image?: ShopifyImage;
+                  };
+                }[];
+              };
+              seo?: SEO;
+            };
+          }[];
+        };
+      };
+    }>({
+      query,
+      variables: { q: `handle:${handle}` },
+      retries: 2
+    });
+
+    const node = res.body?.data?.products?.edges?.[0]?.node;
+    if (!node) return undefined;
+
+    return {
+      id: node.id,
+      handle: node.handle,
+      availableForSale: true,
+      title: node.title,
+      vendor: node.vendor || 'Naaz Book Depot',
+      description: node.description || '',
+      descriptionHtml: node.descriptionHtml || '',
+      options: node.options || [],
+      priceRange: {
+        maxVariantPrice: node.priceRangeV2?.maxVariantPrice || { amount: '0', currencyCode: 'INR' },
+        minVariantPrice: node.priceRangeV2?.minVariantPrice || { amount: '0', currencyCode: 'INR' }
+      },
+      featuredImage: node.images?.edges?.[0]?.node || null,
+      images: node.images?.edges?.map((e) => e.node) || [],
+      variants: node.variants?.edges?.map((e) => ({
+        id: e.node.id,
+        title: e.node.title,
+        sku: e.node.sku,
+        barcode: e.node.barcode,
+        availableForSale: e.node.availableForSale ?? true,
+        selectedOptions: e.node.selectedOptions || [],
+        price: {
+          amount: e.node.price || '0',
+          currencyCode: 'INR'
+        },
+        compareAtPrice: e.node.compareAtPrice ? {
+          amount: e.node.compareAtPrice,
+          currencyCode: 'INR'
+        } : null,
+        image: e.node.image
+      })) || [],
+      seo: node.seo || { title: node.title, description: node.description || '' },
+      tags: node.tags || [],
+      updatedAt: node.updatedAt || new Date().toISOString()
+    };
+  } catch (err) {
+    console.warn('[Admin Fallback Error for getProduct]:', err instanceof Error ? err.message : String(err));
+    return undefined;
+  }
+}
+
 export async function getProduct(handle: string): Promise<ReshapedProduct | undefined> {
   const decodedHandle = decodeURIComponent(handle);
   const res = await shopifyFetch<{ data: { product: Product } }>({
@@ -326,7 +559,13 @@ export async function getProduct(handle: string): Promise<ReshapedProduct | unde
     variables: { handle: decodedHandle }
   });
 
-  return reshapeProduct(res.body.data.product);
+  const reshaped = reshapeProduct(res.body.data.product);
+  if (reshaped) {
+    return reshaped;
+  }
+
+  // Fallback to Shopify Admin API if Storefront API returned null
+  return getProductFromAdmin(decodedHandle);
 }
 
 export async function getProducts({
@@ -339,14 +578,38 @@ export async function getProducts({
   reverse?: boolean;
   sortKey?: string;
   first?: number;
-}): Promise<ReshapedProduct[]> {
+} = {}): Promise<ReshapedProduct[]> {
   const res = await shopifyFetch<{ data: { products: Connection<Product> } }>({
     query: getProductsQuery,
     tags: ['products'],
     variables: { query, reverse, sortKey, first }
   });
 
-  return reshapeProducts(removeEdgesAndNodes(res.body.data.products));
+  let products = reshapeProducts(removeEdgesAndNodes(res.body.data.products));
+
+  // If query is for books and private app token scoped results out, retry without token to ensure all products appear
+  if (query?.includes('tag:Books') && products.length < 12) {
+    try {
+      const fallbackRes = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: getProductsQuery,
+          variables: { query, reverse, sortKey, first }
+        }),
+        next: { tags: ['products'], revalidate: 3600 }
+      });
+      const fallbackBody = await fallbackRes.json();
+      const fallbackProducts = reshapeProducts(removeEdgesAndNodes(fallbackBody?.data?.products));
+      if (fallbackProducts.length > products.length) {
+        products = fallbackProducts;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  return products;
 }
 
 export async function createCart(): Promise<ReshapedCart> {
