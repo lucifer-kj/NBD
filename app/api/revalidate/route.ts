@@ -71,9 +71,11 @@ export async function POST(req: NextRequest) {
           revalidateTag('products');
           revalidatePath('/');
           revalidatePath('/products');
+          revalidatePath('/books');
           if (productHandle) {
             revalidateTag(`product-${productHandle}`);
             revalidatePath(`/products/${productHandle}`);
+            revalidatePath(`/books/${productHandle}`);
             console.log(`Revalidated product: ${productHandle} and associated listing pages`);
           }
         }

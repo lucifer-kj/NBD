@@ -52,14 +52,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export const revalidate = 3600; // Revalidate every hour
-
-export async function generateStaticParams() {
-  const products = await getProducts({ first: 20 });
-  return products.map((product) => ({
-    slug: product.handle,
-  }));
-}
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function ProductPage({ params }: PageProps) {
   const { slug } = await params
