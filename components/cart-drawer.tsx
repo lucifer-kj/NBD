@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Drawer } from "vaul"
 import Image from "next/image"
 import Link from "next/link"
-import { X, ShoppingCart, Trash2, Minus, Plus, Heart, Tag } from "lucide-react"
+import { X, ShoppingCart, Trash2, Minus, Plus, Heart } from "lucide-react"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import { useDonationStore } from "@/store/donation-store"
 import { EmptyState } from "@/components/ui/empty-state";
@@ -45,6 +45,7 @@ export default function CartDrawer() {
   // Cart Fillers state
   const [fillers, setFillers] = useState<ReshapedProduct[]>([]);
   const [addingVariantId, setAddingVariantId] = useState<string | null>(null);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   const subtotal = cart ? Number(cart.cost.subtotalAmount.amount) : 0;
 
@@ -81,22 +82,32 @@ export default function CartDrawer() {
 
   const handleCheckout = async (e: React.MouseEvent) => {
     e.preventDefault();
-    const { valid } = await validateCart();
-    if (valid && cart?.checkoutUrl) {
-      // Fire GA4 begin_checkout event
-      const checkoutItems = lines.map(line => ({
-        item_id: line.merchandise.id,
-        item_name: line.merchandise.product.title,
-        price: parseFloat(line.cost.totalAmount.amount),
-        quantity: line.quantity,
-      }));
-      trackBeginCheckout(checkoutItems);
-      
-      window.location.href = cart.checkoutUrl;
+    if (isCheckingOut || isLoading) return;
+    setIsCheckingOut(true);
+    try {
+      const { valid } = await validateCart();
+      const freshCart = useCartStore.getState().cart || cart;
+      if (valid && freshCart?.checkoutUrl) {
+        // Fire GA4 begin_checkout event
+        const checkoutItems = (freshCart.lines || lines).map(line => ({
+          item_id: line.merchandise.id,
+          item_name: line.merchandise.product.title,
+          price: parseFloat(line.cost.totalAmount.amount),
+          quantity: line.quantity,
+        }));
+        trackBeginCheckout(checkoutItems);
+        
+        window.location.href = freshCart.checkoutUrl;
+      } else {
+        setIsCheckingOut(false);
+      }
+    } catch (err) {
+      console.error("Checkout validation failed:", err);
+      setIsCheckingOut(false);
     }
   };
 
-  const isCheckoutDisabled = lines.length === 0 || isLoading || unavailableItems.length > 0;
+  const isCheckoutDisabled = lines.length === 0 || isLoading || isCheckingOut || unavailableItems.length > 0;
 
   return (
     <Drawer.Root open={isCartDrawerOpen} onOpenChange={(open) => !open && closeCartDrawer()} direction="right">
@@ -118,7 +129,7 @@ export default function CartDrawer() {
       </Drawer.Trigger>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 bg-black/45 backdrop-blur-sm z-[1000] transition-opacity duration-300" onClick={closeCartDrawer} />
-        <Drawer.Content className="fixed top-0 bottom-0 right-0 w-[calc(100%-48px)] sm:max-w-md md:max-w-3xl bg-white shadow-2xl z-[1010] flex flex-col border-l border-gray-100 outline-none">
+        <Drawer.Content className="fixed top-0 bottom-0 right-0 w-full max-w-[100vw] sm:max-w-md md:max-w-3xl bg-white shadow-2xl z-[1010] flex flex-col border-l border-gray-100 outline-none">
           <Drawer.Title asChild>
             <VisuallyHidden>Cart</VisuallyHidden>
           </Drawer.Title>
@@ -350,26 +361,13 @@ export default function CartDrawer() {
 
                 {/* Right Column: Permanently Anchored Checkout Summary on Mobile, Sidebar on Desktop */}
                 <div className="w-full md:w-[340px] flex-shrink-0 bg-white p-4 md:p-6 pb-[calc(1rem+env(safe-area-inset-bottom))] md:pb-6 flex flex-col justify-between border-t md:border-t-0 md:border-l border-gray-100 sticky bottom-0 md:static z-20 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] md:shadow-none md:overflow-y-auto">
-                  <div className="space-y-4 md:space-y-6">
-                    {/* Promo Code Input - Collapsible on Mobile, Open on Desktop */}
-                    <div className="space-y-2">
-                      <details className="md:hidden group/promo">
-                        <summary className="text-xs font-bold text-gray-600 flex items-center justify-between cursor-pointer py-1 select-none">
-                          <span className="flex items-center gap-1.5 text-[var(--islamic-green)]">
-                            <Tag className="w-3.5 h-3.5" /> Have a discount code?
-                          </span>
-                          <span className="text-[10px] text-gray-400 group-open/promo:rotate-180 transition-transform">▼</span>
-                        </summary>
-                        <div className="pt-2">
-                          <DiscountCodeInput />
-                        </div>
-                      </details>
-                      <div className="hidden md:block space-y-2">
-                        <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                          Promo Code
-                        </h4>
-                        <DiscountCodeInput />
-                      </div>
+                  <div className="space-y-3 md:space-y-6">
+                    {/* Promo Code Input - Desktop Only (Mobile uses the promo section inside the scroll area) */}
+                    <div className="hidden md:block space-y-2">
+                      <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                        Promo Code
+                      </h4>
+                      <DiscountCodeInput />
                     </div>
 
                     {/* Sadqa-e-Jariyah micro-nudge (Desktop Only) */}
@@ -395,20 +393,20 @@ export default function CartDrawer() {
                     )}
 
                     {/* Pricing Summary Card */}
-                    <div className="rounded-xl border border-gray-100 bg-[#FAFAFA] p-3.5 md:p-4 mb-2 md:mb-5 shadow-xs">
-                      <div className="flex items-center justify-between text-xs md:text-base font-medium mb-1.5 text-gray-600">
+                    <div className="rounded-xl border border-gray-100 bg-[#FAFAFA] p-3 md:p-4 mb-1 md:mb-5 shadow-xs">
+                      <div className="flex items-center justify-between text-xs md:text-base font-medium mb-1 text-gray-600">
                         <span>Subtotal</span>
                         <span>{formatPrice(totalAmount)}</span>
                       </div>
                       {cart?.discountCodes?.some(d => d.applicable) && (
-                        <div className="flex items-center justify-between text-xs md:text-sm text-[var(--islamic-green)] font-semibold mb-1.5">
+                        <div className="flex items-center justify-between text-xs md:text-sm text-[var(--islamic-green)] font-semibold mb-1">
                           <span>Discount applied</span>
                           <span>- {formatPrice(
                             Number(cart.cost.subtotalAmount.amount) - Number(totalAmount)
                           )}</span>
                         </div>
                       )}
-                      <div className="flex items-center justify-between text-[11px] md:text-sm text-gray-500 border-b border-dashed pb-2 mb-2 border-gray-200">
+                      <div className="flex items-center justify-between text-[11px] md:text-sm text-gray-500 border-b border-dashed pb-1.5 mb-1.5 border-gray-200">
                         <div className="flex flex-col text-left">
                           <span>Shipping</span>
                           <span className="text-[10px] text-emerald-600 font-semibold">Prepaid saves up to ₹40</span>
@@ -418,17 +416,17 @@ export default function CartDrawer() {
                           <span className="block text-[10px] text-gray-400">₹40 WB / ₹70 National</span>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between text-base md:text-lg font-bold text-[var(--islamic-green-dark)]">
+                      <div className="flex items-center justify-between text-sm md:text-lg font-bold text-[var(--islamic-green-dark)]">
                         <span>Total</span>
                         <span>{formatPrice(totalAmount)}</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="space-y-2.5 mt-3 md:mt-6">
+                  <div className="space-y-2 mt-2 md:mt-6">
                     {/* Prepaid savings tip */}
-                    <div className="p-2.5 rounded-xl bg-emerald-50/90 border border-emerald-200/80 text-[11px] text-emerald-900 flex items-center gap-2">
-                      <span className="text-sm shrink-0">⚡</span>
+                    <div className="p-2 md:p-2.5 rounded-xl bg-emerald-50/90 border border-emerald-200/80 text-[10px] md:text-[11px] text-emerald-900 flex items-center gap-1.5 md:gap-2">
+                      <span className="text-xs md:text-sm shrink-0">⚡</span>
                       <p className="leading-tight font-medium">
                         Pay online at checkout to get discounted delivery starting at <strong>₹40</strong>!
                       </p>
@@ -442,15 +440,24 @@ export default function CartDrawer() {
                     <Button 
                       onClick={handleCheckout}
                       disabled={isCheckoutDisabled} 
-                      className="w-full bg-[var(--islamic-green)] hover:bg-[var(--islamic-green-dark)] text-white text-sm md:text-base font-bold py-3.5 h-12 min-h-[48px] rounded-xl shadow-md transition-all duration-205 hover:shadow-lg active:scale-[0.98] cursor-pointer"
+                      className="w-full bg-[var(--islamic-green)] hover:bg-[var(--islamic-green-dark)] text-white text-sm md:text-base font-bold py-3 md:py-3.5 h-11 md:h-12 min-h-[44px] md:min-h-[48px] rounded-xl shadow-md transition-all duration-205 hover:shadow-lg active:scale-[0.98] cursor-pointer"
                     >
-                      {isLoading ? "Validating..." : "Proceed to Checkout"}
+                      {isCheckingOut ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Redirecting to Checkout...
+                        </span>
+                      ) : isLoading ? (
+                        "Validating..."
+                      ) : (
+                        "Proceed to Checkout"
+                      )}
                     </Button>
                     {lines.length > 0 && (
                       <button 
                         onClick={clearCart} 
-                        disabled={isLoading}
-                        className="w-full text-xs md:text-base font-semibold text-gray-400 hover:text-red-500 py-1.5 rounded-lg transition-all active:scale-[0.98] cursor-pointer"
+                        disabled={isLoading || isCheckingOut}
+                        className="w-full text-xs md:text-sm font-semibold text-gray-400 hover:text-red-500 py-1 rounded-lg transition-all active:scale-[0.98] cursor-pointer"
                       >
                         Clear Cart
                       </button>

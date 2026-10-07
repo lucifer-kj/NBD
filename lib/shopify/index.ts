@@ -199,7 +199,14 @@ export async function shopifyFetch<T>({
     };
 
     // Only supply Storefront Access Token if it is a real storefront token (not Admin shpat_ or placeholder)
-    if (key && !key.startsWith('shpat_') && !key.startsWith('your_')) {
+    // and this is not a cart query/mutation (the private custom app token is scoped to legacy products and rejects newly added variants)
+    const isCartOperation = query.includes('cartCreate') || 
+                            query.includes('cartLines') || 
+                            query.includes('cart(') || 
+                            query.includes('cartDiscount') || 
+                            query.includes('cartBuyerIdentity');
+
+    if (!isCartOperation && key && !key.startsWith('shpat_') && !key.startsWith('your_')) {
       storefrontHeaders['X-Shopify-Storefront-Access-Token'] = key;
     }
 
@@ -229,11 +236,29 @@ export async function shopifyFetch<T>({
       throw new Error(error.message || 'Shopify API Error', { cause: error });
     }
 
-    // If a storefront token was passed and Shopify returned null product or empty predictive search,
+    // If a storefront token was passed and Shopify returned null product, empty predictive search, or cart merchandise error,
     // the token is likely scoped to an older private app publication. Fall back to querying without the header.
-    const typedBody = body as { data?: { product?: unknown; predictiveSearch?: { products?: unknown[] } } };
+    const typedBody = body as { 
+      data?: { 
+        product?: unknown; 
+        predictiveSearch?: { products?: unknown[] };
+        cartCreate?: { cart?: unknown; userErrors?: Array<{ message?: string; code?: string }> };
+        cartLinesAdd?: { cart?: unknown; userErrors?: Array<{ message?: string; code?: string }> };
+        cartLinesUpdate?: { cart?: unknown; userErrors?: Array<{ message?: string; code?: string }> };
+      } 
+    };
     const hadToken = !!storefrontHeaders['X-Shopify-Storefront-Access-Token'];
-    if (hadToken && (typedBody.data?.product === null || (typedBody.data?.predictiveSearch && typedBody.data.predictiveSearch.products?.length === 0))) {
+    const hasCartMerchandiseError = !!(
+      typedBody.data?.cartCreate?.userErrors?.some(e => e.message?.toLowerCase().includes('not exist') || e.code === 'INVALID') ||
+      typedBody.data?.cartLinesAdd?.userErrors?.some(e => e.message?.toLowerCase().includes('not exist') || e.code === 'INVALID') ||
+      typedBody.data?.cartLinesUpdate?.userErrors?.some(e => e.message?.toLowerCase().includes('not exist') || e.code === 'INVALID')
+    );
+
+    if (hadToken && (
+      typedBody.data?.product === null || 
+      (typedBody.data?.predictiveSearch && typedBody.data.predictiveSearch.products?.length === 0) ||
+      hasCartMerchandiseError
+    )) {
       try {
         const fallbackHeaders = { ...storefrontHeaders };
         delete fallbackHeaders['X-Shopify-Storefront-Access-Token'];
@@ -241,8 +266,20 @@ export async function shopifyFetch<T>({
           ? await fetchWithRetry(endpoint, { ...fetchOptions, headers: fallbackHeaders }, retries)
           : await fetch(endpoint, { ...fetchOptions, headers: fallbackHeaders });
         const fallbackBody = await fallbackRes.json();
-        const fallbackTyped = fallbackBody as { data?: { product?: unknown; predictiveSearch?: { products?: unknown[] } } };
-        if (fallbackTyped.data?.product || ((fallbackTyped.data?.predictiveSearch?.products?.length ?? 0) > 0)) {
+        const fallbackTyped = fallbackBody as { 
+          data?: { 
+            product?: unknown; 
+            predictiveSearch?: { products?: unknown[] }; 
+            cartLinesAdd?: { cart?: unknown; userErrors?: Array<{ message?: string }> }; 
+            cartCreate?: { cart?: unknown; userErrors?: Array<{ message?: string }> } 
+          } 
+        };
+        if (
+          fallbackTyped.data?.product || 
+          ((fallbackTyped.data?.predictiveSearch?.products?.length ?? 0) > 0) ||
+          (fallbackTyped.data?.cartLinesAdd?.cart && (!fallbackTyped.data.cartLinesAdd.userErrors || fallbackTyped.data.cartLinesAdd.userErrors.length === 0)) ||
+          (fallbackTyped.data?.cartCreate?.cart && (!fallbackTyped.data.cartCreate.userErrors || fallbackTyped.data.cartCreate.userErrors.length === 0))
+        ) {
           return {
             status: fallbackRes.status,
             body: fallbackBody as T
